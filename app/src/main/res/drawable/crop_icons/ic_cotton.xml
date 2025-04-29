@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2025 askChinna App
+  ~ Created: April 28, 2025
+  ~ Version: 1.0
+  -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="#F5F5F5">
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M12,2C8.69,2 6,4.69 6,8c0,2.63 1.68,4.84 4,5.65V20c0,0.55 0.45,1 1,1h2c0.55,0 1,-0.45 1,-1v-6.35c2.32,-0.81 4,-3.02 4,-5.65C18,4.69 15.31,2 12,2zM12,12c-2.21,0 -4,-1.79 -4,-4c0,-2.21 1.79,-4 4,-4s4,1.79 4,4C16,10.21 14.21,12 12,12z"/>
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M8,14L6,14c-1.1,0 -2,0.9 -2,2v4h2v-4h2v4h2v-4C10,14.9 9.1,14 8,14z"/>
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M18,14l-2,0c-1.1,0 -2,0.9 -2,2v4h2v-4h2v4h2v-4C20,14.9 19.1,14 18,14z"/>
+</vector>

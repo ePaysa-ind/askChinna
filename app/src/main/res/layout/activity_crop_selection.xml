@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  File: app/src/main/res/layout/activity_crop_selection.xml
+  Copyright (c) 2025 askChinna
+  Created: April 28, 2025
+  Version: 1.0
+-->
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.cropselection.CropSelectionActivity">
+
+    <!-- Header with title -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbarCropSelection"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/colorPrimary"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/btnBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="12dp"
+            android:src="@drawable/ic_back"
+            android:contentDescription="@string/back" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/select_crop"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+    </androidx.appcompat.widget.Toolbar>
+
+    <!-- Instructions icon with text -->
+    <LinearLayout
+        android:id="@+id/layoutInstructions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="center_vertical"
+        android:background="@color/lightGray"
+        app:layout_constraintTop_toBottomOf="@id/toolbarCropSelection">
+
+        <ImageView
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_help"
+            android:contentDescription="@string/help" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="16dp"
+            android:text="@string/crop_selection_instruction"
+            android:textSize="16sp" />
+
+    </LinearLayout>
+
+    <!-- RecyclerView for crops grid -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerCrops"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:padding="8dp"
+        android:clipToPadding="false"
+        app:layout_constraintTop_toBottomOf="@id/layoutInstructions"
+        app:layout_constraintBottom_toTopOf="@id/viewUsageLimit"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:listitem="@layout/item_crop" />
+
+    <!-- Usage limit view -->
+    <include
+        android:id="@+id/viewUsageLimit"
+        layout="@layout/view_usage_limit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <!-- Loading state -->
+    <FrameLayout
+        android:id="@+id/layoutLoading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:background="@color/semiTransparent"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ProgressBar
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_gravity="center"
+            android:indeterminateTint="@color/colorPrimary" />
+
+    </FrameLayout>
+
+    <!-- Error state -->
+    <include
+        android:id="@+id/viewError"
+        layout="@layout/view_error"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/layoutInstructions"
+        app:layout_constraintBottom_toTopOf="@id/viewUsageLimit" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

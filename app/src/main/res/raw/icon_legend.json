@@ -1,0 +1,258 @@
+{
+  "action_icons": [
+    {
+      "id": "spray",
+      "name": "Spray",
+      "description": "Apply pesticide or fungicide",
+      "icon": "ic_spray"
+    },
+    {
+      "id": "water",
+      "name": "Water",
+      "description": "Irrigate or water the crop",
+      "icon": "ic_water"
+    },
+    {
+      "id": "fertilize",
+      "name": "Fertilize",
+      "description": "Apply fertilizer or nutrients",
+      "icon": "ic_fertilize"
+    },
+    {
+      "id": "remove",
+      "name": "Remove",
+      "description": "Remove affected parts or plants",
+      "icon": "ic_remove"
+    },
+    {
+      "id": "monitor",
+      "name": "Monitor",
+      "description": "Closely observe the crop",
+      "icon": "ic_monitor"
+    }
+  ],
+  "crop_icons": [
+    {
+      "id": "chili",
+      "name": "Chili",
+      "common_diseases": ["Anthracnose", "Bacterial Wilt", "Powdery Mildew"],
+      "icon": "ic_chili"
+    },
+    {
+      "id": "okra",
+      "name": "Okra",
+      "common_diseases": ["Powdery Mildew", "Yellow Vein Mosaic", "Leaf Spot"],
+      "icon": "ic_okra"
+    },
+    {
+      "id": "maize",
+      "name": "Maize",
+      "common_diseases": ["Leaf Blight", "Rust", "Smut"],
+      "icon": "ic_maize"
+    },
+    {
+      "id": "cotton",
+      "name": "Cotton",
+      "common_diseases": ["Bacterial Blight", "Leaf Curl", "Alternaria Leaf Spot"],
+      "icon": "ic_cotton"
+    },
+    {
+      "id": "tomato",
+      "name": "Tomato",
+      "common_diseases": ["Early Blight", "Late Blight", "Leaf Curl"],
+      "icon": "ic_tomato"
+    },
+    {
+      "id": "watermelon",
+      "name": "Watermelon",
+      "common_diseases": ["Downy Mildew", "Anthracnose", "Fusarium Wilt"],
+      "icon": "ic_watermelon"
+    },
+    {
+      "id": "soybean",
+      "name": "Soybean",
+      "common_diseases": ["Rust", "Mosaic Virus", "Bacterial Blight"],
+      "icon": "ic_soybean"
+    },
+    {
+      "id": "rice",
+      "name": "Rice",
+      "common_diseases": ["Blast", "Bacterial Leaf Blight", "Sheath Blight"],
+      "icon": "ic_rice"
+    },
+    {
+      "id": "wheat",
+      "name": "Wheat",
+      "common_diseases": ["Rust", "Powdery Mildew", "Leaf Blight"],
+      "icon": "ic_wheat"
+    },
+    {
+      "id": "pigeon_pea",
+      "name": "Pigeon Pea",
+      "common_diseases": ["Fusarium Wilt", "Sterility Mosaic", "Phytophthora Blight"],
+      "icon": "ic_pigeon_pea"
+    }
+  ],
+  "disease_icons": [
+    {
+      "id": "bacterial",
+      "name": "Bacterial",
+      "description": "Diseases caused by bacteria",
+      "examples": ["Bacterial Blight", "Bacterial Wilt", "Bacterial Spot"],
+      "icon": "ic_bacterial"
+    },
+    {
+      "id": "fungal",
+      "name": "Fungal",
+      "description": "Diseases caused by fungi",
+      "examples": ["Powdery Mildew", "Leaf Spot", "Rust", "Blight"],
+      "icon": "ic_fungal"
+    },
+    {
+      "id": "viral",
+      "name": "Viral",
+      "description": "Diseases caused by viruses",
+      "examples": ["Mosaic Virus", "Leaf Curl Virus", "Yellow Vein Mosaic"],
+      "icon": "ic_viral"
+    },
+    {
+      "id": "deficiency",
+      "name": "Deficiency",
+      "description": "Problems caused by nutrient deficiencies",
+      "examples": ["Nitrogen Deficiency", "Phosphorus Deficiency", "Iron Chlorosis"],
+      "icon": "ic_deficiency"
+    }
+  ],
+  "severity_icons": [
+    {
+      "id": "high",
+      "name": "High Severity",
+      "description": "Requires immediate attention",
+      "icon": "ic_severity_high"
+    },
+    {
+      "id": "medium",
+      "name": "Medium Severity",
+      "description": "Requires attention soon",
+      "icon": "ic_severity_medium"
+    },
+    {
+      "id": "low",
+      "name": "Low Severity",
+      "description": "Monitor but not urgent",
+      "icon": "ic_severity_low"
+    }
+  ],
+  "ui_icons": [
+    {
+      "id": "app_logo",
+      "name": "App Logo",
+      "description": "Main app logo",
+      "icon": "ic_app_logo"
+    },
+    {
+      "id": "back",
+      "name": "Back",
+      "description": "Navigate back",
+      "icon": "ic_back"
+    },
+    {
+      "id": "camera",
+      "name": "Camera",
+      "description": "Take photo",
+      "icon": "ic_camera"
+    },
+    {
+      "id": "capture",
+      "name": "Capture",
+      "description": "Capture button",
+      "icon": "ic_capture"
+    },
+    {
+      "id": "collapse",
+      "name": "Collapse",
+      "description": "Collapse expanded view",
+      "icon": "ic_collapse"
+    },
+    {
+      "id": "expand",
+      "name": "Expand",
+      "description": "Expand collapsed view",
+      "icon": "ic_expand"
+    },
+    {
+      "id": "help",
+      "name": "Help",
+      "description": "Get help or information",
+      "icon": "ic_help"
+    },
+    {
+      "id": "identification",
+      "name": "Identification",
+      "description": "Identify crop disease",
+      "icon": "ic_identification"
+    },
+    {
+      "id": "logout",
+      "name": "Logout",
+      "description": "Sign out of app",
+      "icon": "ic_logout"
+    },
+    {
+      "id": "mobile",
+      "name": "Mobile",
+      "description": "Mobile phone",
+      "icon": "ic_mobile"
+    },
+    {
+      "id": "network_offline",
+      "name": "Network Offline",
+      "description": "No internet connection",
+      "icon": "ic_network_offline"
+    },
+    {
+      "id": "pdf_export",
+      "name": "PDF Export",
+      "description": "Export results as PDF",
+      "icon": "ic_pdf_export"
+    },
+    {
+      "id": "person",
+      "name": "Person",
+      "description": "User profile",
+      "icon": "ic_person"
+    },
+    {
+      "id": "timer",
+      "name": "Timer",
+      "description": "Session timer",
+      "icon": "ic_timer"
+    },
+    {
+      "id": "upload",
+      "name": "Upload",
+      "description": "Upload image",
+      "icon": "ic_upload"
+    },
+    {
+      "id": "usage",
+      "name": "Usage",
+      "description": "Usage limits",
+      "icon": "ic_usage"
+    },
+    {
+      "id": "user",
+      "name": "User",
+      "description": "User account",
+      "icon": "ic_user"
+    },
+    {
+      "id": "warning",
+      "name": "Warning",
+      "description": "Warning or error",
+      "icon": "ic_warning"
+    }
+  ],
+  "version": "1.0.0",
+  "last_updated": "2025-04-29"
+}

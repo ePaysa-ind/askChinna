@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Name and Description -->
+    <string name="app_name">askChinna</string>
+    <string name="app_description">Agricultural Assistant for Farmers</string>
+
+    <!-- Common UI Elements -->
+    <string name="app_logo">App Logo</string>
+    <string name="content_desc_back">Back</string>
+    <string name="content_desc_close">Close</string>
+
+    <!-- Network Status -->
+    <string name="network_offline">You are offline. Some features may be limited.</string>
+
+    <!-- Authentication - Login -->
+    <string name="title_login">Login</string>
+    <string name="hint_mobile_number">Mobile Number (10 digits)</string>
+    <string name="btn_send_otp">Send OTP</string>
+    <string name="prompt_need_account">Don\'t have an account?</string>
+    <string name="action_register">Register</string>
+    <string name="error_invalid_mobile">Please enter a valid 10-digit mobile number</string>
+
+    <!-- Authentication - Register -->
+    <string name="title_register">Register</string>
+    <string name="register_instructions">Create a new account to start using askChinna</string>
+    <string name="hint_name">Your Name</string>
+    <string name="btn_register">Register</string>
+    <string name="prompt_have_account">Already have an account?</string>
+    <string name="action_login">Login</string>
+    <string name="error_invalid_name">Name must be at least 2 characters</string>
+
+    <!-- Authentication - OTP Verification -->
+    <string name="title_verify_otp">Verify OTP</string>
+    <string name="otp_sent_to">OTP sent to %1$s</string>
+    <string name="hint_enter_otp">Enter 6-digit OTP</string>
+    <string name="btn_verify_otp">Verify</string>
+    <string name="resend_otp">Resend OTP</string>
+    <string name="resend_otp_countdown">Resend OTP in %1$d s</string>
+    <string name="otp_instructions">Please enter the 6-digit verification code sent to your mobile number via SMS</string>
+    <string name="otp_resent_success">OTP has been resent</string>
+
+    <!-- OTP Resend Dialog -->
+    <string name="title_resend_otp">Resend OTP</string>
+    <string name="resend_otp_message">Enter your mobile number to receive a new OTP</string>
+
+    <!-- Home Screen -->
+    <string name="title_home">Home</string>
+    <string name="welcome_message">Welcome, %1$s</string>
+    <string name="identify_crop_disease">Identify Crop Disease</string>
+    <string name="view_history">View History</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_logout">Logout</string>
+    <string name="confirm_logout">Are you sure you want to logout?</string>
+    <string name="btn_yes">Yes</string>
+    <string name="btn_no">No</string>
+
+    <!-- Session Timer -->
+    <string name="session_timer">Session: %1$d:%2$02d</string>
+    <string name="session_ending_soon">Session ending soon</string>
+    <string name="session_ended">Session ended</string>
+
+    <!-- Usage Limits -->
+    <string name="usage_count">%1$d/%2$d uses left this month</string>
+    <string name="usage_limit_reached">Usage limit reached for this month</string>
+    <string name="usage_resets_on">Resets on %1$s</string>
+
+    <!-- Crop Selection Screen -->
+    <string name="select_crop">Select Crop</string>
+    <string name="back">Back</string>
+    <string name="help">Help</string>
+    <string name="crop_selection_instruction">Select the crop that you want to check for pests or diseases</string>
+    <string name="crop_icon">Crop Icon</string>
+    <string name="error_no_remaining_uses">You have used all your identification attempts. Please try again next month.</string>
+
+    <!-- Crop Names -->
+    <string name="crop_chili">Chili</string>
+    <string name="crop_okra">Okra</string>
+    <string name="crop_maize">Maize</string>
+    <string name="crop_cotton">Cotton</string>
+    <string name="crop_tomato">Tomato</string>
+    <string name="crop_watermelon">Watermelon</string>
+    <string name="crop_soybean">Soybean</string>
+    <string name="crop_rice">Rice</string>
+    <string name="crop_wheat">Wheat</string>
+    <string name="crop_pigeon_pea">Pigeon Pea</string>
+
+    <!-- Error Messages -->
+    <string name="error_loading_crops">Unable to load crops. Please check your connection and try again.</string>
+    <string name="error_network_unavailable">Network unavailable. Please check your connection.</string>
+    <string name="retry">Retry</string>
+
+    <!-- Image Capture -->
+    <string name="title_capture_image">Capture Image</string>
+    <string name="btn_capture">Capture</string>
+    <string name="btn_use_gallery">Gallery</string>
+    <string name="capture_instructions">Take a clear picture of the affected plant part</string>
+    <string name="camera_permission_required">Camera permission is required to capture images</string>
+    <string name="storage_permission_required">Storage permission is required to select images</string>
+
+    <!-- Image Preview -->
+    <string name="title_image_preview">Preview &amp; Upload</string>
+    <string name="btn_retake">Retake</string>
+    <string name="btn_upload">Upload</string>
+    <string name="image_quality_good">Good image quality</string>
+    <string name="image_quality_poor">Poor image quality. Consider retaking.</string>
+
+    <!-- Image Upload -->
+    <string name="uploading_image">Uploading image…</string>
+    <string name="upload_complete">Upload complete</string>
+    <string name="upload_failed">Upload failed</string>
+
+    <!-- Identification -->
+    <string name="identifying">Identifying disease…</string>
+    <string name="identification_complete">Identification complete</string>
+    <string name="identification_failed">Identification failed</string>
+
+    <!-- Results -->
+    <string name="title_results">Identification Results</string>
+    <string name="disease_name">Disease: %1$s</string>
+    <string name="disease_confidence">Confidence: %1$s</string>
+    <string name="disease_severity">Severity: %1$s</string>
+    <string name="severity_high">High</string>
+    <string name="severity_medium">Medium</string>
+    <string name="severity_low">Low</string>
+    <string name="btn_show_details">Show Details</string>
+    <string name="btn_hide_details">Hide Details</string>
+    <string name="btn_export_pdf">Export PDF</string>
+    <string name="btn_share_results">Share</string>
+    <string name="pdf_export_success">PDF exported successfully</string>
+    <string name="pdf_export_failed">PDF export failed</string>
+
+    <!-- Error Messages -->
+    <string name="error_generic">Something went wrong. Please try again.</string>
+    <string name="error_network">Network error. Please check your connection.</string>
+    <string name="error_api">Service error. Please try again later.</string>
+    <string name="error_auth_failed">Authentication failed</string>
+    <string name="error_session_expired">Session expired. Please login again.</string>
+</resources>

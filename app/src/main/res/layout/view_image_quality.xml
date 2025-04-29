@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2025 askChinna App
+  ~ Created: April 28, 2025
+  ~ Version: 1.0
+  -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@drawable/bg_rounded_card">
+
+    <!-- Overall Quality Status -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingBottom="8dp">
+
+        <ImageView
+            android:id="@+id/ivQualityStatus"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:contentDescription="@string/image_quality"
+            app:tint="@color/colorSuccess"
+            tools:src="@drawable/ic_severity_low" />
+
+        <TextView
+            android:id="@+id/tvQualityStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:textStyle="bold"
+            tools:text="Image Quality: Good"
+            tools:textColor="@color/colorSuccess" />
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#E0E0E0"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="12dp" />
+
+    <!-- Resolution Status -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:layout_marginBottom="8dp">
+
+        <ImageView
+            android:id="@+id/ivResolution"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:contentDescription="@string/resolution"
+            app:tint="@color/colorSuccess"
+            tools:src="@drawable/ic_severity_low" />
+
+        <TextView
+            android:id="@+id/tvResolution"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            tools:text="Resolution: Good"
+            tools:textColor="@color/colorSuccess" />
+
+    </LinearLayout>
+
+    <!-- Focus Status -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:layout_marginBottom="8dp">
+
+        <ImageView
+            android:id="@+id/ivFocus"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:contentDescription="@string/focus"
+            app:tint="@color/colorSuccess"
+            tools:src="@drawable/ic_severity_low" />
+
+        <TextView
+            android:id="@+id/tvFocus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            tools:text="Focus: Good"
+            tools:textColor="@color/colorSuccess" />
+
+    </LinearLayout>
+
+    <!-- Brightness Status -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:layout_marginBottom="8dp">
+
+        <ImageView
+            android:id="@+id/ivBrightness"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:contentDescription="@string/brightness"
+            app:tint="@color/colorSuccess"
+            tools:src="@drawable/ic_severity_low" />
+
+        <TextView
+            android:id="@+id/tvBrightness"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            tools:text="Brightness: Good"
+            tools:textColor="@color/colorSuccess" />
+
+    </LinearLayout>
+
+    <!-- Error Message (if any) -->
+    <TextView
+        android:id="@+id/tvErrorMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textColor="@color/colorError"
+        android:visibility="gone"
+        tools:text="Error analyzing image"
+        tools:visibility="visible" />
+
+</LinearLayout>

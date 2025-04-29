@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2025 askChinna App
+  ~ Created: April 28, 2025
+  ~ Version: 1.0
+  -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48"
+    android:tint="#4CAF50">
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M24,4C12.95,4 4,12.95 4,24C4,35.05 12.95,44 24,44C35.05,44 44,35.05 44,24C44,12.95 35.05,4 24,4ZM24,10C26.1,10 27.8,11.7 27.8,13.8C27.8,15.9 26.1,17.6 24,17.6C21.9,17.6 20.2,15.9 20.2,13.8C20.2,11.7 21.9,10 24,10ZM28,34H20C19.45,34 19,33.55 19,33V25C19,24.45 19.45,24 20,24H22V29H26V24H28C28.55,24 29,24.45 29,25V33C29,33.55 28.55,34 28,34Z"/>
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M12,25L9,21L12,17L15,21L12,25Z"/>
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M36,25L33,21L36,17L39,21L36,25Z"/>
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M12,37L9,33L12,29L15,33L12,37Z"/>
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M36,37L33,33L36,29L39,33L36,37Z"/>
+</vector>
