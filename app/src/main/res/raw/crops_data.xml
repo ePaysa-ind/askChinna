@@ -1,0 +1,673 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  * File: crops_data.xml
+  * Path: src/main/res/raw/crops_data.xml
+  * Created: April 29, 2025
+  * Version: 1.0
+  * Copyright (c) 2025 askChinna Project
+  *
+  * XML representation of crops data for the askChinna application.
+
+  *
+  * LEGEND:
+  * I: Associated primarily or more severely with Irrigated conditions (high humidity/wetness)
+  * R: Associated primarily or more severely with Rainfed conditions (drought stress/dry periods)
+  * B: Association often noted with Black Soils (heavy clay, potentially poor drainage)
+  * Rd: Association often noted with Red Soils (lighter texture, better drainage, sometimes lower fertility)
+  * Both: Occurs significantly under both Irrigated and Rainfed conditions
+  * Soil: Soil-borne pathogen; specific soil type preference can vary
+  * Vector: Disease spread by an insect vector (e.g., whitefly, aphid, hopper, mite)
+  * Stress: Often associated with plant stress (drought, waterlogging, nutrient deficiency)
+  * Drainage: Associated with poorly drained soil conditions
+-->
+<crops>
+    <crop>
+        <id>chili</id>
+        <name>Chillies</name>
+        <scientific_name>Capsicum annuum</scientific_name>
+        <description>Spice crop essential to Indian cuisine</description>
+        <icon_file>ic_chili</icon_file>
+        <growing_regions>
+            <region>Andhra Pradesh</region>
+            <region>Telangana</region>
+            <region>Tamil Nadu</region>
+            <region>Karnataka</region>
+            <region>Kerala</region>
+            <region>Gujarat</region>
+            <region>Rajasthan</region>
+            <region>Uttar Pradesh</region>
+            <region>Jharkhand</region>
+            <region>Bihar</region>
+            <region>Madhya Pradesh</region>
+            <region>Punjab</region>
+            <region>Haryana</region>
+        </growing_regions>
+        <pests>
+            <pest>
+                <name>Thrips</name>
+                <conditions>Both</conditions>
+            </pest>
+            <pest>
+                <name>Mites</name>
+                <conditions>R/Dry</conditions>
+            </pest>
+            <pest>
+                <name>Aphids</name>
+                <conditions>Both</conditions>
+            </pest>
+            <pest>
+                <name>Whitefly</name>
+                <conditions>Both, Vector</conditions>
+            </pest>
+            <pest>
+                <name>Fruit Borer</name>
+                <conditions>Both</conditions>
+            </pest>
+        </pests>
+        <diseases>
+            <disease>
+                <name>Anthracnose</name>
+                <conditions>I/Wet</conditions>
+            </disease>
+            <disease>
+                <name>Powdery Mildew</name>
+                <conditions>Both</conditions>
+            </disease>
+            <disease>
+                <name>Bacterial Leaf Spot</name>
+                <conditions>I/Wet</conditions>
+            </disease>
+            <disease>
+                <name>Fusarium Wilt</name>
+                <conditions>Soil/Stress</conditions>
+            </disease>
+            <disease>
+                <name>Viral Diseases</name>
+                <conditions>Vector</conditions>
+            </disease>
+        </diseases>
+    </crop>
+
+    <crop>
+        <id>cotton</id>
+        <name>Cotton</name>
+        <scientific_name>Gossypium hirsutum</scientific_name>
+        <description>Important cash crop used for textile production</description>
+        <icon_file>ic_cotton</icon_file>
+        <growing_regions>
+            <region>Andhra Pradesh</region>
+            <region>Telangana</region>
+            <region>Tamil Nadu</region>
+            <region>Karnataka</region>
+            <region>Kerala</region>
+            <region>Gujarat</region>
+            <region>Rajasthan</region>
+            <region>Uttar Pradesh</region>
+            <region>Jharkhand</region>
+            <region>Bihar</region>
+            <region>Madhya Pradesh</region>
+            <region>Punjab</region>
+            <region>Haryana</region>
+        </growing_regions>
+        <pests>
+            <pest>
+                <name>Bollworms (Pink, American, Spotted)</name>
+                <conditions>Both</conditions>
+            </pest>
+            <pest>
+                <name>Jassids</name>
+                <conditions>Both</conditions>
+            </pest>
+            <pest>
+                <name>Whiteflies</name>
+                <conditions>I-North, Vector</conditions>
+            </pest>
+            <pest>
+                <name>Aphids</name>
+                <conditions>Both</conditions>
+            </pest>
+            <pest>
+                <name>Thrips</name>
+                <conditions>Both</conditions>
+            </pest>
+        </pests>
+        <diseases>
+            <disease>
+                <name>Bacterial Blight</name>
+                <conditions>I/Wet</conditions>
+            </disease>
+            <disease>
+                <name>Fusarium Wilt</name>
+                <conditions>R/Rd>B</conditions>
+            </disease>
+            <disease>
+                <name>Verticillium Wilt</name>
+                <conditions>I/B>Rd</conditions>
+            </disease>
+            <disease>
+                <name>Root Rot</name>
+                <conditions>Stress/Drainage</conditions>
+            </disease>
+            <disease>
+                <name>Leaf Curl Virus</name>
+                <conditions>I/Vector</conditions>
+            </disease>
+        </diseases>
+    </crop>
+
+    <crop>
+        <id>maize</id>
+        <name>Maize</name>
+        <scientific_name>Zea mays</scientific_name>
+        <description>Versatile crop used for food, feed, and industrial purposes</description>
+        <icon_file>ic_maize</icon_file>
+        <growing_regions>
+            <region>Andhra Pradesh</region>
+            <region>Telangana</region>
+            <region>Tamil Nadu</region>
+            <region>Karnataka</region>
+            <region>Kerala</region>
+            <region>Gujarat</region>
+            <region>Rajasthan</region>
+            <region>Uttar Pradesh</region>
+            <region>Jharkhand</region>
+            <region>Bihar</region>
+            <region>Madhya Pradesh</region>
+            <region>Punjab</region>
+            <region>Haryana</region>
+        </growing_regions>
+        <pests>
+            <pest>
+                <name>Stem Borers (Spotted)</name>
+                <conditions>R/Kharif</conditions>
+            </pest>
+            <pest>
+                <name>Stem Borers (Pink)</name>
+                <conditions>I/Rabi</conditions>
+            </pest>
+            <pest>
+                <name>Fall Armyworm</name>
+                <conditions>Both, Major</conditions>
+            </pest>
+            <pest>
+                <name>Shoot Fly</name>
+                <conditions>Both</conditions>
+            </pest>
+            <pest>
+                <name>Aphids</name>
+                <conditions>I</conditions>
+            </pest>
+            <pest>
+                <name>Termites</name>
+                <conditions>R/Rd</conditions>
+            </pest>
+        </pests>
+        <diseases>
+            <disease>
+                <name>Leaf Blights (TLB, MLB)</name>
+                <conditions>I/Wet</conditions>
+            </disease>
+            <disease>
+                <name>Downy Mildews</name>
+                <conditions>I/Wet</conditions>
+            </disease>
+            <disease>
+                <name>Stalk Rots (Charcoal)</name>
+                <conditions>R/Stress</conditions>
+            </disease>
+            <disease>
+                <name>Stalk Rots (Others)</name>
+                <conditions>I/Wet/Drainage</conditions>
+            </disease>
+        </diseases>
+    </crop>
+
+    <crop>
+        <id>tomato</id>
+        <name>Tomato</name>
+        <scientific_name>Solanum lycopersicum</scientific_name>
+        <description>Popular vegetable crop grown throughout India</description>
+        <icon_file>ic_tomato</icon_file>
+        <growing_regions>
+            <region>Andhra Pradesh</region>
+            <region>Telangana</region>
+            <region>Tamil Nadu</region>
+            <region>Karnataka</region>
+            <region>Kerala</region>
+            <region>Gujarat</region>
+            <region>Rajasthan</region>
+            <region>Uttar Pradesh</region>
+            <region>Jharkhand</region>
+            <region>Bihar</region>
+            <region>Madhya Pradesh</region>
+            <region>Punjab</region>
+            <region>Haryana</region>
+        </growing_regions>
+        <pests>
+            <pest>
+                <name>Fruit Borer</name>
+                <conditions>Both</conditions>
+            </pest>
+            <pest>
+                <name>Whitefly</name>
+                <conditions>Both, Vector</conditions>
+            </pest>
+            <pest>
+                <name>Leaf Miner</name>
+                <conditions>Both</conditions>
+            </pest>
+            <pest>
+                <name>Aphids</name>
+                <conditions>Both</conditions>
+            </pest>
+            <pest>
+                <name>Mites</name>
+                <conditions>R/Dry</conditions>
+            </pest>
+            <pest>
+                <name>Nematodes</name>
+                <conditions>Rd/Sandy</conditions>
+            </pest>
+        </pests>
+        <diseases>
+            <disease>
+                <name>Early Blight</name>
+                <conditions>I/Wet</conditions>
+            </disease>
+            <disease>
+                <name>Late Blight</name>
+                <conditions>I/Wet</conditions>
+            </disease>
+            <disease>
+                <name>Septoria</name>
+                <conditions>I/Wet</conditions>
+            </disease>
+            <disease>
+                <name>Bacterial Wilt</name>
+                <conditions>Soil/Wet</conditions>
+            </disease>
+            <disease>
+                <name>Fusarium Wilt</name>
+                <conditions>Soil</conditions>
+            </disease>
+            <disease>
+                <name>ToLCV</name>
+                <conditions>Vector</conditions>
+            </disease>
+        </diseases>
+    </crop>
+
+    <crop>
+        <id>okra</id>
+        <name>Okra</name>
+        <scientific_name>Abelmoschus esculentus</scientific_name>
+        <description>Popular vegetable known as bhindi or lady's finger</description>
+        <icon_file>ic_okra</icon_file>
+        <growing_regions>
+            <region>Andhra Pradesh</region>
+            <region>Telangana</region>
+            <region>Tamil Nadu</region>
+            <region>Karnataka</region>
+            <region>Kerala</region>
+            <region>Gujarat</region>
+            <region>Rajasthan</region>
+            <region>Uttar Pradesh</region>
+            <region>Jharkhand</region>
+            <region>Bihar</region>
+            <region>Madhya Pradesh</region>
+            <region>Punjab</region>
+            <region>Haryana</region>
+        </growing_regions>
+        <pests>
+            <pest>
+                <name>Jassids</name>
+                <conditions>Both</conditions>
+            </pest>
+            <pest>
+                <name>Aphids</name>
+                <conditions>Both</conditions>
+            </pest>
+            <pest>
+                <name>Whitefly</name>
+                <conditions>Both, Vector</conditions>
+            </pest>
+            <pest>
+                <name>Shoot/Fruit Borer</name>
+                <conditions>Both</conditions>
+            </pest>
+            <pest>
+                <name>Mites</name>
+                <conditions>R/Dry</conditions>
+            </pest>
+        </pests>
+        <diseases>
+            <disease>
+                <name>YVMV</name>
+                <conditions>Vector, Major</conditions>
+            </disease>
+            <disease>
+                <name>Powdery Mildew</name>
+                <conditions>Humid</conditions>
+            </disease>
+            <disease>
+                <name>Fusarium Wilt</name>
+                <conditions>Soil</conditions>
+            </disease>
+            <disease>
+                <name>Damping-off</name>
+                <conditions>Wet/Drainage</conditions>
+            </disease>
+        </diseases>
+    </crop>
+
+    <crop>
+        <id>rice</id>
+        <name>Rice</name>
+        <scientific_name>Oryza sativa</scientific_name>
+        <description>A staple food crop in India grown in paddy fields</description>
+        <icon_file>ic_rice</icon_file>
+        <growing_regions>
+            <region>Andhra Pradesh</region>
+            <region>Telangana</region>
+            <region>Tamil Nadu</region>
+            <region>Karnataka</region>
+            <region>Kerala</region>
+            <region>Gujarat</region>
+            <region>Rajasthan</region>
+            <region>Uttar Pradesh</region>
+            <region>Jharkhand</region>
+            <region>Bihar</region>
+            <region>Madhya Pradesh</region>
+            <region>Punjab</region>
+            <region>Haryana</region>
+        </growing_regions>
+        <pests>
+            <pest>
+                <name>Stem Borer</name>
+                <conditions>I</conditions>
+            </pest>
+            <pest>
+                <name>BPH</name>
+                <conditions>I, Major</conditions>
+            </pest>
+            <pest>
+                <name>WBPH</name>
+                <conditions>I</conditions>
+            </pest>
+            <pest>
+                <name>GLH</name>
+                <conditions>Both, Vector</conditions>
+            </pest>
+            <pest>
+                <name>Leaf Folder</name>
+                <conditions>I</conditions>
+            </pest>
+            <pest>
+                <name>Gundhi Bug</name>
+                <conditions>R-Upland</conditions>
+            </pest>
+        </pests>
+        <diseases>
+            <disease>
+                <name>Blast</name>
+                <conditions>Both</conditions>
+            </disease>
+            <disease>
+                <name>BLB</name>
+                <conditions>I, Major</conditions>
+            </disease>
+            <disease>
+                <name>Sheath Blight</name>
+                <conditions>I</conditions>
+            </disease>
+            <disease>
+                <name>Tungro Virus</name>
+                <conditions>I/Vector</conditions>
+            </disease>
+            <disease>
+                <name>False Smut</name>
+                <conditions>I/Wet at flowering</conditions>
+            </disease>
+        </diseases>
+    </crop>
+
+    <crop>
+        <id>wheat</id>
+        <name>Wheat</name>
+        <scientific_name>Triticum aestivum</scientific_name>
+        <description>A major grain crop grown across Northern India</description>
+        <icon_file>ic_wheat</icon_file>
+        <growing_regions>
+            <region>Andhra Pradesh</region>
+            <region>Telangana</region>
+            <region>Tamil Nadu</region>
+            <region>Karnataka</region>
+            <region>Kerala</region>
+            <region>Gujarat</region>
+            <region>Rajasthan</region>
+            <region>Uttar Pradesh</region>
+            <region>Jharkhand</region>
+            <region>Bihar</region>
+            <region>Madhya Pradesh</region>
+            <region>Punjab</region>
+            <region>Haryana</region>
+        </growing_regions>
+        <pests>
+            <pest>
+                <name>Aphids</name>
+                <conditions>I</conditions>
+            </pest>
+            <pest>
+                <name>Termites</name>
+                <conditions>R/Rd</conditions>
+            </pest>
+            <pest>
+                <name>Brown Wheat Mite</name>
+                <conditions>R/Dry</conditions>
+            </pest>
+        </pests>
+        <diseases>
+            <disease>
+                <name>Rust (Yellow)</name>
+                <conditions>I</conditions>
+            </disease>
+            <disease>
+                <name>Rust (Brown, Black)</name>
+                <conditions>Major</conditions>
+            </disease>
+            <disease>
+                <name>Loose Smut</name>
+                <conditions>Seed</conditions>
+            </disease>
+            <disease>
+                <name>Powdery Mildew</name>
+                <conditions>I/Humid</conditions>
+            </disease>
+            <disease>
+                <name>Karnal Bunt</name>
+                <conditions>I/Humid at flowering</conditions>
+            </disease>
+        </diseases>
+    </crop>
+
+    <crop>
+        <id>soybean</id>
+        <name>Soybean</name>
+        <scientific_name>Glycine max</scientific_name>
+        <description>Legume grown for its protein-rich seeds</description>
+        <icon_file>ic_soybean</icon_file>
+        <growing_regions>
+            <region>Andhra Pradesh</region>
+            <region>Telangana</region>
+            <region>Tamil Nadu</region>
+            <region>Karnataka</region>
+            <region>Kerala</region>
+            <region>Gujarat</region>
+            <region>Rajasthan</region>
+            <region>Uttar Pradesh</region>
+            <region>Jharkhand</region>
+            <region>Bihar</region>
+            <region>Madhya Pradesh</region>
+            <region>Punjab</region>
+            <region>Haryana</region>
+        </growing_regions>
+        <pests>
+            <pest>
+                <name>Girdle Beetle</name>
+                <conditions>R/B</conditions>
+            </pest>
+            <pest>
+                <name>Stem Fly</name>
+                <conditions>R</conditions>
+            </pest>
+            <pest>
+                <name>Semiloopers</name>
+                <conditions>R</conditions>
+            </pest>
+            <pest>
+                <name>Whitefly</name>
+                <conditions>R, Vector</conditions>
+            </pest>
+            <pest>
+                <name>Pod Borers</name>
+                <conditions>R</conditions>
+            </pest>
+        </pests>
+        <diseases>
+            <disease>
+                <name>Rust</name>
+                <conditions>R/Humid</conditions>
+            </disease>
+            <disease>
+                <name>Anthracnose</name>
+                <conditions>R/Wet</conditions>
+            </disease>
+            <disease>
+                <name>Root Rot</name>
+                <conditions>R/Drainage-B</conditions>
+            </disease>
+            <disease>
+                <name>Charcoal Rot</name>
+                <conditions>R/Stress</conditions>
+            </disease>
+            <disease>
+                <name>YMV</name>
+                <conditions>R/Vector</conditions>
+            </disease>
+        </diseases>
+    </crop>
+
+    <crop>
+        <id>pigeon_pea</id>
+        <name>Pigeon Pea</name>
+        <scientific_name>Cajanus cajan</scientific_name>
+        <description>Important pulse crop known as arhar or toor dal</description>
+        <icon_file>ic_pigeon_pea</icon_file>
+        <growing_regions>
+            <region>Andhra Pradesh</region>
+            <region>Telangana</region>
+            <region>Tamil Nadu</region>
+            <region>Karnataka</region>
+            <region>Kerala</region>
+            <region>Gujarat</region>
+            <region>Rajasthan</region>
+            <region>Uttar Pradesh</region>
+            <region>Jharkhand</region>
+            <region>Bihar</region>
+            <region>Madhya Pradesh</region>
+            <region>Punjab</region>
+            <region>Haryana</region>
+        </growing_regions>
+        <pests>
+            <pest>
+                <name>Pod Borer Complex</name>
+                <conditions>R, Major</conditions>
+            </pest>
+            <pest>
+                <name>Pod Fly</name>
+                <conditions>R</conditions>
+            </pest>
+            <pest>
+                <name>Blister Beetles</name>
+                <conditions>R</conditions>
+            </pest>
+        </pests>
+        <diseases>
+            <disease>
+                <name>Fusarium Wilt</name>
+                <conditions>R, Soil, Major</conditions>
+            </disease>
+            <disease>
+                <name>Sterility Mosaic Disease</name>
+                <conditions>R/Vector</conditions>
+            </disease>
+            <disease>
+                <name>Phytophthora Blight</name>
+                <conditions>R/Waterlogging-B</conditions>
+            </disease>
+        </diseases>
+    </crop>
+
+    <crop>
+        <id>watermelon</id>
+        <name>Watermelon</name>
+        <scientific_name>Citrullus lanatus</scientific_name>
+        <description>Popular summer fruit crop in India</description>
+        <icon_file>ic_watermelon</icon_file>
+        <growing_regions>
+            <region>Andhra Pradesh</region>
+            <region>Telangana</region>
+            <region>Tamil Nadu</region>
+            <region>Karnataka</region>
+            <region>Kerala</region>
+            <region>Gujarat</region>
+            <region>Rajasthan</region>
+            <region>Uttar Pradesh</region>
+            <region>Jharkhand</region>
+            <region>Bihar</region>
+            <region>Madhya Pradesh</region>
+            <region>Punjab</region>
+            <region>Haryana</region>
+        </growing_regions>
+        <pests>
+            <pest>
+                <name>Fruit Fly</name>
+                <conditions>Both, Major</conditions>
+            </pest>
+            <pest>
+                <name>Aphids</name>
+                <conditions>Both, Vector</conditions>
+            </pest>
+            <pest>
+                <name>Whitefly</name>
+                <conditions>Both, Vector</conditions>
+            </pest>
+            <pest>
+                <name>Red Pumpkin Beetle</name>
+                <conditions>Seedlings</conditions>
+            </pest>
+        </pests>
+        <diseases>
+            <disease>
+                <name>Downy Mildew</name>
+                <conditions>I/Wet</conditions>
+            </disease>
+            <disease>
+                <name>Powdery Mildew</name>
+                <conditions>Humid</conditions>
+            </disease>
+            <disease>
+                <name>Anthracnose</name>
+                <conditions>I/Wet</conditions>
+            </disease>
+            <disease>
+                <name>Fusarium Wilt</name>
+                <conditions>Soil, Major</conditions>
+            </disease>
+            <disease>
+                <name>Viral Diseases</name>
+                <conditions>Vector</conditions>
+            </disease>
+        </diseases>
+    </crop>
+</crops>

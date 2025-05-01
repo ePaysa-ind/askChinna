@@ -1,5 +1,10 @@
 package com.example.askchinna.auth
-
+/**
+ * app/src/main/java/com/askchinna/ui/auth/LoginUITest.kt
+ * Copyright © 2025 askChinna
+ * Created: April 28, 2025
+ * Version: 1.0
+ */
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.assertion.ViewAssertions.matches

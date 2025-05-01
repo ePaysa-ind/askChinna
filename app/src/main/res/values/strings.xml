@@ -54,6 +54,13 @@
     <string name="btn_yes">Yes</string>
     <string name="btn_no">No</string>
 
+    <!-- Missing strings from Home Screen -->
+    <string name="welcome">Welcome</string>
+    <string name="user_icon">User Icon</string>
+    <string name="identification_icon">Identification Icon</string>
+    <string name="start_identification">Start Identification</string>
+    <string name="identification_description">Use your camera to capture plant images and identify diseases or pests</string>
+
     <!-- Session Timer -->
     <string name="session_timer">Session: %1$d:%2$02d</string>
     <string name="session_ending_soon">Session ending soon</string>
@@ -97,12 +104,26 @@
     <string name="camera_permission_required">Camera permission is required to capture images</string>
     <string name="storage_permission_required">Storage permission is required to select images</string>
 
+    <!-- Missing strings from Image Capture -->
+    <string name="capture_image">Capture Image</string>
+    <string name="capture_image_instructions">Position the affected plant part clearly in the frame</string>
+    <string name="camera">Camera</string>
+    <string name="take_photo_with_camera">Take Photo with Camera</string>
+    <string name="upload">Upload</string>
+    <string name="upload_from_gallery">Upload from Gallery</string>
+
     <!-- Image Preview -->
     <string name="title_image_preview">Preview &amp; Upload</string>
     <string name="btn_retake">Retake</string>
     <string name="btn_upload">Upload</string>
     <string name="image_quality_good">Good image quality</string>
     <string name="image_quality_poor">Poor image quality. Consider retaking.</string>
+
+    <!-- Missing strings from Image Preview -->
+    <string name="preview_image">Preview Image</string>
+    <string name="plant_image_preview">Plant Image Preview</string>
+    <string name="retake">Retake</string>
+    <string name="submit_for_identification">Submit for Identification</string>
 
     <!-- Image Upload -->
     <string name="uploading_image">Uploading image…</string>
@@ -135,4 +156,63 @@
     <string name="error_api">Service error. Please try again later.</string>
     <string name="error_auth_failed">Authentication failed</string>
     <string name="error_session_expired">Session expired. Please login again.</string>
+    <!-- Onboarding -->
+    <string name="skip">Skip</string>
+    <string name="next">Next</string>
+    <string name="onboarding_image_description">Onboarding screen illustration</string>
+
+    <!-- Results -->
+    <string name="cropped_image_description">Cropped plant image</string>
+    <string name="export_pdf">Export PDF</string>
+    <string name="recommended_actions">Recommended Actions</string>
+    <string name="no_actions_available">No recommended actions available</string>
+
+    <!-- Disease Details -->
+    <string name="disease_type_icon">Disease type icon</string>
+    <string name="severity_level">Severity Level</string>
+    <string name="expand_collapse">Expand or collapse</string>
+
+    <!-- Error & Feedback -->
+    <string name="error_icon_description">Error icon</string>
+    <string name="feedback_prompt">Was this identification helpful?</string>
+    <string name="action_icon">Action icon</string>
+    <!-- Feedback -->
+    <string name="feedback_helpful">Helpful</string>
+    <string name="feedback_partially_helpful">Partially Helpful</string>
+    <string name="feedback_not_helpful">Not Helpful</string>
+    <string name="submit_feedback">Submit Feedback</string>
+
+    <!-- Image Quality -->
+    <string name="image_quality">Image Quality</string>
+    <string name="resolution">Resolution</string>
+    <string name="focus">Focus</string>
+    <string name="brightness">Brightness</string>
+
+    <!-- Upload -->
+    <string name="upload_status">Upload Status</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- Loading -->
+    <string name="loading_message">Processing your request...</string>
+    <string name="loading_tip">This usually takes 10-15 seconds</string>
+
+    <!-- Network -->
+    <string name="network_status_icon">Network status icon</string>
+    <string name="retry_connection">Retry Connection</string>
+    <!-- Session Timer -->
+    <string name="timer_icon">Timer icon</string>
+    <string name="timer_paused">Timer paused</string>
+    <string name="warning_icon">Warning icon</string>
+    <string name="session_expiring_soon">Your session is expiring soon</string>
+
+    <!-- Summary -->
+    <string name="confidence_label">Confidence</string>
+
+    <!-- Usage Limit -->
+    <string name="usage_icon">Usage icon</string>
+    <string name="usage_limit">Usage Limit</string>
+
+    <!-- Menu -->
+    <string name="logout">Logout</string>
+
 </resources>

@@ -1,4 +1,10 @@
 package com.example.askchinna
+/**
+ * app/src/main/java/com/askchinna/ui/auth/ExampleInstrumentedTest.kt
+ * Copyright © 2025 askChinna
+ * Created: April 28, 2025
+ * Version: 1.0
+ */
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

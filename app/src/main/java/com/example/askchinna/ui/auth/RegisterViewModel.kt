@@ -1,5 +1,10 @@
-package com.askchinna.ui.auth
-
+package com.example.askchinna.ui.auth
+/**
+ * RegisterViewModel.kt
+ * Copyright © 2025 askChinna
+ * Created: April 28, 2025
+ * Version: 1.0
+ */
 import android.app.Activity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

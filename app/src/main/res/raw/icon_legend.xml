@@ -1,0 +1,367 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  * File: icon_legend.xml
+  * Path: src/main/res/raw/icon_legend.xml
+  * Created: April 29, 2025
+  * Version: 1.0.0
+  * Copyright (c) 2025 askChinna Project
+  *
+  * XML representation of icon legend data for the askChinna application.
+  * This file provides information about all icons used in the application including
+  * action icons, crop icons, disease icons, severity indicators, and UI elements.
+-->
+<icon_legend>
+    <metadata>
+        <version>1.0.0</version>
+        <last_updated>2025-04-29</last_updated>
+    </metadata>
+
+    <action_icons>
+        <icon>
+            <id>spray</id>
+            <name>Spray</name>
+            <description>Apply pesticide or fungicide</description>
+            <icon_file>ic_spray</icon_file>
+            <usage_notes>For targeted application of chemical solutions to combat pests or diseases</usage_notes>
+        </icon>
+        <icon>
+            <id>water</id>
+            <name>Water</name>
+            <description>Irrigate or water the crop</description>
+            <icon_file>ic_water</icon_file>
+            <usage_notes>For increasing soil moisture when conditions are too dry</usage_notes>
+        </icon>
+        <icon>
+            <id>fertilize</id>
+            <name>Fertilize</name>
+            <description>Apply fertilizer or nutrients</description>
+            <icon_file>ic_fertilize</icon_file>
+            <usage_notes>For addressing nutrient deficiencies or improving soil fertility</usage_notes>
+        </icon>
+        <icon>
+            <id>remove</id>
+            <name>Remove</name>
+            <description>Remove affected parts or plants</description>
+            <icon_file>ic_remove</icon_file>
+            <usage_notes>For physical removal of infected material to prevent disease spread</usage_notes>
+        </icon>
+        <icon>
+            <id>monitor</id>
+            <name>Monitor</name>
+            <description>Closely observe the crop</description>
+            <icon_file>ic_monitor</icon_file>
+            <usage_notes>For ongoing surveillance when immediate action is not required</usage_notes>
+        </icon>
+    </action_icons>
+
+    <crop_icons>
+        <icon>
+            <id>chili</id>
+            <name>Chili</name>
+            <common_diseases>
+                <disease>Anthracnose</disease>
+                <disease>Bacterial Wilt</disease>
+                <disease>Powdery Mildew</disease>
+            </common_diseases>
+            <icon_file>ic_chili</icon_file>
+            <identification_tips>Look for elongated fruits with pointed tips, typically red or green in color</identification_tips>
+        </icon>
+        <icon>
+            <id>okra</id>
+            <name>Okra</name>
+            <common_diseases>
+                <disease>Powdery Mildew</disease>
+                <disease>Yellow Vein Mosaic</disease>
+                <disease>Leaf Spot</disease>
+            </common_diseases>
+            <icon_file>ic_okra</icon_file>
+            <identification_tips>Distinguished by star-shaped leaves and elongated ridged pods</identification_tips>
+        </icon>
+        <icon>
+            <id>maize</id>
+            <name>Maize</name>
+            <common_diseases>
+                <disease>Leaf Blight</disease>
+                <disease>Rust</disease>
+                <disease>Smut</disease>
+            </common_diseases>
+            <icon_file>ic_maize</icon_file>
+            <identification_tips>Tall plant with broad leaves and distinctive ears containing kernels</identification_tips>
+        </icon>
+        <icon>
+            <id>cotton</id>
+            <name>Cotton</name>
+            <common_diseases>
+                <disease>Bacterial Blight</disease>
+                <disease>Leaf Curl</disease>
+                <disease>Alternaria Leaf Spot</disease>
+            </common_diseases>
+            <icon_file>ic_cotton</icon_file>
+            <identification_tips>Look for palmate leaves and white fluffy bolls when mature</identification_tips>
+        </icon>
+        <icon>
+            <id>tomato</id>
+            <name>Tomato</name>
+            <common_diseases>
+                <disease>Early Blight</disease>
+                <disease>Late Blight</disease>
+                <disease>Leaf Curl</disease>
+            </common_diseases>
+            <icon_file>ic_tomato</icon_file>
+            <identification_tips>Compound leaves with serrated edges and round or oval fruits</identification_tips>
+        </icon>
+        <icon>
+            <id>watermelon</id>
+            <name>Watermelon</name>
+            <common_diseases>
+                <disease>Downy Mildew</disease>
+                <disease>Anthracnose</disease>
+                <disease>Fusarium Wilt</disease>
+            </common_diseases>
+            <icon_file>ic_watermelon</icon_file>
+            <identification_tips>Vine crop with lobed leaves and large round or oblong fruits</identification_tips>
+        </icon>
+        <icon>
+            <id>soybean</id>
+            <name>Soybean</name>
+            <common_diseases>
+                <disease>Rust</disease>
+                <disease>Mosaic Virus</disease>
+                <disease>Bacterial Blight</disease>
+            </common_diseases>
+            <icon_file>ic_soybean</icon_file>
+            <identification_tips>Bushy plant with trifoliate leaves and hairy pods containing beans</identification_tips>
+        </icon>
+        <icon>
+            <id>rice</id>
+            <name>Rice</name>
+            <common_diseases>
+                <disease>Blast</disease>
+                <disease>Bacterial Leaf Blight</disease>
+                <disease>Sheath Blight</disease>
+            </common_diseases>
+            <icon_file>ic_rice</icon_file>
+            <identification_tips>Grass-like plant with narrow leaves and grains in panicles</identification_tips>
+        </icon>
+        <icon>
+            <id>wheat</id>
+            <name>Wheat</name>
+            <common_diseases>
+                <disease>Rust</disease>
+                <disease>Powdery Mildew</disease>
+                <disease>Leaf Blight</disease>
+            </common_diseases>
+            <icon_file>ic_wheat</icon_file>
+            <identification_tips>Tall grass with narrow leaves and terminal spike containing grains</identification_tips>
+        </icon>
+        <icon>
+            <id>pigeon_pea</id>
+            <name>Pigeon Pea</name>
+            <common_diseases>
+                <disease>Fusarium Wilt</disease>
+                <disease>Sterility Mosaic</disease>
+                <disease>Phytophthora Blight</disease>
+            </common_diseases>
+            <icon_file>ic_pigeon_pea</icon_file>
+            <identification_tips>Woody shrub with trifoliate leaves and pods containing round seeds</identification_tips>
+        </icon>
+    </crop_icons>
+
+    <disease_icons>
+        <icon>
+            <id>bacterial</id>
+            <name>Bacterial</name>
+            <description>Diseases caused by bacteria</description>
+            <examples>
+                <example>Bacterial Blight</example>
+                <example>Bacterial Wilt</example>
+                <example>Bacterial Spot</example>
+            </examples>
+            <icon_file>ic_bacterial</icon_file>
+            <identification_characteristics>Often appears as water-soaked lesions, streaks, or oozing</identification_characteristics>
+            <transmission>Commonly spread through water, soil, wounds, or insects</transmission>
+        </icon>
+        <icon>
+            <id>fungal</id>
+            <name>Fungal</name>
+            <description>Diseases caused by fungi</description>
+            <examples>
+                <example>Powdery Mildew</example>
+                <example>Leaf Spot</example>
+                <example>Rust</example>
+                <example>Blight</example>
+            </examples>
+            <icon_file>ic_fungal</icon_file>
+            <identification_characteristics>Often shows as spots, powdery growth, or visible mycelium</identification_characteristics>
+            <transmission>Spreads through airborne spores, soil, or water splash</transmission>
+        </icon>
+        <icon>
+            <id>viral</id>
+            <name>Viral</name>
+            <description>Diseases caused by viruses</description>
+            <examples>
+                <example>Mosaic Virus</example>
+                <example>Leaf Curl Virus</example>
+                <example>Yellow Vein Mosaic</example>
+            </examples>
+            <icon_file>ic_viral</icon_file>
+            <identification_characteristics>Often causes mottling, curling, stunted growth, or color change</identification_characteristics>
+            <transmission>Primarily spread by insect vectors like aphids, whiteflies, or thrips</transmission>
+        </icon>
+        <icon>
+            <id>deficiency</id>
+            <name>Deficiency</name>
+            <description>Problems caused by nutrient deficiencies</description>
+            <examples>
+                <example>Nitrogen Deficiency</example>
+                <example>Phosphorus Deficiency</example>
+                <example>Iron Chlorosis</example>
+            </examples>
+            <icon_file>ic_deficiency</icon_file>
+            <identification_characteristics>Often presents as yellowing, stunting, or deformed growth patterns</identification_characteristics>
+            <remediation>Usually addressed through appropriate fertilization and soil amendments</remediation>
+        </icon>
+    </disease_icons>
+
+    <severity_icons>
+        <icon>
+            <id>high</id>
+            <name>High Severity</name>
+            <description>Requires immediate attention</description>
+            <icon_file>ic_severity_high</icon_file>
+            <recommended_response>Take action within 1-2 days to prevent significant crop loss</recommended_response>
+        </icon>
+        <icon>
+            <id>medium</id>
+            <name>Medium Severity</name>
+            <description>Requires attention soon</description>
+            <icon_file>ic_severity_medium</icon_file>
+            <recommended_response>Take action within 3-7 days to prevent spread or worsening</recommended_response>
+        </icon>
+        <icon>
+            <id>low</id>
+            <name>Low Severity</name>
+            <description>Monitor but not urgent</description>
+            <icon_file>ic_severity_low</icon_file>
+            <recommended_response>Continue monitoring and reassess in 1-2 weeks</recommended_response>
+        </icon>
+    </severity_icons>
+
+    <ui_icons>
+        <icon>
+            <id>app_logo</id>
+            <name>App Logo</name>
+            <description>Main app logo</description>
+            <icon_file>ic_app_logo</icon_file>
+        </icon>
+        <icon>
+            <id>back</id>
+            <name>Back</name>
+            <description>Navigate back</description>
+            <icon_file>ic_back</icon_file>
+        </icon>
+        <icon>
+            <id>camera</id>
+            <name>Camera</name>
+            <description>Take photo</description>
+            <icon_file>ic_camera</icon_file>
+        </icon>
+        <icon>
+            <id>capture</id>
+            <name>Capture</name>
+            <description>Capture button</description>
+            <icon_file>ic_capture</icon_file>
+        </icon>
+        <icon>
+            <id>collapse</id>
+            <name>Collapse</name>
+            <description>Collapse expanded view</description>
+            <icon_file>ic_collapse</icon_file>
+        </icon>
+        <icon>
+            <id>expand</id>
+            <name>Expand</name>
+            <description>Expand collapsed view</description>
+            <icon_file>ic_expand</icon_file>
+        </icon>
+        <icon>
+            <id>help</id>
+            <name>Help</name>
+            <description>Get help or information</description>
+            <icon_file>ic_help</icon_file>
+        </icon>
+        <icon>
+            <id>identification</id>
+            <name>Identification</name>
+            <description>Identify crop disease</description>
+            <icon_file>ic_identification</icon_file>
+        </icon>
+        <icon>
+            <id>logout</id>
+            <name>Logout</name>
+            <description>Sign out of app</description>
+            <icon_file>ic_logout</icon_file>
+        </icon>
+        <icon>
+            <id>mobile</id>
+            <name>Mobile</name>
+            <description>Mobile phone</description>
+            <icon_file>ic_mobile</icon_file>
+        </icon>
+        <icon>
+            <id>network_offline</id>
+            <name>Network Offline</name>
+            <description>No internet connection</description>
+            <icon_file>ic_network_offline</icon_file>
+        </icon>
+        <icon>
+            <id>pdf_export</id>
+            <name>PDF Export</name>
+            <description>Export results as PDF</description>
+            <icon_file>ic_pdf_export</icon_file>
+        </icon>
+        <icon>
+            <id>person</id>
+            <name>Person</name>
+            <description>User profile</description>
+            <icon_file>ic_person</icon_file>
+        </icon>
+        <icon>
+            <id>timer</id>
+            <name>Timer</name>
+            <description>Session timer</description>
+            <icon_file>ic_timer</icon_file>
+        </icon>
+        <icon>
+            <id>upload</id>
+            <name>Upload</name>
+            <description>Upload image</description>
+            <icon_file>ic_upload</icon_file>
+        </icon>
+        <icon>
+            <id>usage</id>
+            <name>Usage</name>
+            <description>Usage limits</description>
+            <icon_file>ic_usage</icon_file>
+        </icon>
+        <icon>
+            <id>user</id>
+            <name>User</name>
+            <description>User account</description>
+            <icon_file>ic_user</icon_file>
+        </icon>
+        <icon>
+            <id>warning</id>
+            <name>Warning</name>
+            <description>Warning or error</description>
+            <icon_file>ic_warning</icon_file>
+        </icon>
+    </ui_icons>
+
+    <accessibility_notes>
+        <note>All icons have been designed with high contrast to improve visibility in field conditions</note>
+        <note>Each icon has a distinctive shape for easier recognition by users with color vision deficiencies</note>
+        <note>Icons are consistently sized and positioned to improve usability for all users</note>
+        <note>Text labels accompany all icons to ensure understanding regardless of literacy level</note>
+    </accessibility_notes>
+</icon_legend>

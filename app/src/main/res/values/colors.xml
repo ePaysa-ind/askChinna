@@ -1,89 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (c) 2025 askChinna App Development Team
+  File: app/src/main/res/values/colors.xml
+  Created: April 30, 2025
+  Version: 1.0.0
+
+  Contains minimal color definitions required for XML compatibility.
+-->
 <resources>
-    <!-- Primary brand colors -->
-    <color name="primary">#2E7D32</color>
-    <color name="primary_dark">#1B5E20</color>
-    <color name="primary_light">#A5D6A7</color>
-    <color name="accent">#FFA000</color>
+    <!-- Primary colors -->
+    <color name="colorPrimary">#4CAF50</color>
+    <color name="colorPrimaryDark">#388E3C</color>
+    <color name="colorPrimaryVariant">#2E7D32</color>
+    <color name="colorOnPrimary">#FFFFFF</color>
 
-    <!-- Core UI colors -->
-    <color name="background">#F5F5F5</color>
-    <color name="surface">#FFFFFF</color>
-    <color name="error">#B71C1C</color>
-    <color name="on_primary">#FFFFFF</color>
-    <color name="on_background">#212121</color>
-    <color name="on_surface">#212121</color>
-    <color name="on_error">#FFFFFF</color>
+    <!-- Secondary colors -->
+    <color name="colorSecondary">#FF9800</color>
+    <color name="colorSecondaryVariant">#F57C00</color>
+    <color name="colorOnSecondary">#000000</color>
 
-    <!-- Specific functionality colors -->
-    <color name="success">#4CAF50</color>
-    <color name="info">#2196F3</color>
-    <color name="warning">#FFC107</color>
-    <color name="danger">#F44336</color>
+    <!-- Background colors -->
+    <color name="colorBackground">#F5F5F5</color>
+    <color name="colorSurface">#FFFFFF</color>
 
     <!-- Text colors -->
+    <color name="textColorPrimary">#212121</color>
+    <color name="textColorSecondary">#757575</color>
+
+    <!-- Status colors -->
+    <color name="colorError">#F44336</color>
+
+    <!-- Legacy colors (for backward compatibility) -->
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+    <color name="colorFungal">#9C27B0</color>
+
+    <!-- Missing colors from error -->
+    <color name="lightGray">#DDDDDD</color>
+    <color name="semiTransparent">#80000000</color>
+    <color name="background">#F5F5F5</color>
+    <color name="primary">#4CAF50</color>
+    <!--Error colors-->
+    <color name="error">#F44336</color>
     <color name="text_primary">#212121</color>
     <color name="text_secondary">#757575</color>
-    <color name="text_disabled">#9E9E9E</color>
-    <color name="text_hint">#9E9E9E</color>
-    <color name="text_on_dark">#FFFFFF</color>
-    <color name="text_on_light">#212121</color>
-
-    <!-- Border and divider colors -->
-    <color name="divider">#E0E0E0</color>
-    <color name="border">#BDBDBD</color>
-
-    <!-- Network status colors -->
-    <color name="network_status_background">#424242</color>
-    <color name="offline_indicator">#F44336</color>
-    <color name="online_indicator">#4CAF50</color>
-
-    <!-- Button colors -->
-    <color name="button_primary">#2E7D32</color>
-    <color name="button_primary_pressed">#1B5E20</color>
-    <color name="button_secondary">#FFA000</color>
-    <color name="button_secondary_pressed">#FF8F00</color>
-    <color name="button_disabled">#E0E0E0</color>
-
-    <!-- Progress and loading colors -->
-    <color name="progress_primary">#2E7D32</color>
-    <color name="progress_background">#C8E6C9</color>
-
-    <!-- Confidence level colors -->
-    <color name="confidence_high">#4CAF50</color>
-    <color name="confidence_medium">#FFC107</color>
-    <color name="confidence_low">#F44336</color>
-
-    <!-- Severity level colors -->
-    <color name="severity_high">#F44336</color>
-    <color name="severity_medium">#FFC107</color>
-    <color name="severity_low">#4CAF50</color>
-
-    <!-- Authentication colors -->
-    <color name="otp_input_active">#2E7D32</color>
-    <color name="otp_input_inactive">#BDBDBD</color>
-    <color name="otp_input_filled">#A5D6A7</color>
-
-    <!-- Crop selection colors -->
-    <color name="crop_item_selected">#C8E6C9</color>
-    <color name="crop_item_normal">#FFFFFF</color>
-    <color name="crop_item_border_selected">#2E7D32</color>
-    <color name="crop_item_border_normal">#E0E0E0</color>
-
-    <!-- Feedback colors -->
-    <color name="feedback_helpful">#C8E6C9</color>
-    <color name="feedback_partially_helpful">#FFF9C4</color>
-    <color name="feedback_not_helpful">#FFCDD2</color>
-
-    <!-- Transparency colors -->
-    <color name="transparent">#00000000</color>
-    <color name="semi_transparent_light">#80FFFFFF</color>
-    <color name="semi_transparent_dark">#80000000</color>
-
-    <!-- Action type colors -->
-    <color name="action_spray">#4FC3F7</color>
-    <color name="action_water">#29B6F6</color>
-    <color name="action_fertilize">#81C784</color>
-    <color name="action_remove">#EF5350</color>
-    <color name="action_monitor">#FFB74D</color>
+    <color name="primary_light">#A5D6A7</color>
+    <color name="colorSuccess">#4CAF50</color>
+    <color name="network_status_background">#FFF3E0</color>
+    <color name="colorWarning">#FFC107</color>
 </resources>

@@ -9,6 +9,7 @@ package com.example.askchinna
 
 import android.app.Application
 import android.util.Log
+import com.example.askchinna.data.remote.FirestoreInitializer
 import androidx.appcompat.app.AppCompatDelegate
 import com.example.askchinna.data.local.AppDatabase
 import com.example.askchinna.service.DataSeedService
@@ -36,6 +37,9 @@ class AskChinnaApplication : Application() {
 
     // Application-scoped coroutine context
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    @Inject
+    lateinit var firestoreInitializer: FirestoreInitializer
 
     @Inject
     lateinit var database: AppDatabase
@@ -76,6 +80,9 @@ class AskChinnaApplication : Application() {
             // Initialize database and seed data
             initializeDatabase()
 
+            // Initialize Firestore collections
+            initializeFirestore()
+
             // Clean up temp files
             cleanupTempFiles()
 
@@ -99,6 +106,25 @@ class AskChinnaApplication : Application() {
 
             } catch (e: Exception) {
                 Log.e(TAG, "Database initialization error: ${e.message}")
+                FirebaseCrashlytics.getInstance().recordException(e)
+            }
+        }
+    }
+
+    /**
+     * Initialize Firestore collections and documents
+     */
+    private fun initializeFirestore() {
+        applicationScope.launch {
+            try {
+                val success = firestoreInitializer.initializeCollections()
+                if (success) {
+                    Log.d(TAG, "Firestore collections initialized successfully")
+                } else {
+                    Log.e(TAG, "Failed to initialize Firestore collections")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error initializing Firestore collections: ${e.message}")
                 FirebaseCrashlytics.getInstance().recordException(e)
             }
         }

@@ -1,5 +1,10 @@
 package com.example.askchinna.ui.auth
-
+/**
+ * OtpVerificationActivity.kt
+ * Copyright © 2025 askChinna
+ * Created: April 28, 2025
+ * Version: 1.0
+ */
 
 import android.content.Intent
 import android.os.Bundle

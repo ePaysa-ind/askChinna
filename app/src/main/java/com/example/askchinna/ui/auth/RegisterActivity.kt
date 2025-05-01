@@ -122,15 +122,19 @@ class RegisterActivity : AppCompatActivity() {
                 is UIState.Loading -> {
                     showLoading(true)
                 }
+
                 is UIState.Success -> {
                     showLoading(false)
                     navigateToOtpVerification(state.data)
                 }
+
                 is UIState.Error -> {
                     showLoading(false)
                     showError(state.message)
                 }
-                else -> { /* No-op */ }
+
+                else -> { /* No-op */
+                }
             }
         }
     }
@@ -156,9 +160,12 @@ class RegisterActivity : AppCompatActivity() {
     private fun navigateToOtpVerification(verificationId: String) {
         val intent = Intent(this, OtpVerificationActivity::class.java).apply {
             putExtra(OtpVerificationActivity.EXTRA_VERIFICATION_ID, verificationId)
-            putExtra(OtpVerificationActivity.EXTRA_MOBILE_NUMBER,
-                binding.editTextMobile.text.toString().trim())
+            putExtra(
+                OtpVerificationActivity.EXTRA_MOBILE_NUMBER,
+                binding.editTextMobile.text.toString().trim()
+            )
             putExtra(OtpVerificationActivity.EXTRA_IS_REGISTRATION, true)
         }
         startActivity(intent)
     }
+}

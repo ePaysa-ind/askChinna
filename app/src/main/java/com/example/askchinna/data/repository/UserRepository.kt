@@ -6,9 +6,6 @@ package com.example.askchinna.data.repository
  * Created: April 28, 2025
  * Version: 1.0
  */
-
-package com.askchinna.data.repository
-
 import android.app.Activity
 import com.askchinna.data.local.SharedPreferencesManager
 import com.askchinna.data.model.UIState

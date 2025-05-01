@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (c) 2025 askChinna App Development Team
+  File: app/src/main/res/values-night/themes.xml
+  Created: April 30, 2025
+  Version: 1.0.0
+
+  Contains minimal night theme definition.
+-->
+<resources>
+    <style name="Theme.AskChinna" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

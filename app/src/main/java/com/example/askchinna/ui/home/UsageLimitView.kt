@@ -6,8 +6,6 @@ package com.example.askchinna.ui.home
  * Created: April 28, 2025
  * Version: 1.0
  */
-package com.askchinna.ui.home
-
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater

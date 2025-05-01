@@ -6,8 +6,6 @@ package com.example.askchinna.data.model
  * Created: April 28, 2025
  * Version: 1.0
  */
-package com.askchinna.data.model
-
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.ServerTimestamp

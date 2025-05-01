@@ -1,5 +1,10 @@
 package com.example.askchinna
-
+/**
+ * ExampleUnitTest.kt
+ * Copyright © 2025 askChinna
+ * Created: April 28, 2025
+ * Version: 1.0
+ */
 import org.junit.Test
 
 import org.junit.Assert.*

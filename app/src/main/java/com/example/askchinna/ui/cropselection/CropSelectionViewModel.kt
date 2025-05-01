@@ -6,11 +6,11 @@
  */
 package com.example.askchinna.ui.cropselection
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.askchinna.R
 import com.example.askchinna.data.model.Crop
 import com.example.askchinna.data.model.UIState
 import com.example.askchinna.data.model.UsageLimit
@@ -31,6 +31,7 @@ class CropSelectionViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val networkExceptionHandler: NetworkExceptionHandler
 ) : ViewModel() {
+    private val TAG = "CropSelectionViewModel"
 
     // UI state for the crop selection screen
     private val _uiState = MutableLiveData<UIState<List<Crop>>>(UIState.Loading)
@@ -56,7 +57,9 @@ class CropSelectionViewModel @Inject constructor(
                 val crops = cropRepository.getSupportedCrops()
                 if (crops.isNotEmpty()) {
                     _uiState.value = UIState.Success(crops)
+                    Log.d(TAG, "Loaded ${crops.size} crops successfully")
                 } else {
+                    Log.w(TAG, "No crops available")
                     _uiState.value = UIState.Error(
                         message = "No crops available",
                         retryAction = { loadCrops() }
@@ -64,6 +67,7 @@ class CropSelectionViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 val errorMessage = networkExceptionHandler.getErrorMessage(e)
+                Log.e(TAG, "Error loading crops: $errorMessage", e)
                 _uiState.value = UIState.Error(
                     message = errorMessage,
                     retryAction = { loadCrops() }
@@ -80,8 +84,11 @@ class CropSelectionViewModel @Inject constructor(
             try {
                 val limit = userRepository.getUserUsageLimit()
                 _usageLimit.value = limit
+                Log.d(TAG, "Loaded usage limit: ${limit.remainingUses}/${limit.maxUses}")
             } catch (e: Exception) {
                 // Silently fail for usage limits - we'll use default values
+                Log.w(TAG, "Failed to load usage limits, using defaults", e)
+                _usageLimit.value = UsageLimit(remainingUses = 0, maxUses = 5)
             }
         }
     }
