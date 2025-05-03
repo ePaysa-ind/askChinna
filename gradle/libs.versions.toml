@@ -1,46 +1,97 @@
-[versions]
-agp = "8.9.2"
-kotlin = "2.1.0"
-coreKtx = "1.16.0"
-junit = "4.13.2"
-junitVersion = "1.2.1"
-espressoCore = "3.6.1"
-lifecycleRuntimeKtx = "2.8.7"
-activityCompose = "1.10.1"
-composeBom = "2025.04.01"
-hilt = "2.48.1"
-googleServices = "4.4.2"
-room = "2.7.1"
-
-[libraries]
-androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
-junit = { group = "junit", name = "junit", version.ref = "junit" }
-androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
-androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
-androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
-androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
-androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
-androidx-ui = { group = "androidx.compose.ui", name = "ui" }
-androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
-androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
-androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
-androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
-androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
-androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
-hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
-hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
-androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
-androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
-androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+        [versions]
+        agp = "8.6.1"
+        converterGson = "2.9.0"
+        coreSplashscreen = "1.0.1"
+        firebaseBom = "33.13.0"
+        generativeai = "0.9.0"
+        glide = "4.16.0"
+        kotlin = "2.1.0"
+        coreKtx = "1.16.0"
+        junit = "4.13.2"
+        junitVersion = "1.2.1"
+        espressoCore = "3.6.1"
+        kotlinxCoroutinesTest = "1.7.3"
+        lifecycleRuntimeKtx = "2.8.7"
+        activityCompose = "1.10.1"
+        composeBom = "2025.04.01"
+        hilt = "2.53.1"
+        googleServices = "4.4.2"
+        loggingInterceptor = "4.11.0"
+        material = "1.12.0"
+        mockk = "1.13.8"
+        okhttp = "4.11.0"
+        playServicesLocation = "21.3.0"
+        retrofit = "2.9.0"
+        room = "2.7.1"
+        archCoreTesting = "2.2.0"
+        supportAnnotations = "28.0.0"
+        gson = "2.13.1"
+        webkit = "1.13.0"
+        ksp = "2.1.0-1.0.29"
+        material3 = "1.2.0"
 
 
+        [libraries]
+        androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+        androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 
-[plugins]
-android-application = { id = "com.android.application", version.ref = "agp" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
-hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
-google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
+        androidx-webkit = { module = "androidx.webkit:webkit", version.ref = "webkit" }
+
+        converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
+        firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
+        firebase-auth = { module = "com.google.firebase:firebase-auth" }
+        firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+        firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
+        firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
+        firebase-storage = { module = "com.google.firebase:firebase-storage" }
+        generativeai = { module = "com.google.ai.client.generativeai:generativeai", version.ref = "generativeai" }
+
+        glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
+        glide-compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "glide" }
+        junit = { group = "junit", name = "junit", version.ref = "junit" }
+        androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+        androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+        androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+        androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+        androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+        androidx-ui = { group = "androidx.compose.ui", name = "ui" }
+        androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+        androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+        androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+        androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+        androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+        androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+        hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+        hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
+        androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+        androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+        androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+        kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
+
+        logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "loggingInterceptor" }
+        material = { module = "com.google.android.material:material", version.ref = "material" }
+        mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+
+        okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+        play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
+        androidx-arch-core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "archCoreTesting" }
+
+        retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+        support-annotations = { group = "com.android.support", name = "support-annotations", version.ref = "supportAnnotations" }
+        google-gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+        android-material3 = { module = "com.google.android.material3:material3", version.ref = "material3" }
+
+
+
+
+        [plugins]
+        android-application = { id = "com.android.application", version.ref = "agp" }
+        kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+        kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+        kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+        hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+        google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
+        ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+
 
 

@@ -1,30 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  Copyright (c) 2025 askChinna App Development Team
-  File: app/src/main/res/values/themes.xml
-  Created: April 30, 2025
-  Version: 1.0.0
+<!---file path: app/src/main/res/values/themes.xml-->
 
-  Contains minimal theme definition for application entry point.
--->
 <resources>
-    <style name="Theme.AskChinna" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Status bar and navigation bar colors set to transparent for edge-to-edge design -->
+    <!--
+      Copyright (c) 2025 askChinna
+      File: app/src/main/res/values/themes.xml
+      Created: April 30, 2025
+      Version: 1.0.2
+
+      Minimal View‑layer theme. All color theming happens in Compose.
+    -->
+    <style name="Theme.AskChinna" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Edge‑to‑edge transparent bars -->
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">true</item>
 
-        <!-- Essential attributes for XML layouts (if any) -->
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorSecondary</item>
-        <item name="android:colorBackground">@color/colorBackground</item>
+        <!-- Window background (in case any legacy View sneaks through) -->
+        <item name="android:windowBackground">@color/colorBackground</item>
     </style>
-        <!-- Splash screen theme using the modern Splash Screen API -->
+
+    <!-- Splash screen using the AndroidX SplashScreen API -->
     <style name="Theme.AskChinna.SplashScreen" parent="Theme.SplashScreen">
-            <item name="windowSplashScreenBackground">@color/colorPrimary</item>
-            <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
-            <item name="windowSplashScreenAnimationDuration">300</item>
-            <item name="postSplashScreenTheme">@style/Theme.AskChinna</item>
+        <item name="windowSplashScreenBackground">@color/colorPrimary</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="windowSplashScreenAnimationDuration">300</item>
+        <item name="postSplashScreenTheme">@style/Theme.AskChinna</item>
     </style>
 </resources>

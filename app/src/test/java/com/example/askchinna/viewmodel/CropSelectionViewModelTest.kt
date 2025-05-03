@@ -2,7 +2,10 @@
  * File: app/src/test/java/com/example/askchinna/viewmodel/CropSelectionViewModelTest.kt
  * Copyright (c) 2025 askChinna
  * Created: April 28, 2025
- * Version: 1.0
+ * Updated: April 30, 2025
+ * Version: 1.1
+ *
+ * Updated to use StandardTestDispatcher for modern Kotlin testing
  */
 package com.example.askchinna.viewmodel
 
@@ -17,15 +20,15 @@ import com.example.askchinna.ui.cropselection.CropSelectionViewModel
 import com.example.askchinna.util.NetworkExceptionHandler
 import io.mockk.coEvery
 import io.mockk.mockk
-import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.TestCoroutineDispatcher
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -39,7 +42,7 @@ class CropSelectionViewModelTest {
     val instantExecutorRule = InstantTaskExecutorRule()
 
     // Test dispatcher for coroutines
-    private val testDispatcher = TestCoroutineDispatcher()
+    private val testDispatcher = StandardTestDispatcher()
 
     // Mocks
     private lateinit var cropRepository: CropRepository
@@ -72,16 +75,15 @@ class CropSelectionViewModelTest {
     @After
     fun tearDown() {
         Dispatchers.resetMain()
-        testDispatcher.cleanupTestCoroutines()
     }
 
     @Test
-    fun `when init called, loads crops and usage limits`() = testDispatcher.runBlockingTest {
+    fun `when init called, loads crops and usage limits`() = runTest {
         // Initialize viewModel (triggers init)
         viewModel = CropSelectionViewModel(cropRepository, userRepository, networkExceptionHandler)
 
         // Wait for coroutines to complete
-        testDispatcher.advanceUntilIdle()
+        testDispatcher.scheduler.advanceUntilIdle()
 
         // Assert crops loaded successfully
         val cropState = viewModel.uiState.value
@@ -93,7 +95,7 @@ class CropSelectionViewModelTest {
     }
 
     @Test
-    fun `when crop loading fails, shows error state`() = testDispatcher.runBlockingTest {
+    fun `when crop loading fails, shows error state`() = runTest {
         // Setup repository to throw exception
         coEvery { cropRepository.getSupportedCrops() } throws IOException("Network error")
 
@@ -101,7 +103,7 @@ class CropSelectionViewModelTest {
         viewModel = CropSelectionViewModel(cropRepository, userRepository, networkExceptionHandler)
 
         // Wait for coroutines to complete
-        testDispatcher.advanceUntilIdle()
+        testDispatcher.scheduler.advanceUntilIdle()
 
         // Assert error state
         val state = viewModel.uiState.value
@@ -110,7 +112,7 @@ class CropSelectionViewModelTest {
     }
 
     @Test
-    fun `when crops list is empty, shows error state`() = testDispatcher.runBlockingTest {
+    fun `when crops list is empty, shows error state`() = runTest {
         // Setup repository to return empty list
         coEvery { cropRepository.getSupportedCrops() } returns emptyList()
 
@@ -118,7 +120,7 @@ class CropSelectionViewModelTest {
         viewModel = CropSelectionViewModel(cropRepository, userRepository, networkExceptionHandler)
 
         // Wait for coroutines to complete
-        testDispatcher.advanceUntilIdle()
+        testDispatcher.scheduler.advanceUntilIdle()
 
         // Assert error state
         val state = viewModel.uiState.value
@@ -127,7 +129,7 @@ class CropSelectionViewModelTest {
     }
 
     @Test
-    fun `hasRemainingUses returns true when uses remain`() = testDispatcher.runBlockingTest {
+    fun `hasRemainingUses returns true when uses remain`() = runTest {
         // Setup with usage remaining
         coEvery { userRepository.getUserUsageLimit() } returns UsageLimit(remainingUses = 3, maxUses = 5)
 
@@ -135,14 +137,14 @@ class CropSelectionViewModelTest {
         viewModel = CropSelectionViewModel(cropRepository, userRepository, networkExceptionHandler)
 
         // Wait for coroutines to complete
-        testDispatcher.advanceUntilIdle()
+        testDispatcher.scheduler.advanceUntilIdle()
 
         // Assert has remaining uses
         assertTrue(viewModel.hasRemainingUses())
     }
 
     @Test
-    fun `hasRemainingUses returns false when no uses remain`() = testDispatcher.runBlockingTest {
+    fun `hasRemainingUses returns false when no uses remain`() = runTest {
         // Setup with no usage remaining
         coEvery { userRepository.getUserUsageLimit() } returns UsageLimit(remainingUses = 0, maxUses = 5)
 
@@ -150,14 +152,14 @@ class CropSelectionViewModelTest {
         viewModel = CropSelectionViewModel(cropRepository, userRepository, networkExceptionHandler)
 
         // Wait for coroutines to complete
-        testDispatcher.advanceUntilIdle()
+        testDispatcher.scheduler.advanceUntilIdle()
 
         // Assert no remaining uses
         assertTrue(!viewModel.hasRemainingUses())
     }
 
     @Test
-    fun `getUsageLimitText formats correctly`() = testDispatcher.runBlockingTest {
+    fun `getUsageLimitText formats correctly`() = runTest {
         // Setup
         coEvery { userRepository.getUserUsageLimit() } returns UsageLimit(remainingUses = 2, maxUses = 5)
 
@@ -165,7 +167,7 @@ class CropSelectionViewModelTest {
         viewModel = CropSelectionViewModel(cropRepository, userRepository, networkExceptionHandler)
 
         // Wait for coroutines to complete
-        testDispatcher.advanceUntilIdle()
+        testDispatcher.scheduler.advanceUntilIdle()
 
         // Assert correct formatting
         assertEquals("2/5", viewModel.getUsageLimitText())

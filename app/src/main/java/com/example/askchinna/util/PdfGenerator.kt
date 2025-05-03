@@ -32,6 +32,8 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
+import androidx.core.graphics.scale
+import androidx.core.graphics.createBitmap
 
 /**
  * Generator for PDF reports of identification results
@@ -40,8 +42,7 @@ import javax.inject.Singleton
 @Singleton
 class PdfGenerator @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val dateTimeUtils: DateTimeUtils,
-    private val imageHelper: ImageHelper
+    private val dateTimeUtils: DateTimeUtils
 ) {
     companion object {
         private const val TAG = "PdfGenerator"
@@ -184,12 +185,7 @@ class PdfGenerator @Inject constructor(
                 val imageHeight = (imageWidth / aspectRatio).toInt()
 
                 // Scale the bitmap to fit the page width
-                val scaledBitmap = Bitmap.createScaledBitmap(
-                    imageBitmap,
-                    imageWidth.toInt(),
-                    imageHeight,
-                    true
-                )
+                val scaledBitmap = imageBitmap.scale(imageWidth, imageHeight)
 
                 canvas.drawBitmap(
                     scaledBitmap,
@@ -280,7 +276,7 @@ class PdfGenerator @Inject constructor(
 
         result.actions.forEachIndexed { index, action ->
             val bulletPoint = "\u2022 " // Bullet point symbol
-            val actionText = "${bulletPoint} ${action.description}"
+            val actionText = "$bulletPoint ${action.description}"
 
             // Split action text into lines
             val actionLines = splitTextIntoLines(actionText, descriptionTextWidth, paint)
@@ -314,7 +310,8 @@ class PdfGenerator @Inject constructor(
         paint.color = Color.GRAY
 
         // Farmer info
-        val farmerInfo = context.getString(R.string.farmer_info, user.name, user.phoneNumber)
+        val farmerInfo = context.getString(R.string.farmer_info, user.displayName, user.mobileNumber)
+
         canvas.drawText(farmerInfo, MARGIN.toFloat(), PDF_HEIGHT_PX - MARGIN - 30f, paint)
 
         // Report ID and timestamp
@@ -379,7 +376,7 @@ class PdfGenerator @Inject constructor(
             view.layout(0, 0, measuredWidth, measuredHeight)
 
             // Create bitmap from view
-            val bitmap = Bitmap.createBitmap(measuredWidth, measuredHeight, Bitmap.Config.ARGB_8888)
+            val bitmap = createBitmap(measuredWidth, measuredHeight)
             val canvas = Canvas(bitmap)
             view.draw(canvas)
 
@@ -438,24 +435,4 @@ class PdfGenerator @Inject constructor(
         }
     }
 
-    /**
-     * Clean up old PDF files to free up space
-     * Should be called periodically to prevent storage bloat
-     */
-    fun cleanupOldReports() {
-        try {
-            val storageDir = File(context.filesDir, "reports")
-            if (storageDir.exists()) {
-                val files = storageDir.listFiles()
-                files?.forEach { file ->
-                    // Delete files older than 30 days
-                    if (System.currentTimeMillis() - file.lastModified() > 30 * 24 * 60 * 60 * 1000) {
-                        file.delete()
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error cleaning up old reports: ${e.message}")
-        }
-    }
 }

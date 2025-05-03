@@ -1,80 +1,94 @@
 package com.example.askchinna.data.remote
-/**
- * GeminiService.kt
- * Copyright © 2025 askChinna
- * Created: April 28, 2025
- * Version: 1.0
- */
+
+import android.util.Base64
 import android.util.Log
+import com.example.askchinna.util.NetworkExceptionHandler
 import com.google.ai.client.generativeai.GenerativeModel
-import com.google.ai.client.generativeai.type.*
-import com.example.askchinna.BuildConfig
+import com.google.ai.client.generativeai.type.BlockThreshold
+import com.google.ai.client.generativeai.type.GenerateContentResponse
+import com.google.ai.client.generativeai.type.HarmCategory
+import com.google.ai.client.generativeai.type.SafetySetting
+import com.google.ai.client.generativeai.type.generationConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import java.io.IOException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
+import java.nio.charset.StandardCharsets
 import java.util.concurrent.atomic.AtomicInteger
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
-import android.util.Base64
-import java.nio.charset.StandardCharsets
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.math.pow
 
 /**
- * Service class for interacting with the Google Gemini AI API.
- * Handles text generation requests and responses with production-grade reliability.
- * This service is intended for use only within India.
+ * File: app/src/main/java/com/example/askchinna/data/remote/GeminiService.kt
+ * Copyright © 2025 askChinna
+ * Created: April 28, 2025
+ * Updated: May 6, 2025
+ * Version: 1.4
+ * Description: Service class for interacting with the Google Gemini AI API.
+ *              Handles text generation requests and responses with production‑grade reliability.
+ *              Enforces rate‑limits, retries with exponential back‑off, safety filtering,
+ *              in‑memory encryption of the API key, and full logging. Intended for India only.
  */
-class GeminiService {
-    private val TAG = "GeminiService"
+@Singleton
+class GeminiService @Inject constructor(
+    private val apiKeyProvider: ApiKeyProvider,
+    private val networkExceptionHandler: NetworkExceptionHandler
+) {
+    private val tag = "GeminiService"
 
-    // Track API usage for rate limiting
+    // Rate‑limit tracking
     private val requestCounter = AtomicInteger(0)
-    private val maxRequestsPerMinute = 10 // Adjust based on your API tier
+    private val maxRequestsPerMinute = 10
     private var lastResetTime = System.currentTimeMillis()
 
-    // Safety settings for content generation
+    // Safety filters: block above MEDIUM_AND_ABOVE for several harm categories
     private val safetySettings = listOf(
-        SafetySetting(HarmCategory.HARASSMENT, BlockThreshold.MEDIUM),
-        SafetySetting(HarmCategory.HATE_SPEECH, BlockThreshold.MEDIUM),
-        SafetySetting(HarmCategory.SEXUALLY_EXPLICIT, BlockThreshold.MEDIUM),
-        SafetySetting(HarmCategory.DANGEROUS_CONTENT, BlockThreshold.MEDIUM)
+        SafetySetting(HarmCategory.HARASSMENT, BlockThreshold.MEDIUM_AND_ABOVE),
+        SafetySetting(HarmCategory.HATE_SPEECH, BlockThreshold.MEDIUM_AND_ABOVE),
+        SafetySetting(HarmCategory.SEXUALLY_EXPLICIT, BlockThreshold.MEDIUM_AND_ABOVE),
+        SafetySetting(HarmCategory.DANGEROUS_CONTENT, BlockThreshold.MEDIUM_AND_ABOVE)
     )
 
-    // Configuration for the generation model
+    // Generation parameters using DSL builder
     private val generationConfig = generationConfig {
         temperature = 0.7f
         topK = 40
         topP = 0.95f
+        candidateCount = 1
         maxOutputTokens = 2048
     }
 
-    // API key security - use encryption for storing key in memory
-    private val encryptionKey = "AskChinnaSecureKey".toByteArray().copyOf(16) // 128-bit key
-    private val encryptedApiKey by lazy {
-        encryptString(BuildConfig.GEMINI_API_KEY, encryptionKey)
-    }
+    // In‑memory AES key & encrypted API key store
+    private val encryptionKey = "AskChinnaSecureKey".toByteArray().copyOf(16)
+    private var encryptedApiKey: String? = null
 
-    // Initialize the generative model with decrypted API key
-    private val generativeModel by lazy {
-        val decryptedApiKey = decryptString(encryptedApiKey, encryptionKey)
+    /**
+     * Lazily builds a GenerativeModel, decrypting the key if stored,
+     * otherwise fetching & encrypting it on first use.
+     */
+    private suspend fun getGenerativeModel(): GenerativeModel = withContext(Dispatchers.IO) {
+        val apiKey = encryptedApiKey?.let { decryptString(it, encryptionKey) } ?: run {
+            val fresh = apiKeyProvider.getGeminiApiKey()
+            encryptedApiKey = encryptString(fresh, encryptionKey)
+            fresh
+        }
+
         GenerativeModel(
             modelName = "gemini-1.5-pro",
-            apiKey = decryptedApiKey,
+            apiKey = apiKey,
             generationConfig = generationConfig,
             safetySettings = safetySettings
         )
     }
 
     /**
-     * Generates a response for the given prompt with retry logic.
-     *
-     * @param prompt The user's prompt/question to the AI
-     * @param maxRetries Number of times to retry in case of failure
-     * @param userConsentProvided Whether the user has consented to data processing
-     * @return The AI's response as a String, or error message if the request fails
+     * Generate text for [prompt], with up to [maxRetries] attempts,
+     * exponential back‑off, rate‑limit, and mandatory [userConsentProvided].
      */
     suspend fun generateContent(
         prompt: String,
@@ -82,137 +96,105 @@ class GeminiService {
         userConsentProvided: Boolean = false
     ): Result<String> = withContext(Dispatchers.IO) {
         if (!userConsentProvided) {
-            return@withContext Result.failure(IllegalStateException(
-                "User consent for AI processing is required as per Indian IT rules"))
+            return@withContext Result.failure(
+                IllegalStateException("User consent required for AI processing.")
+            )
         }
 
-        // Check and enforce rate limits
         if (!checkRateLimit()) {
-            return@withContext Result.failure(IOException(
-                "Rate limit exceeded. Please try again later."))
+            return@withContext Result.failure(
+                IOException("Rate limit exceeded; please try again later.")
+            )
         }
 
         var lastException: Exception? = null
-
         for (attempt in 0..maxRetries) {
             if (attempt > 0) {
-                // Exponential backoff
-                val backoffTime = (2.0.pow(attempt.toDouble()) * 1000).toLong().coerceAtMost(10000)
-                delay(backoffTime)
+                val backoffMs = (2.0.pow(attempt.toDouble()) * 1000).toLong().coerceAtMost(10000)
+                Log.w(tag, "Retry #$attempt in ${'$'}backoffMs ms")
+                delay(backoffMs)
             }
 
             try {
-                val response = generativeModel.generateContent(prompt)
+                val model = getGenerativeModel()
+                val response = model.generateContent(prompt)
 
-                // Check for content filtering blocks
-                val errorMessage = getErrorFromResponse(response)
-                if (errorMessage != null) {
-                    return@withContext Result.failure(IOException(errorMessage))
+                getErrorFromResponse(response)?.let { reason ->
+                    return@withContext Result.failure(IOException(reason))
                 }
 
-                return@withContext if (response.text != null) {
-                    Log.d(TAG, "Content generated successfully")
-                    Result.success(response.text ?: "No response generated")
+                val text = response.text
+                return@withContext if (!text.isNullOrBlank()) {
+                    Log.d(tag, "Generated content: ${'$'}{text.take(50)}…")
+                    Result.success(text)
                 } else {
-                    Log.e(TAG, "Failed to generate content: Empty response")
-                    Result.failure(IOException("No response text was generated"))
+                    Log.e(tag, "Empty response received")
+                    Result.failure(IOException("No content generated"))
                 }
             } catch (e: SocketTimeoutException) {
-                Log.w(TAG, "Network timeout on attempt ${attempt+1}/$maxRetries", e)
+                Log.w(tag, "Timeout on attempt ${'$'}{attempt + 1}/$maxRetries", e)
                 lastException = e
             } catch (e: UnknownHostException) {
-                Log.e(TAG, "Network connectivity issue", e)
-                return@withContext Result.failure(IOException("Please check your internet connection"))
+                Log.e(tag, "Network connectivity issue", e)
+                return@withContext Result.failure(IOException("Check internet connection"))
             } catch (e: Exception) {
-                Log.e(TAG, "Error generating content on attempt ${attempt+1}/$maxRetries", e)
+                val message = networkExceptionHandler.handle(e)
+                Log.e(tag, "Error on attempt ${'$'}{attempt + 1}/$maxRetries: ${'$'}message", e)
                 lastException = e
-
-                // Don't retry on client errors
                 if (e.message?.contains("400") == true) {
                     return@withContext Result.failure(e)
                 }
             }
         }
 
-        return@withContext Result.failure(lastException ?: IOException("Failed to generate content after $maxRetries retries"))
+        Result.failure(lastException ?: IOException("Failed after ${'$'}maxRetries retries"))
     }
 
     /**
-     * Starts a chat session with the Gemini model.
-     * Use this for multi-turn conversations.
-     *
-     * @param userConsentProvided Whether the user has consented to data processing
-     * @return A chat session that can be used for continued conversation, or null if consent not provided
+     * Begin a multi‑turn chat session (or null if no consent).
      */
-    fun startChat(userConsentProvided: Boolean = false) =
-        if (userConsentProvided) generativeModel.startChat() else null
+    suspend fun startChat(userConsentProvided: Boolean = false) =
+        if (userConsentProvided) getGenerativeModel().startChat() else null
 
     /**
-     * Handles potential errors from the Gemini API response.
-     *
-     * @param response The response from the Gemini API
-     * @return A human-readable error message if there's an error, null otherwise
+     * Inspect the safety feedback; returns a block reason or null.
      */
     private fun getErrorFromResponse(response: GenerateContentResponse): String? {
-        val promptFeedback = response.promptFeedback
-        return if (promptFeedback != null && !promptFeedback.blockReason.isNullOrEmpty()) {
-            "Content was blocked due to: ${promptFeedback.blockReason}"
+        val reason = response.promptFeedback?.blockReason
+        return if (reason != null) {
+            "Content blocked due to: ${'$'}reason"
         } else {
             null
         }
     }
 
     /**
-     * Checks and enforces rate limits for API calls.
-     *
-     * @return true if request can proceed, false if rate limited
+     * Enforce ≤ maxRequestsPerMinute within any rolling 60s window.
      */
     private fun checkRateLimit(): Boolean {
-        val currentTime = System.currentTimeMillis()
-
-        // Reset counter if a minute has passed
-        if (currentTime - lastResetTime > 60000) {
+        val now = System.currentTimeMillis()
+        if (now - lastResetTime > 60000) {
             requestCounter.set(0)
-            lastResetTime = currentTime
+            lastResetTime = now
         }
-
-        val currentCount = requestCounter.incrementAndGet()
-        return currentCount <= maxRequestsPerMinute
+        return requestCounter.incrementAndGet() <= maxRequestsPerMinute
     }
 
-    /**
-     * Encrypts a string using AES encryption.
-     *
-     * @param input The string to encrypt
-     * @param key The encryption key
-     * @return The encrypted string in Base64 format
-     */
     private fun encryptString(input: String, key: ByteArray): String {
         val cipher = Cipher.getInstance("AES/ECB/PKCS5Padding")
-        val secretKey = SecretKeySpec(key, "AES")
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey)
-        val encryptedBytes = cipher.doFinal(input.toByteArray(StandardCharsets.UTF_8))
-        return Base64.encodeToString(encryptedBytes, Base64.DEFAULT)
+        cipher.init(Cipher.ENCRYPT_MODE, SecretKeySpec(key, "AES"))
+        return Base64.encodeToString(cipher.doFinal(input.toByteArray(StandardCharsets.UTF_8)), Base64.DEFAULT)
     }
 
-    /**
-     * Decrypts a string using AES decryption.
-     *
-     * @param encryptedInput The encrypted string in Base64 format
-     * @param key The decryption key
-     * @return The decrypted string
-     */
-    private fun decryptString(encryptedInput: String, key: ByteArray): String {
+    private fun decryptString(encrypted: String, key: ByteArray): String {
         val cipher = Cipher.getInstance("AES/ECB/PKCS5Padding")
-        val secretKey = SecretKeySpec(key, "AES")
-        cipher.init(Cipher.DECRYPT_MODE, secretKey)
-        val decodedBytes = Base64.decode(encryptedInput, Base64.DEFAULT)
-        val decryptedBytes = cipher.doFinal(decodedBytes)
-        return String(decryptedBytes, StandardCharsets.UTF_8)
+        cipher.init(Cipher.DECRYPT_MODE, SecretKeySpec(key, "AES"))
+        val decoded = Base64.decode(encrypted, Base64.DEFAULT)
+        return String(cipher.doFinal(decoded), StandardCharsets.UTF_8)
     }
 
     companion object {
-        const val SERVICE_VERSION = "1.0.0"
-        const val INTENDED_REGION = "India"  // Explicitly mark intended region
+        const val SERVICE_VERSION = "1.4"
+        const val INTENDED_REGION = "India"
     }
 }

@@ -1,16 +1,17 @@
-
 /**
- * app/src/main/java/com/askchinna/data/remote/FirebaseAuthManager.kt
+ * app/src/main/java/com/example/askchinna/data/remote/FirebaseAuthManager.kt
  * Copyright © 2025 askChinna
  * Created: April 28, 2025
- * Version: 1.0
+ * Updated: May 2, 2025
+ * Version: 1.2
  */
 package com.example.askchinna.data.remote
 
 import android.app.Activity
-import com.askchinna.data.local.SharedPreferencesManager
-import com.askchinna.data.model.UIState
-import com.askchinna.data.model.User
+import com.example.askchinna.data.local.SharedPreferencesManager
+import com.example.askchinna.data.model.UIState
+import com.example.askchinna.data.model.User
+import com.example.askchinna.util.NetworkExceptionHandler
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
@@ -20,13 +21,10 @@ import com.google.firebase.auth.PhoneAuthProvider
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.tasks.await
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 
 /**
  * Manager class for handling Firebase Phone Authentication
@@ -72,8 +70,8 @@ class FirebaseAuthManager @Inject constructor(
                 }
 
                 override fun onVerificationFailed(e: FirebaseException) {
-                    val error = networkExceptionHandler.handleAuthException(e)
-                    trySend(UIState.Error(error))
+                    val errorMessage = networkExceptionHandler.handle(e)
+                    trySend(UIState.Error(errorMessage))
                 }
 
                 override fun onCodeSent(
@@ -97,8 +95,8 @@ class FirebaseAuthManager @Inject constructor(
 
             awaitClose { /* Clean up resources if needed */ }
         } catch (e: Exception) {
-            val error = networkExceptionHandler.handleAuthException(e)
-            trySend(UIState.Error(error))
+            val errorMessage = networkExceptionHandler.handle(e)
+            trySend(UIState.Error(errorMessage))
             close(e)
         }
     }
@@ -106,7 +104,7 @@ class FirebaseAuthManager @Inject constructor(
     /**
      * Verify OTP entered by user
      * @param otp OTP code received by user
-     * @return Flow with UI state for verification result
+     * @return UIState with verification result
      */
     suspend fun verifyOtp(otp: String): UIState<User> {
         return try {
@@ -135,8 +133,8 @@ class FirebaseAuthManager @Inject constructor(
         } catch (e: FirebaseAuthInvalidCredentialsException) {
             UIState.Error("Invalid verification code")
         } catch (e: Exception) {
-            val error = networkExceptionHandler.handleAuthException(e)
-            UIState.Error(error)
+            val errorMessage = networkExceptionHandler.handle(e)
+            UIState.Error(errorMessage)
         }
     }
 

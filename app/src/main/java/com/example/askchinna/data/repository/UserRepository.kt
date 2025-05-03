@@ -1,26 +1,26 @@
-package com.example.askchinna.data.repository
-
 /**
- * app/src/main/java/com/askchinna/data/repository/UserRepository.kt
+ * file path: app/src/main/java/com/example/askchinna/data/repository/UserRepository.kt
  * Copyright © 2025 askChinna
  * Created: April 28, 2025
- * Version: 1.0
+ * Updated: May 2, 2025
+ * Version: 1.2
  */
+package com.example.askchinna.data.repository
+
 import android.app.Activity
-import com.askchinna.data.local.SharedPreferencesManager
-import com.askchinna.data.model.UIState
-import com.askchinna.data.model.User
-import com.askchinna.data.model.UsageLimit
-import com.askchinna.data.remote.FirebaseAuthManager
-import com.askchinna.data.remote.FirestoreManager
-import com.askchinna.data.remote.NetworkExceptionHandler
-import com.askchinna.util.SimpleCoroutineUtils
+import com.example.askchinna.data.local.SharedPreferencesManager
+import com.example.askchinna.data.model.UIState
+import com.example.askchinna.data.model.User
+import com.example.askchinna.data.model.UsageLimit
+import com.example.askchinna.data.remote.FirebaseAuthManager
+import com.example.askchinna.data.remote.FirestoreManager
+import com.example.askchinna.util.NetworkExceptionHandler
+import com.example.askchinna.util.SimpleCoroutineUtils
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import java.util.Date
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -54,25 +54,33 @@ class UserRepository @Inject constructor(
     fun verifyOtp(otp: String): Flow<UIState<User>> = flow {
         emit(UIState.Loading())
 
-        val verifyResult = authManager.verifyOtp(otp)
-
-        if (verifyResult is UIState.Success) {
-            // We have authenticated, now get or create user profile
-            val user = verifyResult.data
-            val userResult = firestoreManager.getOrCreateUser(user)
-
-            // Update last login and usage tracking
-            if (userResult is UIState.Success) {
-                updateUserLastLogin(userResult.data)
-                emit(UIState.Success(userResult.data))
-            } else if (userResult is UIState.Error) {
-                emit(UIState.Error(userResult.message))
+        // Important: verifyOtp returns UIState<User> directly, not a Flow
+        when (val verifyResult = authManager.verifyOtp(otp)) {
+            is UIState.Success -> {
+                // We have authenticated, now get or create user profile
+                val user = verifyResult.data
+                when (val userResult = firestoreManager.getOrCreateUser(user)) {
+                    is UIState.Success -> {
+                        updateUserLastLogin(userResult.data)
+                        emit(UIState.Success(userResult.data))
+                    }
+                    is UIState.Error -> {
+                        emit(UIState.Error(userResult.message))
+                    }
+                    is UIState.Loading -> {
+                        // Loading state, no action needed
+                    }
+                }
             }
-        } else if (verifyResult is UIState.Error) {
-            emit(UIState.Error(verifyResult.message))
+            is UIState.Error -> {
+                emit(UIState.Error(verifyResult.message))
+            }
+            is UIState.Loading -> {
+                // Loading state, no action needed
+            }
         }
     }.catch { e ->
-        val errorMsg = networkExceptionHandler.handleException(e)
+        val errorMsg = networkExceptionHandler.handle(e as Exception)
         emit(UIState.Error(errorMsg))
     }.flowOn(coroutineUtils.ioDispatcher)
 
@@ -103,32 +111,41 @@ class UserRepository @Inject constructor(
     fun completeRegistration(otp: String): Flow<UIState<User>> = flow {
         emit(UIState.Loading())
 
-        val verifyResult = authManager.verifyOtp(otp)
+        // Important: verifyOtp returns UIState<User> directly, not a Flow
+        when (val verifyResult = authManager.verifyOtp(otp)) {
+            is UIState.Success -> {
+                // Create a new user with the stored display name
+                val displayName = prefsManager.getDisplayName()
+                val user = verifyResult.data.copy(
+                    displayName = displayName,
+                    isVerified = true,
+                    createdAt = Timestamp.now()
+                )
 
-        if (verifyResult is UIState.Success) {
-            // Create a new user with the stored display name
-            val displayName = prefsManager.getDisplayName()
-            val user = verifyResult.data.copy(
-                displayName = displayName,
-                isVerified = true,
-                createdAt = Timestamp.now()
-            )
-
-            // Create user in Firestore
-            val createResult = firestoreManager.createUser(user)
-
-            if (createResult is UIState.Success) {
-                // Clear stored display name
-                prefsManager.clearDisplayName()
-                emit(UIState.Success(createResult.data))
-            } else if (createResult is UIState.Error) {
-                emit(UIState.Error(createResult.message))
+                // Create user in Firestore
+                when (val createResult = firestoreManager.createUser(user)) {
+                    is UIState.Success -> {
+                        // Clear stored display name
+                        prefsManager.clearDisplayName()
+                        emit(UIState.Success(createResult.data))
+                    }
+                    is UIState.Error -> {
+                        emit(UIState.Error(createResult.message))
+                    }
+                    is UIState.Loading -> {
+                        // Loading state, no action needed
+                    }
+                }
             }
-        } else if (verifyResult is UIState.Error) {
-            emit(UIState.Error(verifyResult.message))
+            is UIState.Error -> {
+                emit(UIState.Error(verifyResult.message))
+            }
+            is UIState.Loading -> {
+                // Loading state, no action needed
+            }
         }
     }.catch { e ->
-        val errorMsg = networkExceptionHandler.handleException(e)
+        val errorMsg = networkExceptionHandler.handle(e as Exception)
         emit(UIState.Error(errorMsg))
     }.flowOn(coroutineUtils.ioDispatcher)
 
@@ -155,7 +172,7 @@ class UserRepository @Inject constructor(
             }
         }
     }.catch { e ->
-        val errorMsg = networkExceptionHandler.handleException(e)
+        val errorMsg = networkExceptionHandler.handle(e as Exception)
         emit(UIState.Error(errorMsg))
     }.flowOn(coroutineUtils.ioDispatcher)
 
@@ -173,61 +190,64 @@ class UserRepository @Inject constructor(
         }
 
         // Get user profile to check usage
-        val userResult = firestoreManager.getUser(userId)
+        when (val userResult = firestoreManager.getUser(userId)) {
+            is UIState.Success -> {
+                val user = userResult.data
+                val now = Timestamp.now()
+                var usageCount = user.usageCount
+                var resetDate = user.usageResetDate
+                var resetNeeded = false
 
-        if (userResult is UIState.Success) {
-            val user = userResult.data
-            val now = Timestamp.now()
-            var usageCount = user.usageCount
-            var resetDate = user.usageResetDate
-            var resetNeeded = false
+                // Check if reset is needed (30 days passed since last reset)
+                if (resetDate != null) {
+                    val diffMs = now.toDate().time - resetDate.toDate().time
+                    val diffDays = TimeUnit.MILLISECONDS.toDays(diffMs)
 
-            // Check if reset is needed (30 days passed since last reset)
-            if (resetDate != null) {
-                val diffMs = now.toDate().time - resetDate.toDate().time
-                val diffDays = TimeUnit.MILLISECONDS.toDays(diffMs)
-
-                if (diffDays >= 30) {
-                    // Reset usage count
-                    usageCount = 0
+                    if (diffDays >= 30) {
+                        // Reset usage count
+                        usageCount = 0
+                        resetDate = now
+                        resetNeeded = true
+                    }
+                } else {
+                    // First time using app - initialize
                     resetDate = now
                     resetNeeded = true
                 }
-            } else {
-                // First time using app - initialize
-                resetDate = now
-                resetNeeded = true
-            }
 
-            // Check if user has reached limit
-            val hasReachedLimit = usageCount >= 5
+                // Check if user has reached limit
+                val isLimitReached = usageCount >= 5
 
-            // If changes needed, update user profile
-            if (resetNeeded) {
-                val updateResult = firestoreManager.updateUsageTracking(
-                    userId, usageCount, resetDate
+                // If changes needed, update user profile
+                if (resetNeeded) {
+                    val updateResult = firestoreManager.updateUsageTracking(
+                        userId, usageCount, resetDate
+                    )
+
+                    if (updateResult is UIState.Error) {
+                        emit(UIState.Error(updateResult.message))
+                        return@flow
+                    }
+                }
+
+                // Return usage limit info
+                val usageLimit = UsageLimit(
+                    usageCount = usageCount,
+                    lastUpdated = resetDate.toDate(),
+                    isLimitReached = isLimitReached
                 )
 
-                if (updateResult is UIState.Error) {
-                    emit(UIState.Error(updateResult.message))
-                    return@flow
-                }
+                emit(UIState.Success(usageLimit))
             }
-
-            // Return usage limit info
-            val usageLimit = UsageLimit(
-                currentCount = usageCount,
-                maxCount = 5,
-                resetDate = resetDate?.toDate() ?: Date(),
-                hasReachedLimit = hasReachedLimit
-            )
-
-            emit(UIState.Success(usageLimit))
-        } else if (userResult is UIState.Error) {
-            emit(UIState.Error(userResult.message))
+            is UIState.Error -> {
+                emit(UIState.Error(userResult.message))
+            }
+            is UIState.Loading -> {
+                // Loading state, no action needed
+            }
         }
     }.catch { e ->
-        val errorMsg = networkExceptionHandler.handleException(e)
+        val errorMsg = networkExceptionHandler.handle(e as Exception)
         emit(UIState.Error(errorMsg))
     }.flowOn(coroutineUtils.ioDispatcher)
 
@@ -245,25 +265,33 @@ class UserRepository @Inject constructor(
         }
 
         // Get current user profile
-        val userResult = firestoreManager.getUser(userId)
+        when (val userResult = firestoreManager.getUser(userId)) {
+            is UIState.Success -> {
+                val user = userResult.data
+                val newCount = user.usageCount + 1
 
-        if (userResult is UIState.Success) {
-            val user = userResult.data
-            val newCount = user.usageCount + 1
-
-            // Update usage count in Firestore
-            val updateResult = firestoreManager.updateUsageCount(userId, newCount)
-
-            if (updateResult is UIState.Success) {
-                emit(UIState.Success(newCount))
-            } else if (updateResult is UIState.Error) {
-                emit(UIState.Error(updateResult.message))
+                // Update usage count in Firestore
+                when (val updateResult = firestoreManager.updateUsageCount(userId, newCount)) {
+                    is UIState.Success -> {
+                        emit(UIState.Success(updateResult.data))
+                    }
+                    is UIState.Error -> {
+                        emit(UIState.Error(updateResult.message))
+                    }
+                    is UIState.Loading -> {
+                        // Loading state, no action needed
+                    }
+                }
             }
-        } else if (userResult is UIState.Error) {
-            emit(UIState.Error(userResult.message))
+            is UIState.Error -> {
+                emit(UIState.Error(userResult.message))
+            }
+            is UIState.Loading -> {
+                // Loading state, no action needed
+            }
         }
     }.catch { e ->
-        val errorMsg = networkExceptionHandler.handleException(e)
+        val errorMsg = networkExceptionHandler.handle(e as Exception)
         emit(UIState.Error(errorMsg))
     }.flowOn(coroutineUtils.ioDispatcher)
 
@@ -286,7 +314,7 @@ class UserRepository @Inject constructor(
 
         emit(UIState.Success(Unit))
     }.catch { e ->
-        val errorMsg = networkExceptionHandler.handleException(e)
+        val errorMsg = networkExceptionHandler.handle(e as Exception)
         emit(UIState.Error(errorMsg))
     }.flowOn(coroutineUtils.ioDispatcher)
 

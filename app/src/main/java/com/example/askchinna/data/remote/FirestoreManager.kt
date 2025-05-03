@@ -3,12 +3,14 @@ package com.example.askchinna.data.remote
  * app/src/main/java/com/askchinna/data/remote/FirestoreManager.kt
  * Copyright © 2025 askChinna
  * Created: April 28, 2025
- * Version: 1.0
+ * Updated: May 2, 2025
+ * Version: 1.1
  */
 
-import com.askchinna.data.local.SharedPreferencesManager
-import com.askchinna.data.model.UIState
-import com.askchinna.data.model.User
+import com.example.askchinna.data.local.SharedPreferencesManager
+import com.example.askchinna.data.model.UIState
+import com.example.askchinna.data.model.User
+import com.example.askchinna.util.NetworkExceptionHandler
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
@@ -58,10 +60,10 @@ class FirestoreManager @Inject constructor(
                 UIState.Error("User document does not exist")
             }
         } catch (e: FirebaseFirestoreException) {
-            val error = networkExceptionHandler.handleFirestoreException(e)
+            val error = networkExceptionHandler.handle(e)
             UIState.Error(error)
         } catch (e: Exception) {
-            val error = networkExceptionHandler.handleException(e)
+            val error = networkExceptionHandler.handle(e)
             UIState.Error(error)
         }
     }
@@ -103,10 +105,10 @@ class FirestoreManager @Inject constructor(
                 createUser(newUser)
             }
         } catch (e: FirebaseFirestoreException) {
-            val error = networkExceptionHandler.handleFirestoreException(e)
+            val error = networkExceptionHandler.handle(e)
             UIState.Error(error)
         } catch (e: Exception) {
-            val error = networkExceptionHandler.handleException(e)
+            val error = networkExceptionHandler.handle(e)
             UIState.Error(error)
         }
     }
@@ -131,10 +133,10 @@ class FirestoreManager @Inject constructor(
 
             UIState.Success(user)
         } catch (e: FirebaseFirestoreException) {
-            val error = networkExceptionHandler.handleFirestoreException(e)
+            val error = networkExceptionHandler.handle(e)
             UIState.Error(error)
         } catch (e: Exception) {
-            val error = networkExceptionHandler.handleException(e)
+            val error = networkExceptionHandler.handle(e)
             UIState.Error(error)
         }
     }
@@ -156,10 +158,10 @@ class FirestoreManager @Inject constructor(
 
             UIState.Success(Unit)
         } catch (e: FirebaseFirestoreException) {
-            val error = networkExceptionHandler.handleFirestoreException(e)
+            val error = networkExceptionHandler.handle(e)
             UIState.Error(error)
         } catch (e: Exception) {
-            val error = networkExceptionHandler.handleException(e)
+            val error = networkExceptionHandler.handle(e)
             UIState.Error(error)
         }
     }
@@ -188,10 +190,10 @@ class FirestoreManager @Inject constructor(
 
             UIState.Success(usageCount)
         } catch (e: FirebaseFirestoreException) {
-            val error = networkExceptionHandler.handleFirestoreException(e)
+            val error = networkExceptionHandler.handle(e)
             UIState.Error(error)
         } catch (e: Exception) {
-            val error = networkExceptionHandler.handleException(e)
+            val error = networkExceptionHandler.handle(e)
             UIState.Error(error)
         }
     }
@@ -229,10 +231,10 @@ class FirestoreManager @Inject constructor(
 
             UIState.Success(Unit)
         } catch (e: FirebaseFirestoreException) {
-            val error = networkExceptionHandler.handleFirestoreException(e)
+            val error = networkExceptionHandler.handle(e)
             UIState.Error(error)
         } catch (e: Exception) {
-            val error = networkExceptionHandler.handleException(e)
+            val error = networkExceptionHandler.handle(e)
             UIState.Error(error)
         }
     }
@@ -264,10 +266,10 @@ class FirestoreManager @Inject constructor(
                 UIState.Success(null)
             }
         } catch (e: FirebaseFirestoreException) {
-            val error = networkExceptionHandler.handleFirestoreException(e)
+            val error = networkExceptionHandler.handle(e)
             UIState.Error(error)
         } catch (e: Exception) {
-            val error = networkExceptionHandler.handleException(e)
+            val error = networkExceptionHandler.handle(e)
             UIState.Error(error)
         }
     }
@@ -296,10 +298,10 @@ class FirestoreManager @Inject constructor(
 
             UIState.Success(Unit)
         } catch (e: FirebaseFirestoreException) {
-            val error = networkExceptionHandler.handleFirestoreException(e)
+            val error = networkExceptionHandler.handle(e)
             UIState.Error(error)
         } catch (e: Exception) {
-            val error = networkExceptionHandler.handleException(e)
+            val error = networkExceptionHandler.handle(e)
             UIState.Error(error)
         }
     }

@@ -1,7 +1,8 @@
-/*
- * Copyright (c) 2025 askChinna App
+/*file path: app/src/main/java/com/example/askchinna/ui/results/ActionPlanView.kt*/
+ /* Copyright (c) 2025 askChinna App
  * Created: April 29, 2025
- * Version: 1.0
+ * Updated: May 2, 2025
+ * Version: 1.1
  */
 
 package com.example.askchinna.ui.results
@@ -10,15 +11,14 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.LinearLayout
+import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.cardview.widget.CardView
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.askchinna.R
 import com.example.askchinna.data.model.Action
-import android.widget.ImageView
-import android.widget.TextView
 
 /**
  * Custom view that displays a list of recommended actions for the farmer
@@ -99,17 +99,18 @@ class ActionPlanView @JvmOverloads constructor(
 
             fun bind(action: Action) {
                 // Set action icon based on type
-                val iconRes = when (action.type) {
-                    Action.Type.SPRAY -> R.drawable.ic_spray
-                    Action.Type.WATER -> R.drawable.ic_water
-                    Action.Type.FERTILIZE -> R.drawable.ic_fertilize
-                    Action.Type.REMOVE -> R.drawable.ic_remove
-                    Action.Type.MONITOR -> R.drawable.ic_monitor
+                val iconRes = when (action.actionType.lowercase()) {
+                    Action.Companion.ActionType.SPRAY -> R.drawable.ic_spray
+                    Action.Companion.ActionType.WATER -> R.drawable.ic_water
+                    Action.Companion.ActionType.FERTILIZE -> R.drawable.ic_fertilize
+                    Action.Companion.ActionType.REMOVE -> R.drawable.ic_remove
+                    Action.Companion.ActionType.MONITOR -> R.drawable.ic_monitor
+                    else -> R.drawable.ic_monitor // Default icon
                 }
                 iconView.setImageResource(iconRes)
 
                 // Set text content
-                titleView.text = action.title
+                titleView.text = action.actionTitle
                 descriptionView.text = action.description
             }
         }

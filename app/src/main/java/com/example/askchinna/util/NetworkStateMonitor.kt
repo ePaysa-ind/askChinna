@@ -1,17 +1,20 @@
-package com.example.askchinna.util
-/**
- * app/src/main/java/com/askchinna/util/NetworkStateMonitor.kt
+/*
+ * file path: app/src/main/java/com/example/askchinna/util/NetworkStateMonitor.kt
+ * file name: NetworkStateMonitor.kt
+ * created: April 28, 2025
+ * version: 1.2
+ * This file is part of AskChinna.
  * Copyright © 2025 askChinna
- * Created: April 28, 2025
- * Version: 1.0
  */
 
+package com.example.askchinna.util
 
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -19,13 +22,15 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Monitors network state changes
+ * Monitors network state changes and quality.
  */
 @Singleton
 class NetworkStateMonitor @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
-    private val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    private val TAG = "NetworkStateMonitor"
+    private val connectivityManager =
+        context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
     private val _isNetworkAvailable = MutableLiveData<Boolean>()
     val isNetworkAvailable: LiveData<Boolean> = _isNetworkAvailable
@@ -51,93 +56,107 @@ class NetworkStateMonitor @Inject constructor(
         }
     }
 
+    private var isMonitoring = false
+
     init {
-        // Set initial values
-        val isConnected = isNetworkConnected()
-        _isNetworkAvailable.value = isConnected
-
-        if (isConnected) {
-            checkNetworkQuality()
-        }
-
-        // Register network callback
-        val request = NetworkRequest.Builder()
-            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-            .build()
-
-        connectivityManager.registerNetworkCallback(request, networkCallback)
+        // Initialize network state
+        val connected = isNetworkConnected()
+        _isNetworkAvailable.value = connected
+        if (connected) checkNetworkQuality()
     }
 
     /**
-     * Check if network is connected
-     * @return Boolean True if network is connected
+     * Start listening for network availability and changes.
      */
-    private fun isNetworkConnected(): Boolean {
-        val network = connectivityManager.activeNetwork ?: return false
-        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
-
-        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+    fun startMonitoring() {
+        if (isMonitoring) return
+        try {
+            val request = NetworkRequest.Builder()
+                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                .build()
+            connectivityManager.registerNetworkCallback(request, networkCallback)
+            isMonitoring = true
+            Log.d(TAG, "Network monitoring started")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error starting network monitoring: ${e.message}", e)
+            isMonitoring = false
+        }
     }
 
     /**
-     * Check network quality
+     * Stop listening for network changes.
+     */
+    fun stopMonitoring() {
+        if (!isMonitoring) return
+        try {
+            connectivityManager.unregisterNetworkCallback(networkCallback)
+            isMonitoring = false
+            Log.d(TAG, "Network monitoring stopped")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error stopping network monitoring: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Check if network is currently connected.
+     * @return true if internet is available
+     */
+    fun isNetworkConnected(): Boolean {
+        val network = connectivityManager.activeNetwork ?: return false
+        val caps = connectivityManager.getNetworkCapabilities(network) ?: return false
+        return caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+    }
+
+    /**
+     * Alias for synchronous network availability checks.
+     */
+    fun isNetworkAvailable(): Boolean = isNetworkConnected()
+
+    /**
+     * Determine network quality for deciding on certain operations.
      */
     private fun checkNetworkQuality() {
         val network = connectivityManager.activeNetwork ?: return
-        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return
-
-        // Consider network low quality if:
-        // - Not wifi or ethernet
-        // - On metered connection
-        val isLowQuality = !(capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
-                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) ||
-                connectivityManager.isActiveNetworkMetered
-
-        _isLowQualityNetwork.postValue(isLowQuality)
+        val caps = connectivityManager.getNetworkCapabilities(network) ?: return
+        val lowQuality =
+            !(caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
+                    || caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET))
+                    || connectivityManager.isActiveNetworkMetered
+        _isLowQualityNetwork.postValue(lowQuality)
     }
 
     /**
-     * Check if current network is suitable for image uploads
-     * @return Boolean True if network is suitable
+     * Check if the current network is sufficient for image uploads.
+     * @return true if on WiFi or Ethernet
      */
     fun isNetworkSuitableForImageUpload(): Boolean {
-        if (!isNetworkConnected()) {
-            return false
-        }
-
+        if (!isNetworkConnected()) return false
         val network = connectivityManager.activeNetwork ?: return false
-        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
-
-        // Prefer wifi or ethernet for image uploads
-        return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
-                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
+        val caps = connectivityManager.getNetworkCapabilities(network) ?: return false
+        return caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
+                || caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
     }
 
     /**
-     * Get network type as string
-     * @return String Network type
+     * Get a human-friendly network type string.
      */
     fun getNetworkTypeString(): String {
         val network = connectivityManager.activeNetwork ?: return "Offline"
-        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return "Unknown"
-
+        val caps = connectivityManager.getNetworkCapabilities(network) ?: return "Unknown"
         return when {
-            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "WiFi"
-            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "Mobile Data"
-            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> "Ethernet"
-            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> "Bluetooth"
+            caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "WiFi"
+            caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "Mobile Data"
+            caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> "Ethernet"
+            caps.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> "Bluetooth"
             else -> "Unknown"
         }
     }
 
     /**
-     * Clean up resources
+     * Unregisters callbacks; deprecated in favor of stopMonitoring().
      */
+    @Deprecated("Use stopMonitoring() instead", ReplaceWith("stopMonitoring()"))
     fun unregister() {
-        try {
-            connectivityManager.unregisterNetworkCallback(networkCallback)
-        } catch (e: Exception) {
-            // Ignore
-        }
+        stopMonitoring()
     }
 }

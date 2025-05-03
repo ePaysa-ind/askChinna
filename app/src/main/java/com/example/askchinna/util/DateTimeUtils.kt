@@ -92,7 +92,7 @@ object DateTimeUtils {
     /**
      * Calculate time difference in minutes between current time and given time
      */
-    fun getMinutesDifference(timeInMillis: Long): Int {
+    private fun getMinutesDifference(timeInMillis: Long): Int {
         val diffMillis = getCurrentTimeMillis() - timeInMillis
         return TimeUnit.MILLISECONDS.toMinutes(diffMillis).toInt()
     }

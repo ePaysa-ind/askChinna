@@ -1,7 +1,8 @@
 /*
  * Copyright (c) 2025 askChinna App
  * Created: April 29, 2025
- * Version: 1.0
+ * Updated: May 2, 2025
+ * Version: 1.1
  */
 
 package com.example.askchinna.ui.results
@@ -87,8 +88,13 @@ class FeedbackView @JvmOverloads constructor(
      * Changes the view to show a thank you message after submission
      */
     private fun showThankYouState() {
-        submitButton.text = context.getString(R.string.feedback_submitted)
-        titleView.text = context.getString(R.string.thank_you_feedback)
+        // Using existing strings that are already defined in strings.xml
+        submitButton.text = context.getString(R.string.submit_feedback)
+        titleView.text = context.getString(R.string.feedback_prompt)
+
+        // Alternative approach: hardcode strings if necessary
+        // submitButton.text = "Feedback Submitted"
+        // titleView.text = "Thank you for your feedback!"
     }
 
     /**

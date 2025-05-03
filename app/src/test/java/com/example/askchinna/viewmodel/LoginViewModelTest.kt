@@ -1,333 +1,212 @@
-package com.example.askchinna.viewmodel
-
 /**
  * app/src/test/java/com/askchinna/viewmodel/LoginViewModelTest.kt
  * Copyright © 2025 askChinna
  * Created: April 28, 2025
- * Version: 1.0
+ * Updated: May 1, 2025
+ * Version: 1.2
+ *
+ * Updated to match current LoginViewModel implementation
  */
 
+package com.example.askchinna.viewmodel
+
+import android.app.Activity
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.askchinna.data.model.UIState
-import com.askchinna.data.model.User
-import com.askchinna.data.repository.UserRepository
-import com.askchinna.ui.auth.LoginViewModel
+import androidx.lifecycle.Observer
+import com.example.askchinna.data.model.UIState
+import com.example.askchinna.data.model.User
+import com.example.askchinna.data.repository.UserRepository
+import com.example.askchinna.ui.auth.LoginViewModel
+import com.example.askchinna.util.SimpleCoroutineUtils
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.test.TestCoroutineDispatcher
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.Mockito.`when`
-import org.mockito.Mockito.verify
-import org.mockito.junit.MockitoJUnitRunner
+import org.junit.runners.JUnit4
 
 @ExperimentalCoroutinesApi
-@RunWith(MockitoJUnitRunner::class)
+@RunWith(JUnit4::class)
 class LoginViewModelTest {
 
+    // Rule to make LiveData work synchronously in tests
     @get:Rule
     val instantTaskExecutorRule = InstantTaskExecutorRule()
 
-    @Mock
-    private lateinit var userRepository: UserRepository
+    // Test dispatcher for controlling coroutines
+    private val testDispatcher = StandardTestDispatcher()
 
+    // Mocks
+    private lateinit var userRepository: UserRepository
+    private lateinit var coroutineUtils: SimpleCoroutineUtils
     private lateinit var viewModel: LoginViewModel
-    private val testDispatcher = TestCoroutineDispatcher()
+    private lateinit var mockActivity: Activity
+
+    // Observer for LiveData
+    private lateinit var otpSendStateObserver: Observer<UIState<String>>
+    private lateinit var autoLoginStateObserver: Observer<Boolean>
 
     @Before
     fun setup() {
+        // Set main dispatcher for coroutines testing
         Dispatchers.setMain(testDispatcher)
-        viewModel = LoginViewModel(userRepository)
+
+        // Create mocks
+        userRepository = mockk(relaxed = true)
+        coroutineUtils = mockk(relaxed = true)
+        mockActivity = mockk(relaxed = true)
+
+        // Set up coroutine utilities to use test dispatcher
+        every { coroutineUtils.ioDispatcher } returns testDispatcher
+
+        // Create observers
+        otpSendStateObserver = mockk(relaxed = true)
+        autoLoginStateObserver = mockk(relaxed = true)
+
+        // Initialize ViewModel with mocked dependencies
+        viewModel = LoginViewModel(userRepository, coroutineUtils)
+
+        // Observe LiveData
+        viewModel.otpSendState.observeForever(otpSendStateObserver)
+        viewModel.autoLoginState.observeForever(autoLoginStateObserver)
     }
 
     @After
     fun tearDown() {
+        // Reset main dispatcher
         Dispatchers.resetMain()
-        testDispatcher.cleanupTestCoroutines()
+
+        // Remove observers
+        viewModel.otpSendState.removeObserver(otpSendStateObserver)
+        viewModel.autoLoginState.removeObserver(autoLoginStateObserver)
     }
 
     @Test
-    fun `validateMobileNumber returns true for valid Indian mobile number`() {
-        // Valid Indian mobile number with country code
-        val validMobileNumber = "+919876543210"
-
-        // Call method that performs validation
-        val result = viewModel.validateMobileNumber(validMobileNumber)
-
-        // Check validation result
-        assert(result)
-        assert(viewModel.mobileNumberError.value == null)
-    }
-
-    @Test
-    fun `validateMobileNumber returns false for invalid Indian mobile number`() {
-        // Invalid number - too short
-        val invalidMobileNumber = "+9198765"
-
-        // Call method that performs validation
-        val result = viewModel.validateMobileNumber(invalidMobileNumber)
-
-        // Check validation result
-        assert(!result)
-        assert(viewModel.mobileNumberError.value != null)
-    }
-
-    @Test
-    fun `validateMobileNumber returns false for non-Indian country code`() {
-        // Non-Indian country code
-        val nonIndianNumber = "+14155552671"
-
-        // Call method that performs validation
-        val result = viewModel.validateMobileNumber(nonIndianNumber)
-
-        // Check validation result
-        assert(!result)
-        assert(viewModel.mobileNumberError.value != null)
-    }
-
-    @Test
-    fun `validateMobileNumber returns false for empty mobile number`() {
-        // Empty mobile number
-        val emptyMobileNumber = ""
-
-        // Call method that performs validation
-        val result = viewModel.validateMobileNumber(emptyMobileNumber)
-
-        // Check validation result
-        assert(!result)
-        assert(viewModel.mobileNumberError.value != null)
-    }
-
-    @Test
-    fun `startPhoneAuthentication calls repository and updates state on success`() = runBlockingTest {
-        // Valid mobile number
-        val mobileNumber = "+919876543210"
-
-        // Mock success response
-        val verificationId = "test_verification_id"
-        `when`(userRepository.startPhoneNumberVerification(mobileNumber)).thenReturn(
-            flow {
-                emit(UIState.Loading)
-                emit(UIState.Success(verificationId))
-            }
-        )
-
-        // Call method
-        viewModel.startPhoneAuthentication(mobileNumber)
-
-        // Verify repository was called
-        verify(userRepository).startPhoneNumberVerification(mobileNumber)
-
-        // Verify state was updated
-        assert(viewModel.phoneAuthState.value is UIState.Success)
-        assert((viewModel.phoneAuthState.value as UIState.Success<String>).data == verificationId)
-    }
-
-    @Test
-    fun `startPhoneAuthentication updates state on error`() = runBlockingTest {
-        // Valid mobile number
-        val mobileNumber = "+919876543210"
-
-        // Mock error response
-        val errorMessage = "Failed to send OTP"
-        `when`(userRepository.startPhoneNumberVerification(mobileNumber)).thenReturn(
-            flow {
-                emit(UIState.Loading)
-                emit(UIState.Error(errorMessage))
-            }
-        )
-
-        // Call method
-        viewModel.startPhoneAuthentication(mobileNumber)
-
-        // Verify repository was called
-        verify(userRepository).startPhoneNumberVerification(mobileNumber)
-
-        // Verify state was updated with error
-        assert(viewModel.phoneAuthState.value is UIState.Error)
-        assert((viewModel.phoneAuthState.value as UIState.Error).message == errorMessage)
-    }
-
-    @Test
-    fun `verifyOtp calls repository and updates state on success`() = runBlockingTest {
-        // Test verification ID and OTP
-        val verificationId = "test_verification_id"
-        val otp = "123456"
-
-        // Mock success response
-        val mockUser = User(id = "user_id", mobileNumber = "+919876543210", name = "Test User")
-        `when`(userRepository.verifyOtp(verificationId, otp)).thenReturn(
-            flow {
-                emit(UIState.Loading)
-                emit(UIState.Success(mockUser))
-            }
-        )
-
-        // Set verification ID in ViewModel
-        viewModel.verificationId = verificationId
-
-        // Call method
-        viewModel.verifyOtp(otp)
-
-        // Verify repository was called
-        verify(userRepository).verifyOtp(verificationId, otp)
-
-        // Verify state was updated
-        assert(viewModel.loginState.value is UIState.Success)
-        assert((viewModel.loginState.value as UIState.Success<User>).data.id == mockUser.id)
-    }
-
-    @Test
-    fun `verifyOtp updates state on error`() = runBlockingTest {
-        // Test verification ID and OTP
-        val verificationId = "test_verification_id"
-        val otp = "123456"
-
-        // Mock error response
-        val errorMessage = "Invalid OTP"
-        `when`(userRepository.verifyOtp(verificationId, otp)).thenReturn(
-            flow {
-                emit(UIState.Loading)
-                emit(UIState.Error(errorMessage))
-            }
-        )
-
-        // Set verification ID in ViewModel
-        viewModel.verificationId = verificationId
-
-        // Call method
-        viewModel.verifyOtp(otp)
-
-        // Verify repository was called
-        verify(userRepository).verifyOtp(verificationId, otp)
-
-        // Verify state was updated with error
-        assert(viewModel.loginState.value is UIState.Error)
-        assert((viewModel.loginState.value as UIState.Error).message == errorMessage)
-    }
-
-    @Test
-    fun `register calls repository with mobile number and name`() = runBlockingTest {
+    fun `sendOtp calls repository and updates LiveData on success`() = runTest {
         // Test data
-        val mobileNumber = "+919876543210"
-        val name = "Test User"
-
-        // Mock success response
-        val mockUser = User(id = "user_id", mobileNumber = mobileNumber, name = name)
-        `when`(userRepository.registerUser(mobileNumber, name)).thenReturn(
-            flow {
-                emit(UIState.Loading)
-                emit(UIState.Success(mockUser))
-            }
-        )
-
-        // Call method
-        viewModel.register(mobileNumber, name)
-
-        // Verify repository was called
-        verify(userRepository).registerUser(mobileNumber, name)
-
-        // Verify state was updated
-        assert(viewModel.registrationState.value is UIState.Success)
-    }
-
-    @Test
-    fun `validateInput returns false when mobile number is invalid`() {
-        // Invalid mobile number
-        val mobileNumber = "12345"
-        val name = "Test User"
-
-        // Call method
-        val result = viewModel.validateRegistrationInput(mobileNumber, name)
-
-        // Verify result
-        assert(!result)
-        assert(viewModel.mobileNumberError.value != null)
-    }
-
-    @Test
-    fun `validateInput returns false when name is empty`() {
-        // Valid mobile number but empty name
-        val mobileNumber = "+919876543210"
-        val name = ""
-
-        // Call method
-        val result = viewModel.validateRegistrationInput(mobileNumber, name)
-
-        // Verify result
-        assert(!result)
-        assert(viewModel.nameError.value != null)
-    }
-
-    @Test
-    fun `validateInput returns true when all inputs are valid`() {
-        // Valid inputs
-        val mobileNumber = "+919876543210"
-        val name = "Test User"
-
-        // Call method
-        val result = viewModel.validateRegistrationInput(mobileNumber, name)
-
-        // Verify result
-        assert(result)
-        assert(viewModel.mobileNumberError.value == null)
-        assert(viewModel.nameError.value == null)
-    }
-
-    @Test
-    fun `resendOtp calls repository and updates state`() = runBlockingTest {
-        // Valid mobile number
-        val mobileNumber = "+919876543210"
-
-        // Mock success response
-        val verificationId = "new_verification_id"
-        `when`(userRepository.resendOtp(mobileNumber)).thenReturn(
-            flow {
-                emit(UIState.Loading)
-                emit(UIState.Success(verificationId))
-            }
-        )
-
-        // Call method
-        viewModel.resendOtp(mobileNumber)
-
-        // Verify repository was called
-        verify(userRepository).resendOtp(mobileNumber)
-
-        // Verify state was updated
-        assert(viewModel.resendOtpState.value is UIState.Success)
-        assert((viewModel.resendOtpState.value as UIState.Success<String>).data == verificationId)
-    }
-
-    @Test
-    fun `formatMobileNumber adds country code if missing`() {
-        // Mobile number without country code
         val mobileNumber = "9876543210"
+        val verificationId = "test_verification_id"
 
-        // Call method
-        val formattedNumber = viewModel.formatMobileNumber(mobileNumber)
+        // Mock repository response for success
+        coEvery { userRepository.sendOtp(mobileNumber, mockActivity) } returns
+                flow {
+                    emit(UIState.Loading())
+                    emit(UIState.Success(verificationId))
+                }
 
-        // Verify country code was added
-        assert(formattedNumber == "+919876543210")
+        // Call the method
+        viewModel.sendOtp(mobileNumber, mockActivity)
+
+        // Advance coroutines to complete
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Verify repository was called with correct parameters
+        coVerify { userRepository.sendOtp(mobileNumber, mockActivity) }
+
+        // Verify LiveData emissions happened in correct order
+        verify(exactly = 1) { otpSendStateObserver.onChanged(match { it is UIState.Loading }) }
+        verify(exactly = 1) { otpSendStateObserver.onChanged(match {
+            it is UIState.Success && it.data == verificationId
+        })}
     }
 
     @Test
-    fun `formatMobileNumber preserves existing country code`() {
-        // Mobile number with country code
-        val mobileNumber = "+919876543210"
+    fun `sendOtp updates LiveData with error state when repository fails`() = runTest {
+        // Test data
+        val mobileNumber = "9876543210"
+        val errorMessage = "Failed to send OTP"
 
-        // Call method
-        val formattedNumber = viewModel.formatMobileNumber(mobileNumber)
+        // Mock repository response for error
+        coEvery { userRepository.sendOtp(mobileNumber, mockActivity) } returns
+                flow {
+                    emit(UIState.Loading())
+                    emit(UIState.Error(errorMessage))
+                }
 
-        // Verify number was not changed
-        assert(formattedNumber == mobileNumber)
+        // Call the method
+        viewModel.sendOtp(mobileNumber, mockActivity)
+
+        // Advance coroutines to complete
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Verify repository was called
+        coVerify { userRepository.sendOtp(mobileNumber, mockActivity) }
+
+        // Verify LiveData emissions
+        verify(exactly = 1) { otpSendStateObserver.onChanged(match { it is UIState.Loading }) }
+        verify(exactly = 1) { otpSendStateObserver.onChanged(match {
+            it is UIState.Error && it.message == errorMessage
+        })}
+    }
+
+    @Test
+    fun `initialization checks authentication status - authenticated user`() = runTest {
+        // Create a fresh ViewModel to test initialization behavior
+        every { coroutineUtils.ioDispatcher } returns testDispatcher
+
+        // Mock authenticated user response
+        val mockUser = User(uid = "user_id", mobileNumber = "+919876543210")
+        coEvery { userRepository.getCurrentUser() } returns
+                flow {
+                    emit(UIState.Loading())
+                    emit(UIState.Success(mockUser))
+                }
+
+        // Create new ViewModel instance which triggers init block
+        val newViewModel = LoginViewModel(userRepository, coroutineUtils)
+        newViewModel.autoLoginState.observeForever(autoLoginStateObserver)
+
+        // Advance coroutines to complete
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Verify repository was called
+        coVerify { userRepository.getCurrentUser() }
+
+        // Verify LiveData was updated correctly - should be true for authenticated user
+        verify { autoLoginStateObserver.onChanged(true) }
+
+        // Clean up
+        newViewModel.autoLoginState.removeObserver(autoLoginStateObserver)
+    }
+
+    @Test
+    fun `initialization checks authentication status - unauthenticated user`() = runTest {
+        // Create a fresh ViewModel to test initialization behavior
+        every { coroutineUtils.ioDispatcher } returns testDispatcher
+
+        // Mock unauthenticated user response
+        coEvery { userRepository.getCurrentUser() } returns
+                flow {
+                    emit(UIState.Loading())
+                    emit(UIState.Error("User not authenticated"))
+                }
+
+        // Create new ViewModel instance which triggers init block
+        val newViewModel = LoginViewModel(userRepository, coroutineUtils)
+        newViewModel.autoLoginState.observeForever(autoLoginStateObserver)
+
+        // Advance coroutines to complete
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Verify repository was called
+        coVerify { userRepository.getCurrentUser() }
+
+        // Verify LiveData was updated correctly - should be false for unauthenticated user
+        verify { autoLoginStateObserver.onChanged(false) }
+
+        // Clean up
+        newViewModel.autoLoginState.removeObserver(autoLoginStateObserver)
     }
 }

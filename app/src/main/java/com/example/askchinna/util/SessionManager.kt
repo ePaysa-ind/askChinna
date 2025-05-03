@@ -1,18 +1,22 @@
 /**
  * File: app/src/main/java/com/example/askchinna/util/SessionManager.kt
- * Copyright (c) 2025 askChinna
+ * Copyright © 2025 askChinna
  * Created: April 29, 2025
- * Version: 1.0
+ * Updated: May 4, 2025
+ * Version: 1.1.1
+ * Description: Manages user session, authentication state, and usage limits.
  */
 
 package com.example.askchinna.util
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.askchinna.data.local.SharedPreferencesManager
 import com.example.askchinna.data.model.UsageLimit
 import com.example.askchinna.data.model.User
+import com.example.askchinna.util.Constants
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,231 +25,231 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * Manages user session, authentication state, and usage limits
- * Optimized for low-end devices with efficient state management
- */
 @Singleton
 class SessionManager @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val sharedPreferencesManager: SharedPreferencesManager,
-    private val dateTimeUtils: DateTimeUtils
+    private val sharedPreferencesManager: SharedPreferencesManager
 ) {
     companion object {
         private const val TAG = "SessionManager"
         private const val DEFAULT_SESSION_TIMEOUT_MINUTES = 10
     }
 
-    // Session state
-    private val _isSessionActive = MutableStateFlow(false)
+    private val _isSessionActive       = MutableStateFlow(false)
     val isSessionActive: Flow<Boolean> = _isSessionActive
 
-    private val _sessionStartTime = MutableLiveData<Long>()
+    private val _sessionStartTime       = MutableLiveData<Long>()
     val sessionStartTime: LiveData<Long> = _sessionStartTime
 
-    private val _timeRemainingSeconds = MutableLiveData<Int>()
+    private val _timeRemainingSeconds   = MutableLiveData<Int>()
     val timeRemainingSeconds: LiveData<Int> = _timeRemainingSeconds
 
-    private val _currentUser = MutableStateFlow<User?>(null)
+    private val _currentUser            = MutableStateFlow<User?>(null)
     val currentUser: Flow<User?> = _currentUser
 
-    private val _usageLimit = MutableStateFlow<UsageLimit?>(null)
+    private val _usageLimit             = MutableStateFlow<UsageLimit?>(null)
     val usageLimit: Flow<UsageLimit?> = _usageLimit
 
     init {
-        // Load session data if exists
+        Log.d(TAG, "Initializing SessionManager and loading stored session data")
         loadSessionData()
     }
 
     /**
-     * Start a new session
-     * @param user Current user
-     * @param usageLimit Current usage limit
+     * Starts a new user session.
      */
     fun startSession(user: User, usageLimit: UsageLimit) {
-        val currentTime = System.currentTimeMillis()
-
-        // Store session data
-        _sessionStartTime.value = currentTime
-        _isSessionActive.value = true
-        _currentUser.value = user
-        _usageLimit.value = usageLimit
-
-        // Initialize time remaining
+        val now = System.currentTimeMillis()
+        Log.i(TAG, "Starting session for user=${user.uid} at $now")
+        _sessionStartTime.value = now
+        _isSessionActive.value  = true
+        _currentUser.value      = user
+        _usageLimit.value       = usageLimit
         updateTimeRemaining()
 
-        // Save to shared preferences
-        sharedPreferencesManager.saveSessionStartTime(currentTime)
+        sharedPreferencesManager.saveSessionStartTime(now)
+        sharedPreferencesManager.saveAuthState(true)
         sharedPreferencesManager.saveUser(user)
         sharedPreferencesManager.saveUsageLimit(usageLimit)
-        sharedPreferencesManager.saveAuthState(true)
     }
 
     /**
-     * End current session
+     * Ends the current user session.
      */
     fun endSession() {
-        _isSessionActive.value = false
-        _sessionStartTime.value = 0
-        _timeRemainingSeconds.value = 0
+        Log.i(TAG, "Ending session")
+        _isSessionActive.value       = false
+        _sessionStartTime.value      = 0L
+        _timeRemainingSeconds.value  = 0
 
-        // Clear session data from preferences
-        sharedPreferencesManager.saveSessionStartTime(0)
+        sharedPreferencesManager.saveSessionStartTime(0L)
         sharedPreferencesManager.saveAuthState(false)
     }
 
     /**
-     * Check if session has expired and end it if needed
-     * @return true if session expired and was ended, false otherwise
+     * Checks if the session has expired and handles it.
+     * @return true if session expired and was ended
      */
     fun checkAndHandleSessionExpiry(): Boolean {
         if (!_isSessionActive.value) return false
+        val start = _sessionStartTime.value ?: 0L
+        if (start <= 0L) return false
 
-        val startTime = _sessionStartTime.value ?: 0
-        if (startTime <= 0) return false
-
-        val hasExpired = dateTimeUtils.hasSessionExpired(startTime)
-
-        if (hasExpired) {
+        val expired = DateTimeUtils.hasSessionExpired(start)
+        if (expired) {
+            Log.w(TAG, "Session expired; ending session")
             endSession()
             return true
         }
-
         updateTimeRemaining()
         return false
     }
 
     /**
-     * Update time remaining in current session
+     * Updates timeRemainingSeconds LiveData based on DEFAULT_SESSION_TIMEOUT_MINUTES.
      */
-    fun updateTimeRemaining() {
-        val startTime = _sessionStartTime.value ?: 0
-        if (startTime <= 0) {
+    private fun updateTimeRemaining() {
+        val start = _sessionStartTime.value ?: 0L
+        if (start <= 0L) {
             _timeRemainingSeconds.value = 0
             return
         }
 
-        val elapsedSeconds = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startTime).toInt()
-        val remainingSeconds = (DEFAULT_SESSION_TIMEOUT_MINUTES * 60) - elapsedSeconds
+        val elapsedSec = TimeUnit.MILLISECONDS
+            .toSeconds(System.currentTimeMillis() - start)
+            .toInt()
+        val remainSec = (DEFAULT_SESSION_TIMEOUT_MINUTES * 60) - elapsedSec
+        _timeRemainingSeconds.value = remainSec.coerceAtLeast(0)
 
-        _timeRemainingSeconds.value = if (remainingSeconds < 0) 0 else remainingSeconds
+        Log.d(TAG, "Time remaining (sec) = ${_timeRemainingSeconds.value}")
     }
 
     /**
-     * Load session data from shared preferences
+     * Loads saved session data (auth, start time, user, usage) from prefs.
      */
     private fun loadSessionData() {
-        val isAuthenticated = sharedPreferencesManager.getAuthState()
+        val isAuthed = sharedPreferencesManager.getAuthState()
+        Log.d(TAG, "loadSessionData: isAuthed=$isAuthed")
+        if (!isAuthed) {
+            endSession()
+            return
+        }
 
-        if (isAuthenticated) {
-            val storedStartTime = sharedPreferencesManager.getSessionStartTime()
-            val storedUser = sharedPreferencesManager.getUser()
-            val storedUsageLimit = sharedPreferencesManager.getUsageLimit()
+        val storedStart = sharedPreferencesManager.getSessionStartTime()
+        val storedUser  = sharedPreferencesManager.getUser()
+        val storedLimit = sharedPreferencesManager.getUsageLimit()
+        Log.d(TAG, "Stored start=$storedStart, user=$storedUser, limit=$storedLimit")
 
-            if (storedStartTime > 0 && storedUser != null) {
-                _sessionStartTime.value = storedStartTime
-                _currentUser.value = storedUser
-                _usageLimit.value = storedUsageLimit
+        if (storedStart > 0L && storedUser != null && storedLimit != null) {
+            _sessionStartTime.value = storedStart
+            _currentUser.value      = storedUser
+            _usageLimit.value       = storedLimit
 
-                // Check if session is still valid
-                if (!dateTimeUtils.hasSessionExpired(storedStartTime)) {
-                    _isSessionActive.value = true
-                    updateTimeRemaining()
-                } else {
-                    // Session expired while app was closed
-                    endSession()
-                }
+            if (!DateTimeUtils.hasSessionExpired(storedStart)) {
+                Log.d(TAG, "Restored active session")
+                _isSessionActive.value = true
+                updateTimeRemaining()
             } else {
-                // Invalid session data
+                Log.w(TAG, "Restored session has expired")
                 endSession()
             }
+        } else {
+            endSession()
         }
     }
 
     /**
-     * Update user information
-     * @param user Updated user information
+     * Updates only the user in session and persists it.
      */
     fun updateUser(user: User) {
+        Log.d(TAG, "Updating current user to ${user.uid}")
         _currentUser.value = user
         sharedPreferencesManager.saveUser(user)
     }
 
     /**
-     * Update usage limit information
-     * @param usageLimit Updated usage limit
+     * Updates the usage limit in memory and prefs.
      */
-    fun updateUsageLimit(usageLimit: UsageLimit) {
-        _usageLimit.value = usageLimit
-        sharedPreferencesManager.saveUsageLimit(usageLimit)
+    fun updateUsageLimit(limit: UsageLimit) {
+        Log.d(TAG, "Updating usage limit: $limit")
+        _usageLimit.value = limit
+        sharedPreferencesManager.saveUsageLimit(limit)
     }
 
     /**
-     * Check if user has exceeded monthly usage limit
-     * @return true if limit exceeded, false otherwise
+     * Checks if the user has exceeded their monthly usage limit.
      */
     fun hasExceededUsageLimit(): Boolean {
         val limit = _usageLimit.value ?: return false
-        return limit.usageCount >= Constants.MAX_MONTHLY_IDENTIFICATIONS
+        val exceeded = limit.usageCount >= Constants.MAX_MONTHLY_IDENTIFICATIONS
+        Log.d(TAG, "hasExceededUsageLimit = $exceeded")
+        return exceeded
     }
 
     /**
-     * Increment usage count
-     * @return Updated usage limit
+     * Increments the usage count (new Date) and persists the updated UsageLimit.
+     * Returns the new UsageLimit.
      */
     fun incrementUsageCount(): UsageLimit {
-        val currentLimit = _usageLimit.value ?: UsageLimit(0, Date())
+        val current = _usageLimit.value
+            ?: UsageLimit(0, Date(), isLimitReached = false)
 
-        // Check if we need to reset the counter (new month)
-        val updatedLimit = if (dateTimeUtils.isWithinLastNDays(currentLimit.lastUpdated, Constants.DAYS_IN_MONTH)) {
-            // Still within the same 30-day period
-            currentLimit.copy(usageCount = currentLimit.usageCount + 1, lastUpdated = Date())
+        val withinWindow = DateTimeUtils.isWithinLastNDays(
+            current.lastUpdated, Constants.DAYS_IN_MONTH
+        )
+
+        val newCount = if (withinWindow) {
+            current.usageCount + 1
         } else {
-            // Reset for a new 30-day period
-            UsageLimit(1, Date())
+            1
         }
+        val newDate = Date()
+        val newLimitReached = newCount >= Constants.MAX_MONTHLY_IDENTIFICATIONS
+        val next = UsageLimit(newCount, newDate, newLimitReached)
 
-        updateUsageLimit(updatedLimit)
-        return updatedLimit
+        Log.i(TAG, "incrementUsageCount: from=${current.usageCount} to=$newCount, reached=$newLimitReached")
+        updateUsageLimit(next)
+        return next
     }
 
     /**
-     * Get number of identifications left in current period
-     * @return Number of identifications left
+     * Returns how many identifications the user has left in the current window.
      */
     fun getIdentificationsLeft(): Int {
-        val currentLimit = _usageLimit.value ?: return Constants.MAX_MONTHLY_IDENTIFICATIONS
-
-        // If last updated is older than 30 days, reset to max
-        return if (dateTimeUtils.isWithinLastNDays(currentLimit.lastUpdated, Constants.DAYS_IN_MONTH)) {
-            (Constants.MAX_MONTHLY_IDENTIFICATIONS - currentLimit.usageCount).coerceAtLeast(0)
+        val current = _usageLimit.value
+        val left = if (current != null && DateTimeUtils.isWithinLastNDays(
+                current.lastUpdated, Constants.DAYS_IN_MONTH
+            )) {
+            (Constants.MAX_MONTHLY_IDENTIFICATIONS - current.usageCount)
+                .coerceAtLeast(0)
         } else {
             Constants.MAX_MONTHLY_IDENTIFICATIONS
         }
+        Log.d(TAG, "getIdentificationsLeft = $left")
+        return left
     }
 
     /**
-     * Check if user is authenticated
-     * @return true if authenticated, false otherwise
+     * @return true if the user is currently authenticated and session active.
      */
     fun isAuthenticated(): Boolean {
-        return sharedPreferencesManager.getAuthState() && _currentUser.value != null
+        val auth = sharedPreferencesManager.getAuthState() && _currentUser.value != null
+        Log.d(TAG, "isAuthenticated = $auth")
+        return auth
     }
 
     /**
-     * Get current user information
-     * @return Current user or null if not authenticated
+     * @return the current user, or null if none.
      */
-    fun getCurrentUser(): User? {
-        return _currentUser.value
-    }
+    fun getCurrentUser(): User? = _currentUser.value
 
     /**
-     * Check if session timeout is approaching (less than 1 minute)
-     * @return true if timeout is approaching, false otherwise
+     * Detect if we’re within the last minute of session expiry.
      */
     fun isSessionTimeoutApproaching(): Boolean {
-        val remaining = _timeRemainingSeconds.value ?: 0
-        return remaining in 1..60
+        val remain = _timeRemainingSeconds.value ?: 0
+        val approaching = remain in 1..60
+        Log.d(TAG, "isSessionTimeoutApproaching = $approaching")
+        return approaching
     }
 }

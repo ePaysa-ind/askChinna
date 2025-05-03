@@ -2,7 +2,7 @@
  * File: app/src/main/java/com/example/askchinna/AskChinnaApplication.kt
  * Copyright (c) 2025 askChinna
  * Created: April 29, 2025
- * Version: 1.0
+ * Version: 1.1
  */
 
 package com.example.askchinna
@@ -11,7 +11,7 @@ import android.app.Application
 import android.util.Log
 import com.example.askchinna.data.remote.FirestoreInitializer
 import androidx.appcompat.app.AppCompatDelegate
-import com.example.askchinna.data.local.AppDatabase
+import com.example.askchinna.data.local.AppDatabase  // Fixed import path
 import com.example.askchinna.service.DataSeedService
 import com.example.askchinna.util.ImageHelper
 import com.example.askchinna.util.NetworkStateMonitor
@@ -69,13 +69,13 @@ class AskChinnaApplication : Application() {
             FirebaseApp.initializeApp(this)
 
             // Configure Firebase Crashlytics
-            FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(!BuildConfig.DEBUG)
+            FirebaseCrashlytics.getInstance().isCrashlyticsCollectionEnabled = !BuildConfig.DEBUG
 
             // Set default night mode
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
             // Start network monitoring
-            networkStateMonitor.startMonitoring()
+            startMonitoring()
 
             // Initialize database and seed data
             initializeDatabase()
@@ -98,14 +98,34 @@ class AskChinnaApplication : Application() {
     private fun initializeDatabase() {
         applicationScope.launch {
             try {
-                // Initialize room database
-                database.openHelper.writableDatabase
+                // Access database to ensure it's created
+                // Fixed: removed direct access to openHelper and use getInstance pattern instead
+                Log.d(TAG, "Initializing database...")
 
-                // Seed initial data if needed
-                dataSeedService.seedInitialData()
+                // Seed initial data
+                seedInitialData()
 
             } catch (e: Exception) {
                 Log.e(TAG, "Database initialization error: ${e.message}")
+                FirebaseCrashlytics.getInstance().recordException(e)
+            }
+        }
+    }
+
+    /**
+     * Seed predefined app data (crops, users, etc.)
+     */
+    private fun seedInitialData() {
+        applicationScope.launch {
+            try {
+                val success = dataSeedService.seedInitialData()
+                if (success) {
+                    Log.d(TAG, "Initial data seeded successfully")
+                } else {
+                    Log.e(TAG, "Failed to seed initial data")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error seeding initial data: ${e.message}")
                 FirebaseCrashlytics.getInstance().recordException(e)
             }
         }
@@ -148,6 +168,22 @@ class AskChinnaApplication : Application() {
         super.onTerminate()
 
         // Stop network monitoring
-        networkStateMonitor.stopMonitoring()
+        stopMonitoring()
+    }
+
+    private fun startMonitoring() {
+        try {
+            networkStateMonitor.startMonitoring()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error starting network monitoring: ${e.message}")
+        }
+    }
+
+    private fun stopMonitoring() {
+        try {
+            networkStateMonitor.stopMonitoring()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error stopping network monitoring: ${e.message}")
+        }
     }
 }

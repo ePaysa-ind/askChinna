@@ -1,320 +1,317 @@
-/*
- * File: com/example/askchinna/ui/identification/IdentificationViewModel.kt
+/**
+ * File: app/src/test/java/com/example/askchinna/viewmodel/IdentificationViewModelTest.kt
  * Copyright (c) 2025 askChinna
- * Created: April 29, 2025
+ * Created: April 30, 2025
  * Version: 1.0
+ *
+ * Unit tests for IdentificationViewModel using MockK and modern Kotlin testing approaches
  */
-
-package com.example.askchinna.ui.identification
+package com.example.askchinna.viewmodel
 
 import android.graphics.Bitmap
 import android.net.Uri
-import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.example.askchinna.data.model.Crop
 import com.example.askchinna.data.model.IdentificationResult
 import com.example.askchinna.data.model.UIState
 import com.example.askchinna.data.repository.IdentificationRepository
 import com.example.askchinna.data.repository.UserRepository
+import com.example.askchinna.ui.identification.IdentificationViewModel
 import com.example.askchinna.util.ImageHelper
 import com.example.askchinna.util.NetworkStateMonitor
-import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CancellationException
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
+import org.junit.rules.TestRule
 import java.io.File
 import java.io.IOException
-import javax.inject.Inject
 
-/**
- * ViewModel for the image capturing and pest/disease identification flow.
- * Handles image processing, quality assessment, and API communication.
- * Implements offline functionality and fallback strategies.
- */
-@HiltViewModel
-class IdentificationViewModel @Inject constructor(
-    private val identificationRepository: IdentificationRepository,
-    private val userRepository: UserRepository,
-    private val imageHelper: ImageHelper,
-    private val networkStateMonitor: NetworkStateMonitor
-) : ViewModel() {
+@ExperimentalCoroutinesApi
+class IdentificationViewModelTest {
 
-    private val TAG = "IdentificationViewModel"
+    @get:Rule
+    val rule: TestRule = InstantTaskExecutorRule()
 
-    // UI state for different screens
-    private val _uiState = MutableLiveData<UIState>(UIState.Initial)
-    val uiState: LiveData<UIState> = _uiState
+    private val testDispatcher = StandardTestDispatcher()
 
-    // Captured or selected image
-    private val _capturedImage = MutableLiveData<Bitmap?>()
-    val capturedImage: LiveData<Bitmap?> = _capturedImage
+    // Mocks
+    private lateinit var identificationRepository: IdentificationRepository
+    private lateinit var userRepository: UserRepository
+    private lateinit var imageHelper: ImageHelper
+    private lateinit var networkStateMonitor: NetworkStateMonitor
+    private lateinit var viewModel: IdentificationViewModel
 
-    // Image quality assessment
-    private val _imageQuality = MutableLiveData<Int>()
-    val imageQuality: LiveData<Int> = _imageQuality
+    // Test data
+    private val mockBitmap = mockk<Bitmap>()
+    private val mockOptimizedBitmap = mockk<Bitmap>()
+    private val mockUri = mockk<Uri>()
+    private val mockImageFile = mockk<File>()
+    private val mockCrop = Crop(
+        id = "rice",
+        name = "Rice",
+        scientificName = "Oryza sativa",
+        description = "Rice description",
+        iconResourceName = "ic_rice",
+        growthRegions = listOf("Region1", "Region2"),
+        growingSeasons = listOf("Season1", "Season2"),
+        soilTypes = listOf("Soil1", "Soil2")
+    )
+    private val mockResult = IdentificationResult(
+        id = "test_id",
+        cropId = "rice",
+        crop = mockCrop,
+        diseaseName = "Test Disease",
+        diseaseType = IdentificationResult.DiseaseType.FUNGAL,
+        description = "Test description",
+        severity = IdentificationResult.Severity.MEDIUM,
+        imageUrl = "https://example.com/image.jpg",
+        actions = emptyList(),
+        timestamp = System.currentTimeMillis(),
+        confidence = 0.85f
+    )
 
-    // Selected crop
-    private val _selectedCrop = MutableStateFlow<Crop?>(null)
-    val selectedCrop: StateFlow<Crop?> = _selectedCrop
+    @Before
+    fun setup() {
+        Dispatchers.setMain(testDispatcher)
 
-    // Identification result
-    private val _identificationResult = MutableLiveData<IdentificationResult?>()
-    val identificationResult: LiveData<IdentificationResult?> = _identificationResult
+        // Initialize mocks
+        identificationRepository = mockk(relaxed = true)
+        userRepository = mockk(relaxed = true)
+        imageHelper = mockk(relaxed = true)
+        networkStateMonitor = mockk(relaxed = true)
 
-    // Error handling
-    private val _errorMessage = MutableLiveData<String?>()
-    val errorMessage: LiveData<String?> = _errorMessage
+        // Set up default behavior
+        every { networkStateMonitor.networkState } returns MutableStateFlow(true)
+        every { networkStateMonitor.isNetworkAvailable() } returns true
+        coEvery { userRepository.getRemainingUsageCount() } returns 5
+        coEvery { imageHelper.getBitmapFromUri(any()) } returns mockBitmap
+        coEvery { imageHelper.optimizeImageForUpload(any(), any()) } returns mockOptimizedBitmap
+        coEvery { imageHelper.assessImageQuality(any()) } returns 85
+        coEvery { imageHelper.saveImageToCache(any(), any()) } returns mockImageFile
+        every { mockImageFile.length() } returns 1024L
+        coEvery { identificationRepository.identifyWithGeminiAPI(any(), any()) } returns mockResult
+        coEvery { identificationRepository.identifyOffline(any(), any()) } returns mockResult
+        coEvery { identificationRepository.cacheIdentificationResult(any()) } returns Unit
 
-    // Remaining usage count
-    private val _remainingUsageCount = MutableLiveData<Int>()
-    val remainingUsageCount: LiveData<Int> = _remainingUsageCount
-
-    // File for image upload
-    private var imageFile: File? = null
-
-    init {
-        // Check remaining usage count on initialization
-        checkRemainingUsage()
-
-        // Monitor network state for connectivity changes
-        viewModelScope.launch {
-            networkStateMonitor.networkState.collect { isConnected ->
-                if (isConnected && _uiState.value == UIState.Error) {
-                    // Retry failed operations when network becomes available
-                    Log.d(TAG, "Network reconnected, retrying pending operations")
-                    _errorMessage.value = null
-                    _uiState.value = UIState.Initial
-                }
-            }
-        }
+        // Initialize viewModel after setting up mocks
+        viewModel = IdentificationViewModel(
+            identificationRepository,
+            userRepository,
+            imageHelper,
+            networkStateMonitor
+        )
     }
 
-    /**
-     * Sets the selected crop for identification.
-     *
-     * @param crop The selected crop
-     */
-    fun setSelectedCrop(crop: Crop) {
-        viewModelScope.launch {
-            _selectedCrop.value = crop
-            Log.d(TAG, "Selected crop: ${crop.name}")
-        }
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
     }
 
-    /**
-     * Processes an image from a Uri (gallery selection).
-     *
-     * @param imageUri The Uri of the selected image
-     */
-    fun processImageFromUri(imageUri: Uri) {
-        viewModelScope.launch {
-            try {
-                _uiState.value = UIState.Loading
+    @Test
+    fun `setSelectedCrop updates selected crop state`() = runTest {
+        // When
+        viewModel.setSelectedCrop(mockCrop)
+        testDispatcher.scheduler.advanceUntilIdle()
 
-                // Get bitmap from uri
-                val bitmap = withContext(Dispatchers.IO) {
-                    imageHelper.getBitmapFromUri(imageUri)
-                }
-
-                if (bitmap != null) {
-                    processImage(bitmap)
-                } else {
-                    throw IOException("Failed to load image from gallery")
-                }
-            } catch (e: Exception) {
-                handleImageProcessingError(e)
-            }
-        }
+        // Then
+        assertEquals(mockCrop, viewModel.selectedCrop.value)
     }
 
-    /**
-     * Processes a captured camera image.
-     *
-     * @param bitmap The bitmap of the captured image
-     */
-    fun processImageFromCamera(bitmap: Bitmap) {
-        viewModelScope.launch {
-            try {
-                _uiState.value = UIState.Loading
-                processImage(bitmap)
-            } catch (e: Exception) {
-                handleImageProcessingError(e)
-            }
-        }
+    @Test
+    fun `processImageFromUri processes image successfully`() = runTest {
+        // When
+        viewModel.processImageFromUri(mockUri)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Then
+        assertEquals(UIState.Success, viewModel.uiState.value)
+        assertEquals(mockOptimizedBitmap, viewModel.capturedImage.value)
+        assertEquals(85, viewModel.imageQuality.value)
+        coVerify { imageHelper.getBitmapFromUri(mockUri) }
+        coVerify { imageHelper.optimizeImageForUpload(mockBitmap, any()) }
+        coVerify { imageHelper.assessImageQuality(mockOptimizedBitmap) }
+        coVerify { imageHelper.saveImageToCache(mockOptimizedBitmap, any()) }
     }
 
-    /**
-     * Common image processing logic for both camera and gallery sources.
-     * Optimizes image, assesses quality, and prepares for upload.
-     *
-     * @param bitmap The bitmap to process
-     */
-    private suspend fun processImage(bitmap: Bitmap) {
-        try {
-            // Optimize image for low-end devices
-            val optimizedBitmap = withContext(Dispatchers.IO) {
-                imageHelper.optimizeImageForUpload(bitmap, MAX_IMAGE_SIZE_BYTES)
-            }
+    @Test
+    fun `processImageFromUri handles error when loading image fails`() = runTest {
+        // Given
+        coEvery { imageHelper.getBitmapFromUri(any()) } returns null
 
-            // Store processed image
-            _capturedImage.value = optimizedBitmap
+        // When
+        viewModel.processImageFromUri(mockUri)
+        testDispatcher.scheduler.advanceUntilIdle()
 
-            // Assess image quality
-            val quality = withContext(Dispatchers.IO) {
-                imageHelper.assessImageQuality(optimizedBitmap)
-            }
-            _imageQuality.value = quality
-
-            // Save image to cache for upload
-            imageFile = withContext(Dispatchers.IO) {
-                imageHelper.saveImageToCache(
-                    optimizedBitmap,
-                    "pest_analysis_${System.currentTimeMillis()}.jpg"
-                )
-            }
-
-            _uiState.value = UIState.Success
-
-            Log.d(TAG, "Image processed successfully. Quality: $quality, Size: ${imageFile?.length() ?: 0} bytes")
-        } catch (e: Exception) {
-            if (e is CancellationException) throw e
-            handleImageProcessingError(e)
-        }
+        // Then
+        assertTrue(viewModel.uiState.value is UIState.Error)
+        assertNotNull(viewModel.errorMessage.value)
     }
 
-    /**
-     * Submits the processed image for identification.
-     * Handles both online and offline scenarios with fallback strategies.
-     */
-    fun submitForIdentification() {
-        // Validate prerequisites
-        val crop = _selectedCrop.value ?: run {
-            _errorMessage.value = "Please select a crop first"
-            return
-        }
+    @Test
+    fun `processImageFromCamera processes image successfully`() = runTest {
+        // When
+        viewModel.processImageFromCamera(mockBitmap)
+        testDispatcher.scheduler.advanceUntilIdle()
 
-        val imageFileToSubmit = imageFile ?: run {
-            _errorMessage.value = "Image not available. Please try again."
-            return
-        }
-
-        viewModelScope.launch {
-            try {
-                _uiState.value = UIState.Loading
-
-                // Check usage limits before proceeding
-                val usageCount = userRepository.getRemainingUsageCount()
-                if (usageCount <= 0) {
-                    _errorMessage.value = "You have reached the maximum usage limit for this month."
-                    _uiState.value = UIState.Error
-                    return@launch
-                }
-
-                // Perform identification based on network availability
-                val isNetworkAvailable = networkStateMonitor.isNetworkAvailable()
-                val result = if (isNetworkAvailable) {
-                    // Online identification using API
-                    Log.d(TAG, "Using online identification via Gemini API")
-                    identificationRepository.identifyWithGeminiAPI(imageFileToSubmit, crop)
-                } else {
-                    // Offline identification using local model
-                    Log.d(TAG, "Using offline identification with local model")
-                    identificationRepository.identifyOffline(imageFileToSubmit, crop)
-                }
-
-                // Process result
-                if (result != null) {
-                    _identificationResult.value = result
-                    _uiState.value = UIState.Success
-
-                    // Update usage count
-                    userRepository.decrementUsageCount()
-                    checkRemainingUsage()
-
-                    // Cache result for offline access
-                    identificationRepository.cacheIdentificationResult(result)
-
-                    Log.d(TAG, "Identification successful: ${result.diseaseName}")
-                } else {
-                    throw IOException("Identification returned null result")
-                }
-
-            } catch (e: Exception) {
-                if (e is CancellationException) throw e
-
-                Log.e(TAG, "Error during identification", e)
-                _errorMessage.value = when {
-                    !networkStateMonitor.isNetworkAvailable() ->
-                        "No internet connection. Please try again when connected."
-                    e.message?.contains("quota") == true ->
-                        "Service is currently busy. Please try again later."
-                    else -> "Failed to identify pest/disease. ${e.message}"
-                }
-                _uiState.value = UIState.Error
-            }
-        }
+        // Then
+        assertEquals(UIState.Success, viewModel.uiState.value)
+        assertEquals(mockOptimizedBitmap, viewModel.capturedImage.value)
+        assertEquals(85, viewModel.imageQuality.value)
+        coVerify { imageHelper.optimizeImageForUpload(mockBitmap, any()) }
+        coVerify { imageHelper.assessImageQuality(mockOptimizedBitmap) }
+        coVerify { imageHelper.saveImageToCache(mockOptimizedBitmap, any()) }
     }
 
-    /**
-     * Checks and updates the remaining usage count for the current user.
-     */
-    private fun checkRemainingUsage() {
-        viewModelScope.launch {
-            try {
-                val usageCount = userRepository.getRemainingUsageCount()
-                _remainingUsageCount.value = usageCount
-                Log.d(TAG, "Remaining usage count: $usageCount")
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to get remaining usage count", e)
-                // Default to 0 on error to prevent unlimited usage
-                _remainingUsageCount.value = 0
-            }
-        }
+    @Test
+    fun `submitForIdentification requires selected crop`() = runTest {
+        // Given
+        viewModel = IdentificationViewModel(
+            identificationRepository,
+            userRepository,
+            imageHelper,
+            networkStateMonitor
+        ) // Reset viewModel to clear selectedCrop
+
+        // When
+        viewModel.submitForIdentification()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Then
+        assertNotNull(viewModel.errorMessage.value)
+        assertEquals("Please select a crop first", viewModel.errorMessage.value)
     }
 
-    /**
-     * Retries a failed identification.
-     * Attempts to use a different strategy based on the previous error.
-     */
-    fun retryIdentification() {
-        _errorMessage.value = null
-        _uiState.value = UIState.Initial
-        submitForIdentification()
+    @Test
+    fun `submitForIdentification checks usage limits`() = runTest {
+        // Given
+        coEvery { userRepository.getRemainingUsageCount() } returns 0
+        viewModel.setSelectedCrop(mockCrop)
+        val fileSlot = slot<File>()
+        coEvery { imageHelper.saveImageToCache(any(), any()) } returns mockImageFile
+        viewModel.processImageFromCamera(mockBitmap)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // When
+        viewModel.submitForIdentification()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Then
+        assertEquals(UIState.Error, viewModel.uiState.value)
+        assertEquals("You have reached the maximum usage limit for this month.", viewModel.errorMessage.value)
     }
 
-    /**
-     * Handles errors during image processing with appropriate user feedback.
-     *
-     * @param e The exception that occurred
-     */
-    private fun handleImageProcessingError(e: Exception) {
-        Log.e(TAG, "Error processing image", e)
-        _errorMessage.value = when (e) {
-            is OutOfMemoryError -> "Device memory is low. Please try with a smaller image."
-            is IOException -> "Failed to process image: ${e.message}"
-            else -> "Unexpected error while processing image: ${e.message}"
-        }
-        _uiState.value = UIState.Error
+    @Test
+    fun `submitForIdentification uses online API when network available`() = runTest {
+        // Given
+        every { networkStateMonitor.isNetworkAvailable() } returns true
+        viewModel.setSelectedCrop(mockCrop)
+        viewModel.processImageFromCamera(mockBitmap)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // When
+        viewModel.submitForIdentification()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Then
+        assertEquals(UIState.Success, viewModel.uiState.value)
+        assertEquals(mockResult, viewModel.identificationResult.value)
+        coVerify { identificationRepository.identifyWithGeminiAPI(mockImageFile, mockCrop) }
+        coVerify { userRepository.decrementUsageCount() }
+        coVerify { identificationRepository.cacheIdentificationResult(mockResult) }
     }
 
-    /**
-     * Clears current image and state to start over.
-     */
-    fun clearImage() {
-        _capturedImage.value = null
-        _imageQuality.value = 0
-        imageFile = null
-        _errorMessage.value = null
-        _uiState.value = UIState.Initial
+    @Test
+    fun `submitForIdentification uses offline model when network unavailable`() = runTest {
+        // Given
+        every { networkStateMonitor.isNetworkAvailable() } returns false
+        viewModel.setSelectedCrop(mockCrop)
+        viewModel.processImageFromCamera(mockBitmap)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // When
+        viewModel.submitForIdentification()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Then
+        assertEquals(UIState.Success, viewModel.uiState.value)
+        assertEquals(mockResult, viewModel.identificationResult.value)
+        coVerify { identificationRepository.identifyOffline(mockImageFile, mockCrop) }
+        coVerify { userRepository.decrementUsageCount() }
+        coVerify { identificationRepository.cacheIdentificationResult(mockResult) }
     }
 
-    companion object {
-        private const val MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024 // 2MB max size
+    @Test
+    fun `submitForIdentification handles error during identification`() = runTest {
+        // Given
+        val errorMessage = "API error"
+        coEvery { identificationRepository.identifyWithGeminiAPI(any(), any()) } throws IOException(errorMessage)
+        viewModel.setSelectedCrop(mockCrop)
+        viewModel.processImageFromCamera(mockBitmap)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // When
+        viewModel.submitForIdentification()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Then
+        assertEquals(UIState.Error, viewModel.uiState.value)
+        assertTrue(viewModel.errorMessage.value?.contains(errorMessage) == true)
+    }
+
+    @Test
+    fun `retryIdentification resets error state and attempts again`() = runTest {
+        // Given - error state
+        coEvery { identificationRepository.identifyWithGeminiAPI(any(), any()) } throws IOException("First error")
+        viewModel.setSelectedCrop(mockCrop)
+        viewModel.processImageFromCamera(mockBitmap)
+        testDispatcher.scheduler.advanceUntilIdle()
+        viewModel.submitForIdentification()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Now setup for success on retry
+        coEvery { identificationRepository.identifyWithGeminiAPI(any(), any()) } returns mockResult
+
+        // When
+        viewModel.retryIdentification()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Then
+        assertNull(viewModel.errorMessage.value)
+        assertEquals(UIState.Success, viewModel.uiState.value)
+        assertEquals(mockResult, viewModel.identificationResult.value)
+    }
+
+    @Test
+    fun `clearImage resets state`() = runTest {
+        // Given - image processed
+        viewModel.processImageFromCamera(mockBitmap)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // When
+        viewModel.clearImage()
+
+        // Then
+        assertNull(viewModel.capturedImage.value)
+        assertEquals(0, viewModel.imageQuality.value)
+        assertNull(viewModel.errorMessage.value)
+        assertEquals(UIState.Initial, viewModel.uiState.value)
     }
 }

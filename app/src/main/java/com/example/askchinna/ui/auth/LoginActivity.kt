@@ -1,10 +1,10 @@
 package com.example.askchinna.ui.auth
 
 /**
- * app/src/main/java/com/askchinna/ui/auth/LoginActivity.kt
+ * app/src/main/java/com/example/askchinna/ui/auth/LoginActivity.kt
  * Copyright © 2025 askChinna
  * Created: April 28, 2025
- * Version: 1.0
+ * Version: 1.1
  */
 
 import android.content.Intent
@@ -14,11 +14,11 @@ import android.text.TextWatcher
 import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.askchinna.R
-import com.askchinna.data.model.UIState
-import com.askchinna.databinding.ActivityLoginBinding
-import com.askchinna.ui.home.HomeActivity
-import com.askchinna.util.NetworkStateMonitor
+import com.example.askchinna.R
+import com.example.askchinna.data.model.UIState
+import com.example.askchinna.databinding.ActivityLoginBinding
+import com.example.askchinna.ui.home.HomeActivity
+import com.example.askchinna.util.NetworkStateMonitor
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -116,15 +116,25 @@ class LoginActivity : AppCompatActivity() {
 
     private fun setupNetworkMonitoring() {
         networkMonitor.isNetworkAvailable.observe(this) { isAvailable ->
-            binding.networkStatusView.visibility = if (!isAvailable) View.VISIBLE else View.GONE
-            binding.buttonLogin.isEnabled = isAvailable &&
-                    binding.editTextMobile.text.toString().matches(Regex("^[0-9]{10}$"))
+            val visibilityState = if (!isAvailable) View.VISIBLE else View.GONE
+            binding.networkStatusView.apply {
+                var visibility = visibilityState
+            }
+
+            binding.buttonLogin.apply {
+                isEnabled = isAvailable &&
+                        binding.editTextMobile.text.toString().matches(Regex("^[0-9]{10}$"))
+            }
         }
     }
 
     private fun showLoading(isLoading: Boolean) {
-        binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
-        binding.contentGroup.visibility = if (isLoading) View.GONE else View.VISIBLE
+        binding.progressBar.apply {
+            visibility = if (isLoading) View.VISIBLE else View.GONE
+        }
+        binding.contentGroup.apply {
+            visibility = if (isLoading) View.GONE else View.VISIBLE
+        }
     }
 
     private fun showError(message: String) {

@@ -39,6 +39,8 @@ data class IdentificationResult(
      */
     val imageUrl: String,
 
+    /**SummaryView.kt support**/
+     val imagePath: String = "",
     /**
      * Name of the identified pest/disease
      */

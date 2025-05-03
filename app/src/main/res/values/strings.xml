@@ -125,6 +125,20 @@
     <string name="retake">Retake</string>
     <string name="submit_for_identification">Submit for Identification</string>
 
+    <string name="report_title">%1$s Identification Report</string>
+    <string name="report_date_time">Date: %1$s</string>
+    <string name="identification_result">Identification Result</string>
+    <string name="problem_name_label">Problem: %1$s</string>
+    <string name="severity_label">Severity: %1$s</string>
+    <string name="severity_low">Low</string>
+    <string name="severity_medium">Medium</string>
+    <string name="severity_high">High</string>
+    <string name="unknown">Unknown</string>
+    <string name="confidence_label">Confidence: %1$s</string>
+    <string name="description_heading">Problem Description</string>
+    <string name="recommended_actions">Recommended Actions</string>
+    <string name="farmer_info">Farmer: %1$s, Phone: %2$s</string>
+    <string name="report_id_info">Report ID: %1$s | Generated: %2$s</string>
     <!-- Image Upload -->
     <string name="uploading_image">Uploading image…</string>
     <string name="upload_complete">Upload complete</string>
@@ -140,9 +154,6 @@
     <string name="disease_name">Disease: %1$s</string>
     <string name="disease_confidence">Confidence: %1$s</string>
     <string name="disease_severity">Severity: %1$s</string>
-    <string name="severity_high">High</string>
-    <string name="severity_medium">Medium</string>
-    <string name="severity_low">Low</string>
     <string name="btn_show_details">Show Details</string>
     <string name="btn_hide_details">Hide Details</string>
     <string name="btn_export_pdf">Export PDF</string>
@@ -160,11 +171,14 @@
     <string name="skip">Skip</string>
     <string name="next">Next</string>
     <string name="onboarding_image_description">Onboarding screen illustration</string>
-
+    <!-- SummaryView.kt support -->
+    <string name="confidence_percent">Confidence: %1$d%%</string>
+    <string name="confidence_high">High Confidence</string>
+    <string name="confidence_medium">Medium Confidence</string>
+    <string name="confidence_low">Low Confidence</string>
     <!-- Results -->
     <string name="cropped_image_description">Cropped plant image</string>
     <string name="export_pdf">Export PDF</string>
-    <string name="recommended_actions">Recommended Actions</string>
     <string name="no_actions_available">No recommended actions available</string>
 
     <!-- Disease Details -->
@@ -181,6 +195,8 @@
     <string name="feedback_partially_helpful">Partially Helpful</string>
     <string name="feedback_not_helpful">Not Helpful</string>
     <string name="submit_feedback">Submit Feedback</string>
+    <string name="feedback_submitted">Feedback Submitted</string>
+    <string name="thank_you_feedback">Thank you for your feedback!</string>
 
     <!-- Image Quality -->
     <string name="image_quality">Image Quality</string>
@@ -205,8 +221,7 @@
     <string name="warning_icon">Warning icon</string>
     <string name="session_expiring_soon">Your session is expiring soon</string>
 
-    <!-- Summary -->
-    <string name="confidence_label">Confidence</string>
+
 
     <!-- Usage Limit -->
     <string name="usage_icon">Usage icon</string>

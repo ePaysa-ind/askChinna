@@ -4,7 +4,7 @@ package com.example.askchinna.data.model
  * app/src/main/java/com/askchinna/data/model/User.kt
  * Copyright © 2025 askChinna
  * Created: April 28, 2025
- * Version: 1.0
+ * Version: 1.1
  */
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentId

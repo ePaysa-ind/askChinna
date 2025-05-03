@@ -1,7 +1,11 @@
-/*
- * Copyright (c) 2025 askChinna App
- * Created: April 29, 2025
- * Version: 1.0
+/**
+ * File: app/src/main/java/com/example/askchinna/di/AppModule.kt
+ * Copyright © 2025 askChinna
+ * Created: April 28, 2025
+ * Updated: May 4, 2025
+ * Version: 1.4
+ * Description: Hilt module providing application‑level dependencies,
+ * including dispatchers with qualifiers, DateTimeUtils, and unified Room database.
  */
 
 package com.example.askchinna.di
@@ -14,18 +18,19 @@ import com.example.askchinna.data.remote.ApiKeyProvider
 import com.example.askchinna.data.remote.FirebaseAuthManager
 import com.example.askchinna.data.remote.FirestoreManager
 import com.example.askchinna.data.remote.GeminiService
-import com.example.askchinna.data.remote.NetworkExceptionHandler
 import com.example.askchinna.data.repository.CropRepository
 import com.example.askchinna.data.repository.IdentificationRepository
 import com.example.askchinna.data.repository.UserRepository
 import com.example.askchinna.util.DateTimeUtils
 import com.example.askchinna.util.ImageHelper
+import com.example.askchinna.util.NetworkExceptionHandler
 import com.example.askchinna.util.NetworkStateMonitor
 import com.example.askchinna.util.PdfGenerator
 import com.example.askchinna.util.SessionManager
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
+import com.google.gson.Gson
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -33,250 +38,176 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import javax.inject.Qualifier
 import javax.inject.Singleton
 
-/**
- * Hilt module that provides application-level dependencies
- */
+// Qualifiers for dispatchers
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class IoDispatcher
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class MainDispatcher
+
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
-    /**
-     * Provides the application context
-     */
-    @Singleton
+    /** Provides the Room database, using the same name as AppDatabase’s companion */
     @Provides
-    fun provideContext(@ApplicationContext context: Context): Context {
-        return context
-    }
-
-    /**
-     * Provides the Room database instance
-     */
     @Singleton
-    @Provides
-    fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
-        return Room.databaseBuilder(
-            context,
-            AppDatabase::class.java,
-            "askchinna_database"
-        ).fallbackToDestructiveMigration() // Only for MVP phase, to be removed in production
+    fun provideAppDatabase(@ApplicationContext ctx: Context): AppDatabase =
+        Room.databaseBuilder(ctx, AppDatabase::class.java, "askchinna-db")
+            .fallbackToDestructiveMigration(false)
             .build()
-    }
 
-    /**
-     * Provides the SharedPreferencesManager for secure local storage
-     */
-    @Singleton
+    /** SharedPreferences manager (plain for now; encryption can be swapped in later) */
     @Provides
-    fun provideSharedPreferencesManager(@ApplicationContext context: Context): SharedPreferencesManager {
-        return SharedPreferencesManager(context)
-    }
+    @Singleton
+    fun provideSharedPreferencesManager(@ApplicationContext ctx: Context): SharedPreferencesManager =
+        SharedPreferencesManager(ctx)
 
-    /**
-     * Provides Firebase Authentication instance
-     */
-    @Singleton
+    /** Network exception handler for Firebase and general errors */
     @Provides
-    fun provideFirebaseAuth(): FirebaseAuth {
-        return FirebaseAuth.getInstance()
-    }
+    @Singleton
+    fun provideNetworkExceptionHandler(): NetworkExceptionHandler =
+        NetworkExceptionHandler()
 
-    /**
-     * Provides Firebase Firestore instance
-     */
-    @Singleton
+    /** Monitor connectivity state */
     @Provides
-    fun provideFirestore(): FirebaseFirestore {
-        return FirebaseFirestore.getInstance()
-    }
+    @Singleton
+    fun provideNetworkStateMonitor(@ApplicationContext ctx: Context): NetworkStateMonitor =
+        NetworkStateMonitor(ctx)
 
-    /**
-     * Provides Firebase Storage instance
-     */
-    @Singleton
+    /** SessionManager orchestrates session timing & auth state */
     @Provides
-    fun provideFirebaseStorage(): FirebaseStorage {
-        return FirebaseStorage.getInstance()
-    }
+    @Singleton
+    fun provideSessionManager(
+        @ApplicationContext ctx: Context,
+        prefs: SharedPreferencesManager
+    ): SessionManager = SessionManager(ctx, prefs)
 
-    /**
-     * Provides Firebase Authentication manager
-     */
-    @Singleton
+    /** Utilities for date/time operations (object) */
     @Provides
+    @Singleton
+    fun provideDateTimeUtils(): DateTimeUtils = DateTimeUtils
+
+    /** Image processing helper */
+    @Provides
+    @Singleton
+    fun provideImageHelper(@ApplicationContext ctx: Context): ImageHelper =
+        ImageHelper(ctx)
+
+    /** PDF export utility */
+    @Provides
+    @Singleton
+    fun providePdfGenerator(
+            @ApplicationContext ctx: Context,
+           dateTimeUtils: DateTimeUtils
+       ): PdfGenerator = PdfGenerator(ctx, dateTimeUtils)
+
+    /** FirebaseAuth singleton */
+    @Provides
+    @Singleton
+    fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
+
+    /** Firestore singleton */
+    @Provides
+    @Singleton
+    fun provideFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
+
+    /** Firebase Storage singleton */
+    @Provides
+    @Singleton
+    fun provideFirebaseStorage(): FirebaseStorage = FirebaseStorage.getInstance()
+
+    /** Auth manager with injected prefs & error handler */
+    @Provides
+    @Singleton
     fun provideFirebaseAuthManager(
-        firebaseAuth: FirebaseAuth,
-        sharedPreferencesManager: SharedPreferencesManager
-    ): FirebaseAuthManager {
-        return FirebaseAuthManager(firebaseAuth, sharedPreferencesManager)
-    }
+        auth: FirebaseAuth,
+        prefs: SharedPreferencesManager,
+        handler: NetworkExceptionHandler
+    ): FirebaseAuthManager = FirebaseAuthManager(auth, prefs, handler)
 
-    /**
-     * Provides Firestore manager for database operations
-     */
-    @Singleton
+    /** Firestore manager aligned to its constructor */
     @Provides
+    @Singleton
     fun provideFirestoreManager(
         firestore: FirebaseFirestore,
-        firebaseStorage: FirebaseStorage
-    ): FirestoreManager {
-        return FirestoreManager(firestore, firebaseStorage)
-    }
+        prefs: SharedPreferencesManager,
+        handler: NetworkExceptionHandler
+    ): FirestoreManager = FirestoreManager(firestore, prefs, handler)
 
-    /**
-     * Provides the API key provider for secure API key storage and retrieval
-     */
-    @Singleton
+    /** Simple API key storage */
     @Provides
-    fun provideApiKeyProvider(
-        sharedPreferencesManager: SharedPreferencesManager,
-        firestoreManager: FirestoreManager
-    ): ApiKeyProvider {
-        return ApiKeyProvider(sharedPreferencesManager, firestoreManager)
-    }
+    @Singleton
+    fun provideApiKeyProvider(@ApplicationContext ctx: Context): ApiKeyProvider =
+        ApiKeyProvider(ctx)
 
-    /**
-     * Provides the Gemini AI service
-     */
-    @Singleton
+    /** Gemini AI service */
     @Provides
+    @Singleton
     fun provideGeminiService(
         apiKeyProvider: ApiKeyProvider,
-        networkExceptionHandler: NetworkExceptionHandler
-    ): GeminiService {
-        return GeminiService(apiKeyProvider, networkExceptionHandler)
-    }
+        handler: NetworkExceptionHandler
+    ): GeminiService = GeminiService(apiKeyProvider, handler)
 
-    /**
-     * Provides the network exception handler for consistent error handling
-     */
+    /** IO dispatcher (for background work) */
+    @Provides
+    @IoDispatcher
+    fun provideIoDispatcher(): CoroutineDispatcher = Dispatchers.IO
+
+    /** Main dispatcher (for UI work) */
+    @Provides
+    @MainDispatcher
+    fun provideMainDispatcher(): CoroutineDispatcher = Dispatchers.Main
+
+    /** Gson for JSON parsing */
+    @Provides
     @Singleton
-    @Provides
-    fun provideNetworkExceptionHandler(): NetworkExceptionHandler {
-        return NetworkExceptionHandler()
-    }
+    fun provideGson(): Gson = Gson()
 
-    /**
-     * Provides network state monitor to track connectivity
-     */
+    /** Crop data repository */
+    @Provides
     @Singleton
-    @Provides
-    fun provideNetworkStateMonitor(@ApplicationContext context: Context): NetworkStateMonitor {
-        return NetworkStateMonitor(context)
-    }
-
-    /**
-     * Provides session manager for session timing
-     */
-    @Singleton
-    @Provides
-    fun provideSessionManager(
-        sharedPreferencesManager: SharedPreferencesManager,
-        dateTimeUtils: DateTimeUtils
-    ): SessionManager {
-        return SessionManager(sharedPreferencesManager, dateTimeUtils)
-    }
-
-    /**
-     * Provides date/time utility functions
-     */
-    @Singleton
-    @Provides
-    fun provideDateTimeUtils(): DateTimeUtils {
-        return DateTimeUtils()
-    }
-
-    /**
-     * Provides image helper for image processing
-     */
-    @Singleton
-    @Provides
-    fun provideImageHelper(@ApplicationContext context: Context): ImageHelper {
-        return ImageHelper(context)
-    }
-
-    /**
-     * Provides PDF generator for exporting results
-     */
-    @Singleton
-    @Provides
-    fun providePdfGenerator(@ApplicationContext context: Context): PdfGenerator {
-        return PdfGenerator(context)
-    }
-
-    /**
-     * Provides IO dispatcher for coroutines
-     */
-    @Provides
-    fun provideIODispatcher(): CoroutineDispatcher {
-        return Dispatchers.IO
-    }
-
-    /**
-     * Provides main thread dispatcher for coroutines
-     */
-    @Provides
-    fun provideMainDispatcher(): CoroutineDispatcher {
-        return Dispatchers.Main
-    }
-
-    /**
-     * Provides Crop Repository
-     */
-    @Singleton
-    @Provides
     fun provideCropRepository(
-        appDatabase: AppDatabase,
-        firestoreManager: FirestoreManager,
-        @ApplicationContext context: Context,
-        ioDispatcher: CoroutineDispatcher
-    ): CropRepository {
-        return CropRepository(appDatabase, firestoreManager, context, ioDispatcher)
-    }
+        @ApplicationContext ctx: Context,
+        gson: Gson
+    ): CropRepository = CropRepository(ctx, gson)
 
-    /**
-     * Provides User Repository
-     */
-    @Singleton
+    /** UserRepository aligned to its constructor */
     @Provides
+    @Singleton
     fun provideUserRepository(
-        sharedPreferencesManager: SharedPreferencesManager,
-        firebaseAuthManager: FirebaseAuthManager,
-        firestoreManager: FirestoreManager,
-        ioDispatcher: CoroutineDispatcher
-    ): UserRepository {
-        return UserRepository(
-            sharedPreferencesManager,
-            firebaseAuthManager,
-            firestoreManager,
-            ioDispatcher
-        )
-    }
+        authMgr: FirebaseAuthManager,
+        storeMgr: FirestoreManager,
+        prefs: SharedPreferencesManager,
+        handler: NetworkExceptionHandler,
+        utils: com.example.askchinna.util.SimpleCoroutineUtils
+    ): UserRepository = UserRepository(authMgr, storeMgr, prefs, handler, utils)
 
-    /**
-     * Provides Identification Repository
-     */
-    @Singleton
+    /** IdentificationRepository must match its 8‑arg constructor */
     @Provides
+    @Singleton
     fun provideIdentificationRepository(
-        appDatabase: AppDatabase,
-        firestoreManager: FirestoreManager,
-        geminiService: GeminiService,
-        cropRepository: CropRepository,
-        imageHelper: ImageHelper,
-        sharedPreferencesManager: SharedPreferencesManager,
-        ioDispatcher: CoroutineDispatcher
-    ): IdentificationRepository {
-        return IdentificationRepository(
-            appDatabase,
-            firestoreManager,
-            geminiService,
-            cropRepository,
-            imageHelper,
-            sharedPreferencesManager,
-            ioDispatcher
-        )
-    }
+        cropRepo: CropRepository,
+        storeMgr: FirestoreManager,
+        gemini: GeminiService,
+        imgHelper: ImageHelper,
+        sessionMgr: SessionManager,
+        dateTimeUtils: DateTimeUtils,
+        @IoDispatcher ioDispatcher: CoroutineDispatcher,
+        firestore: FirebaseFirestore
+    ): IdentificationRepository = IdentificationRepository(
+        cropRepo,
+        storeMgr,
+        gemini,
+        imgHelper,
+        sessionMgr,
+        dateTimeUtils,
+        ioDispatcher,
+        firestore
+    )
 }

@@ -67,4 +67,11 @@ object Constants {
 
     // Permissions
     const val PERMISSION_REQUEST_DELAY_MS = 500L
+
+    // Debug logging flag
+    const val DEBUG = true
+
+    // Retrofit base URLs
+    const val GEMINI_API_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=GEMINI_API_KEY"
+
 }

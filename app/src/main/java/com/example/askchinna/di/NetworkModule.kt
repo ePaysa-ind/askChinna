@@ -1,20 +1,28 @@
 /*
- * Copyright (c) 2025 askChinna App
- * Created: April 29, 2025
- * Version: 1.0
+ * file path: app/src/main/java/com/example/askchinna/di/NetworkModule.kt
+ * file name: NetworkModule.kt
+ * created by Chinna on 2023-10-01
+ * version 1.0
+ * This file is part of AskChinna.
+ * Copyright © 2023 askChinna
  */
 
 package com.example.askchinna.di
 
+import android.content.Context
 import com.example.askchinna.data.remote.ApiKeyProvider
-import com.example.askchinna.data.remote.NetworkExceptionHandler
 import com.example.askchinna.util.Constants
+import com.example.askchinna.util.NetworkExceptionHandler
 import com.example.askchinna.util.NetworkStateMonitor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import okhttp3.Cache
+import okhttp3.CacheControl
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -24,9 +32,6 @@ import java.io.File
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
 import javax.inject.Singleton
-import android.content.Context
-import dagger.hilt.android.qualifiers.ApplicationContext
-import okhttp3.CacheControl
 
 /**
  * Hilt module that provides networking-related dependencies
@@ -35,105 +40,89 @@ import okhttp3.CacheControl
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val CACHE_SIZE = 10 * 1024 * 1024L // 10 MB cache
-    private const val CACHE_MAX_AGE = 1 // 1 day for cached responses
-    private const val CACHE_MAX_STALE = 7 // 7 days for offline mode
+    private const val CACHE_SIZE = 10L * 1024 * 1024        // 10 MB
+    private const val CACHE_MAX_AGE = 1                    // in days
+    private const val CACHE_MAX_STALE = 7                  // in days
 
     /**
-     * Provides the OkHttp cache for efficient network requests
+     * Provides OkHttp cache instance.
      */
     @Singleton
     @Provides
-    fun provideOkHttpCache(@ApplicationContext context: Context): Cache {
-        val cacheDir = File(context.cacheDir, "http-cache")
-        return Cache(cacheDir, CACHE_SIZE)
-    }
+    fun provideOkHttpCache(
+        @ApplicationContext context: Context
+    ): Cache = Cache(File(context.cacheDir, "http-cache"), CACHE_SIZE)
 
     /**
-     * Provides the API key interceptor for authenticating requests
+     * Interceptor adding the Gemini API key to every request.
+     * Uses runBlocking to call the suspend function synchronously.
      */
     @Singleton
     @Provides
     @Named("apiKeyInterceptor")
-    fun provideApiKeyInterceptor(apiKeyProvider: ApiKeyProvider): Interceptor {
-        return Interceptor { chain ->
-            val original = chain.request()
-            val originalUrl = original.url
-
-            // Add API key as query parameter
-            val url = originalUrl.newBuilder()
-                .addQueryParameter("key", apiKeyProvider.getApiKey())
-                .build()
-
-            val requestBuilder = original.newBuilder().url(url)
-            chain.proceed(requestBuilder.build())
-        }
+    fun provideApiKeyInterceptor(
+        apiKeyProvider: ApiKeyProvider
+    ): Interceptor = Interceptor { chain ->
+        val key = runBlocking(Dispatchers.IO) { apiKeyProvider.getGeminiApiKey() }
+        val original = chain.request()
+        val newUrl = original.url.newBuilder()
+            .addQueryParameter("key", key)
+            .build()
+        val newRequest = original.newBuilder().url(newUrl).build()
+        chain.proceed(newRequest)
     }
 
     /**
-     * Provides offline cache interceptor for supporting offline functionality
+     * Interceptor serving cached responses when offline.
      */
     @Singleton
     @Provides
     @Named("offlineCacheInterceptor")
-    fun provideOfflineCacheInterceptor(networkStateMonitor: NetworkStateMonitor): Interceptor {
-        return Interceptor { chain ->
-            var request = chain.request()
-
-            if (!networkStateMonitor.isNetworkAvailable()) {
-                // If offline, get from cache and set max-stale to tolerate older responses
-                val cacheControl = CacheControl.Builder()
-                    .maxStale(CACHE_MAX_STALE, TimeUnit.DAYS)
-                    .build()
-
-                request = request.newBuilder()
-                    .cacheControl(cacheControl)
-                    .build()
-            }
-
-            chain.proceed(request)
+    fun provideOfflineCacheInterceptor(
+        networkStateMonitor: NetworkStateMonitor
+    ): Interceptor = Interceptor { chain ->
+        var request = chain.request()
+        if (!networkStateMonitor.isNetworkAvailable()) {
+            val cacheControl = CacheControl.Builder()
+                .maxStale(CACHE_MAX_STALE, TimeUnit.DAYS)
+                .build()
+            request = request.newBuilder()
+                .cacheControl(cacheControl)
+                .build()
         }
+        chain.proceed(request)
     }
 
     /**
-     * Provides cache interceptor for efficient network usage
+     * Interceptor adding default cache-control headers.
      */
     @Singleton
     @Provides
     @Named("cacheInterceptor")
-    fun provideCacheInterceptor(): Interceptor {
-        return Interceptor { chain ->
-            val response = chain.proceed(chain.request())
-
-            // Cache for a day by default
-            val cacheControl = CacheControl.Builder()
-                .maxAge(CACHE_MAX_AGE, TimeUnit.DAYS)
-                .build()
-
-            response.newBuilder()
-                .header("Cache-Control", cacheControl.toString())
-                .build()
-        }
+    fun provideCacheInterceptor(): Interceptor = Interceptor { chain ->
+        val response = chain.proceed(chain.request())
+        val cacheControl = CacheControl.Builder()
+            .maxAge(CACHE_MAX_AGE, TimeUnit.DAYS)
+            .build()
+        response.newBuilder()
+            .header("Cache-Control", cacheControl.toString())
+            .build()
     }
 
     /**
-     * Provides logging interceptor for debugging network requests
+     * HTTP logging interceptor for debugging network calls.
      */
     @Singleton
     @Provides
     @Named("loggingInterceptor")
-    fun provideLoggingInterceptor(): HttpLoggingInterceptor {
-        return HttpLoggingInterceptor().apply {
-            level = if (Constants.DEBUG) {
-                HttpLoggingInterceptor.Level.BODY
-            } else {
-                HttpLoggingInterceptor.Level.NONE
-            }
+    fun provideLoggingInterceptor(): HttpLoggingInterceptor =
+        HttpLoggingInterceptor().apply {
+            level = if (Constants.DEBUG) HttpLoggingInterceptor.Level.BODY
+            else HttpLoggingInterceptor.Level.NONE
         }
-    }
 
     /**
-     * Provides OkHttpClient configured for the application needs
+     * OkHttpClient configured with cache, interceptors, and timeouts.
      */
     @Singleton
     @Provides
@@ -144,47 +133,29 @@ object NetworkModule {
         @Named("cacheInterceptor") cacheInterceptor: Interceptor,
         @Named("loggingInterceptor") loggingInterceptor: HttpLoggingInterceptor,
         networkExceptionHandler: NetworkExceptionHandler
-    ): OkHttpClient {
-        return OkHttpClient.Builder()
-            .cache(cache)
-            .addInterceptor(apiKeyInterceptor)
-            .addInterceptor(offlineCacheInterceptor)
-            .addNetworkInterceptor(cacheInterceptor)
-            .addInterceptor(loggingInterceptor)
-            // Add timeout settings for low-connectivity rural areas
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
-            // Add retry mechanism for unstable connections
-            .retryOnConnectionFailure(true)
-            .build()
-    }
+    ): OkHttpClient = OkHttpClient.Builder()
+        .cache(cache)
+        .addInterceptor(apiKeyInterceptor)
+        .addInterceptor(offlineCacheInterceptor)
+        .addNetworkInterceptor(cacheInterceptor)
+        .addInterceptor(loggingInterceptor)
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(30, TimeUnit.SECONDS)
+        .retryOnConnectionFailure(true)
+        .build()
 
     /**
-     * Provides Retrofit client for the Gemini API
+     * Retrofit client for the Gemini API.
      */
     @Singleton
     @Provides
     @Named("geminiRetrofit")
-    fun provideGeminiRetrofit(okHttpClient: OkHttpClient): Retrofit {
-        return Retrofit.Builder()
-            .baseUrl(Constants.GEMINI_API_BASE_URL)
-            .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-    }
-
-    /**
-     * Provides Retrofit client for potential future APIs
-     */
-    @Singleton
-    @Provides
-    @Named("backupApiRetrofit")
-    fun provideBackupApiRetrofit(okHttpClient: OkHttpClient): Retrofit {
-        return Retrofit.Builder()
-            .baseUrl(Constants.BACKUP_API_BASE_URL)
-            .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-    }
+    fun provideGeminiRetrofit(
+        okHttpClient: OkHttpClient
+    ): Retrofit = Retrofit.Builder()
+        .baseUrl(Constants.GEMINI_API_BASE_URL)
+        .client(okHttpClient)
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
 }

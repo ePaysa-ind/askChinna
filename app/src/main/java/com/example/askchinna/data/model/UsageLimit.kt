@@ -1,24 +1,21 @@
 package com.example.askchinna.data.model
 
 /**
- * app/src/main/java/com/askchinna/data/model/UsageLimit.kt
+ * file: app/src/main/java/com/example/askchinna/data/model/UsageLimit.kt
+ *
  * Copyright © 2025 askChinna
  * Created: April 28, 2025
- * Version: 1.0
+ * Updated: May 1, 2025
+ * Version: 1.1
  */
-
+import java.util.Date
 
 /**
  * Data class representing usage limits for a user
- *
- * @property currentCount Current number of identifications used in period
- * @property remainingCount Remaining number of identifications allowed
- * @property isLimitReached Whether user has reached their usage limit
- * @property role User role (free/tester/premium)
+ * Used to track and enforce the 5 uses per 30 days limit
  */
 data class UsageLimit(
-    val currentCount: Int,
-    val remainingCount: Int,
-    val isLimitReached: Boolean,
-    val role: String
+    val usageCount: Int,
+    val lastUpdated: Date,
+    val isLimitReached: Boolean
 )

@@ -1,11 +1,12 @@
 /**
- * File: app/src/main/java/com/example/askchinna/data/local/database/AppDatabase.kt
+ * file path: app/src/main/java/com/example/askchinna/data/local/AppDatabase.kt
  * Copyright (c) 2025 askChinna
- * Created: April 30, 2025
- * Version: 1.0
- */
-
-package com.example.askchinna.data.local.database
+ * Created: April 30,2025
+ * Updated: May 2, 2025
+ * Version: 1.2
+ * Description: Room database for the askChinna app
+*/
+package com.example.askchinna.data.local
 
 import android.content.Context
 import androidx.room.Database
@@ -66,7 +67,7 @@ abstract class AppDatabase : RoomDatabase() {
                 AppDatabase::class.java,
                 DATABASE_NAME
             )
-                .fallbackToDestructiveMigration() // Only for development
+                .fallbackToDestructiveMigration(false) // Only for development
                 .addCallback(AppDatabaseCallback(scope))
                 .build()
         }
@@ -77,7 +78,7 @@ abstract class AppDatabase : RoomDatabase() {
      */
     class AppDatabaseCallback(
         private val scope: CoroutineScope
-    ) : RoomDatabase.Callback() {
+    ) : Callback() {
 
         override fun onCreate(db: SupportSQLiteDatabase) {
             super.onCreate(db)

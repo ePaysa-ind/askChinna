@@ -44,5 +44,26 @@ data class Action(
      * Optional additional information for the action
      * Can include dosage information, tools needed, etc.
      */
-    val additionalInfo: String? = null
-) : Parcelable
+    val additionalInfo: String? = null,
+
+    /**
+     * Display title for the action
+     * If not provided, will use a capitalized version of the action type
+     */
+    val actionTitle: String = actionType.replaceFirstChar { it.uppercase() }
+) : Parcelable {
+
+    /**
+     * Predefined action types as constants
+     * Used for consistent type references
+     */
+    companion object {
+        object ActionType {
+            const val SPRAY = "spray"
+            const val WATER = "water"
+            const val FERTILIZE = "fertilize"
+            const val REMOVE = "remove"
+            const val MONITOR = "monitor"
+        }
+    }
+}

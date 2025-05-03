@@ -27,6 +27,7 @@ import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
+
 /**
  * Helper class for image processing operations
  * Optimized for low-end Android devices with minimal memory usage
