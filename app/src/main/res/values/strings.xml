@@ -261,6 +261,7 @@
     <string name="error_unknown">Something went wrong</string>
     <string name="error_network_failure">Network failure</string>
     <string name="error_otp_send_failed">Failed to send OTP</string>
+    <string name="still_no_connection">Still no internet connection. Please check your WiFi settings.</string>
 
     <!-- Feedback -->
     <string name="feedback_helpful">Helpful</string>

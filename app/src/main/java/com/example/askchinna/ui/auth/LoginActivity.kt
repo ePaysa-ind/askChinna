@@ -13,16 +13,21 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.example.askchinna.R
 import com.example.askchinna.data.model.UIState
 import com.example.askchinna.databinding.ActivityLoginBinding
+import com.example.askchinna.ui.common.NetworkStatusView
 import com.example.askchinna.ui.home.HomeActivity
 import com.example.askchinna.util.NetworkState
 import com.example.askchinna.util.NetworkStateMonitor
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
@@ -30,7 +35,7 @@ import javax.inject.Inject
  */
 
 @AndroidEntryPoint
-class LoginActivity : AppCompatActivity() {
+class LoginActivity : AppCompatActivity(), NetworkStatusView.OnRetryConnectionListener {
 
     private lateinit var binding: ActivityLoginBinding
     private val viewModel: LoginViewModel by viewModels()
@@ -196,5 +201,31 @@ class LoginActivity : AppCompatActivity() {
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
         finish()
+    }
+
+    override fun onRetryConnection() {
+        Log.d("LoginActivity", "Retry connection clicked")
+        // Restart network monitoring
+        networkMonitor.startMonitoring()
+        
+        // Force a network check
+        lifecycleScope.launch {
+            delay(500) // Small delay to allow monitoring to restart
+            val currentState = networkMonitor.networkState.value
+            Log.d("LoginActivity", "Current network state after retry: $currentState")
+            
+            if (currentState != NetworkState.Offline) {
+                // Network is available, hide the error
+                binding.networkStatusView.visibility = View.GONE
+                
+                // Update button state
+                val mobile = binding.editTextMobile.text.toString().trim()
+                val isValid = mobile.matches(Regex("^[0-9]{10}$"))
+                binding.buttonLogin.isEnabled = isValid
+            } else {
+                // Still offline
+                Toast.makeText(this@LoginActivity, getString(R.string.still_no_connection), Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }
