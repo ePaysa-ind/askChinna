@@ -293,7 +293,7 @@ class FirestoreInitializer @Inject constructor() {
 
             // Use batch write to add all crops efficiently
             val batch = db.batch()
-            crops.forEachIndexed { index, crop ->
+            crops.forEachIndexed { _, crop ->
                 // Create document ID from crop name to ensure consistency
                 val cropName = crop["name"] as String
                 val docId = cropName.lowercase().replace(" ", "_")

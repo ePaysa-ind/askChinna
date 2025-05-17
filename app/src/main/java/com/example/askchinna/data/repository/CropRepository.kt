@@ -108,7 +108,7 @@ class CropRepository @Inject constructor(
             val crops = snapshot.documents.mapNotNull { doc ->
                 try {
                     val crop = doc.toObject(Crop::class.java)
-                    crop?.copy(id = doc.id) ?: null
+                    crop?.copy(id = doc.id)
                 } catch (e: Exception) {
                     Log.e(TAG, "Error converting document to Crop", e)
                     null

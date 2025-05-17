@@ -134,6 +134,7 @@ class IdentificationRepository @Inject constructor(
             val data = document.data ?: return null
 
             // Parse actions with all required fields
+            @Suppress("UNCHECKED_CAST")
             val actionsData = data["actions"] as? List<Map<String, Any>> ?: emptyList()
             val actions = actionsData.mapIndexed { index, actionData ->
                 val actionType = actionData["actionType"] as? String ?: "general"
