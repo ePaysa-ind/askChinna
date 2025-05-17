@@ -1,25 +1,25 @@
 /*
  * Copyright (c) 2025 askChinna App
  * Created: April 29, 2025
- * Updated: May 2, 2025
- * Version: 1.1
+ * Updated: May 4, 2025
+ * Version: 1.2
  */
 
 package com.example.askchinna.ui.results
 
 import android.content.Context
 import android.util.AttributeSet
+import android.util.Log
 import android.view.LayoutInflater
-import android.widget.Button
-import android.widget.RadioButton
-import android.widget.RadioGroup
-import android.widget.TextView
+import android.view.View
 import androidx.cardview.widget.CardView
+import androidx.core.content.ContextCompat
 import com.example.askchinna.R
+import com.example.askchinna.databinding.ViewFeedbackBinding
 
 /**
- * Custom view that allows users to provide feedback on the identification result.
- * Collects simple feedback through radio buttons and submits it to the server.
+ * Custom view that allows users to provide feedback
+ * about the identification results.
  */
 class FeedbackView @JvmOverloads constructor(
     context: Context,
@@ -27,100 +27,141 @@ class FeedbackView @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : CardView(context, attrs, defStyleAttr) {
 
-    private val radioGroup: RadioGroup
-    private val submitButton: Button
-    private val titleView: TextView
-    private val radioHelpful: RadioButton
-    private val radioPartiallyHelpful: RadioButton
-    private val radioNotHelpful: RadioButton
+    private val TAG = "FeedbackView"
+    
+    // Direct initialization of binding
+    private val binding: ViewFeedbackBinding = ViewFeedbackBinding.inflate(
+        LayoutInflater.from(context), this
+    )
 
-    private var onFeedbackSubmittedListener: ((FeedbackType) -> Unit)? = null
+    private var onFeedbackSubmitted: ((feedbackType: FeedbackType) -> Unit)? = null
 
     init {
-        // Inflate the layout
-        LayoutInflater.from(context).inflate(R.layout.view_feedback, this, true)
+        try {
+            // Load custom attributes if any
+            attrs?.let {
+                val typedArray = context.obtainStyledAttributes(it, R.styleable.FeedbackView)
+                try {
+                    // Apply attributes
+                    val textColor = typedArray.getColor(
+                        R.styleable.FeedbackView_feedbackTextColor,
+                        ContextCompat.getColor(context, R.color.text_primary)
+                    )
+                    typedArray.getDimensionPixelSize(
+                        R.styleable.FeedbackView_feedbackIconSize,
+                        resources.getDimensionPixelSize(R.dimen.icon_size_medium)
+                    )
 
-        // Initialize views
-        radioGroup = findViewById(R.id.radio_group_feedback)
-        submitButton = findViewById(R.id.button_submit_feedback)
-        titleView = findViewById(R.id.text_feedback_title)
-        radioHelpful = findViewById(R.id.radio_helpful)
-        radioPartiallyHelpful = findViewById(R.id.radio_partially_helpful)
-        radioNotHelpful = findViewById(R.id.radio_not_helpful)
-
-        // Set up click listener for submit button
-        submitButton.setOnClickListener {
-            val selectedFeedback = when (radioGroup.checkedRadioButtonId) {
-                R.id.radio_helpful -> FeedbackType.HELPFUL
-                R.id.radio_partially_helpful -> FeedbackType.PARTIALLY_HELPFUL
-                R.id.radio_not_helpful -> FeedbackType.NOT_HELPFUL
-                else -> null
+                    // Use binding directly
+                    binding.textFeedbackTitle.setTextColor(textColor)
+                    binding.radioHelpful.setTextColor(textColor)
+                    binding.radioPartiallyHelpful.setTextColor(textColor)
+                    binding.radioNotHelpful.setTextColor(textColor)
+                } finally {
+                    typedArray.recycle()
+                }
             }
 
-            selectedFeedback?.let {
-                onFeedbackSubmittedListener?.invoke(it)
-                // Disable radio buttons and submit button after submission
-                disableInputs()
-                // Show thank you message
-                showThankYouState()
+            // Set up submit button click listener
+            binding.buttonSubmitFeedback.setOnClickListener {
+                try {
+                    handleFeedbackSubmission()
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error handling feedback submission", e)
+                }
             }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error initializing FeedbackView", e)
+            throw e
         }
     }
 
     /**
-     * Sets a listener to be called when feedback is submitted
+     * Sets the title for this feedback view
      */
-    fun setOnFeedbackSubmittedListener(listener: (FeedbackType) -> Unit) {
-        onFeedbackSubmittedListener = listener
+    fun setTitle(title: String) {
+        try {
+            if (title.isBlank()) {
+                Log.e(TAG, "Invalid title: blank")
+                return
+            }
+
+            binding.textFeedbackTitle.text = title
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting title", e)
+        }
     }
 
     /**
-     * Disables all input controls after submission
+     * Sets the callback to be invoked when feedback is submitted
      */
-    private fun disableInputs() {
-        radioHelpful.isEnabled = false
-        radioPartiallyHelpful.isEnabled = false
-        radioNotHelpful.isEnabled = false
-        submitButton.isEnabled = false
+    fun setOnFeedbackSubmittedListener(listener: (feedbackType: FeedbackType) -> Unit) {
+        try {
+            onFeedbackSubmitted = listener
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting feedback listener", e)
+        }
     }
 
     /**
-     * Changes the view to show a thank you message after submission
+     * Handles the feedback submission process
      */
-    private fun showThankYouState() {
-        // Using existing strings that are already defined in strings.xml
-        submitButton.text = context.getString(R.string.submit_feedback)
-        titleView.text = context.getString(R.string.feedback_prompt)
+    private fun handleFeedbackSubmission() {
+        try {
+            val feedbackType = when (binding.radioGroupFeedback.checkedRadioButtonId) {
+                R.id.radioHelpful -> FeedbackType.HELPFUL
+                R.id.radioPartiallyHelpful -> FeedbackType.PARTIALLY_HELPFUL
+                R.id.radioNotHelpful -> FeedbackType.NOT_HELPFUL
+                else -> {
+                    Log.e(TAG, "No feedback option selected")
+                    return
+                }
+            }
 
-        // Alternative approach: hardcode strings if necessary
-        // submitButton.text = "Feedback Submitted"
-        // titleView.text = "Thank you for your feedback!"
+            // Call the listener if set
+            onFeedbackSubmitted?.invoke(feedbackType)
+
+            // Show thank you message
+            showThankYouMessage()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error handling feedback submission", e)
+        }
+    }
+
+    /**
+     * Shows the thank you message and resets the form
+     */
+    private fun showThankYouMessage() {
+        try {
+            // Hide input elements
+            binding.radioGroupFeedback.visibility = View.GONE
+            binding.buttonSubmitFeedback.visibility = View.GONE
+
+            // Show thank you message
+            binding.textThankYou.visibility = View.VISIBLE
+        } catch (e: Exception) {
+            Log.e(TAG, "Error showing thank you message", e)
+        }
     }
 
     /**
      * Resets the view to its initial state
      */
-    fun resetView() {
-        // Clear selection
-        radioGroup.clearCheck()
-
-        // Reset button and title text
-        submitButton.text = context.getString(R.string.submit_feedback)
-        titleView.text = context.getString(R.string.feedback_prompt)
-
-        // Re-enable controls
-        radioHelpful.isEnabled = true
-        radioPartiallyHelpful.isEnabled = true
-        radioNotHelpful.isEnabled = true
-        submitButton.isEnabled = true
+    fun reset() {
+        try {
+            binding.textFeedbackTitle.text = ""
+            binding.radioGroupFeedback.clearCheck()
+            binding.radioGroupFeedback.visibility = View.VISIBLE
+            binding.buttonSubmitFeedback.visibility = View.VISIBLE
+            binding.textThankYou.visibility = View.GONE
+        } catch (e: Exception) {
+            Log.e(TAG, "Error resetting view", e)
+        }
     }
 
-    /**
-     * Enum representing feedback types
-     */
-    enum class FeedbackType {
-        HELPFUL,
-        PARTIALLY_HELPFUL,
-        NOT_HELPFUL
+    // No need to handle binding in onDetachedFromWindow since it's val, not lateinit var
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        // Clean up any resources if needed
     }
 }

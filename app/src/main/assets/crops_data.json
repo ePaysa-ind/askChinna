@@ -1,0 +1,542 @@
+[
+  {
+    "id": "chili",
+    "name": "Chillies",
+    "scientificName": "Capsicum annuum",
+    "description": "Spice crop essential to Indian cuisine",
+    "iconResId": 2131165310,
+    "growingRegions": [
+      "Andhra Pradesh", "Telangana", "Tamil Nadu", "Karnataka", "Kerala",
+      "Gujarat", "Rajasthan", "Uttar Pradesh", "Jharkhand", "Bihar",
+      "Madhya Pradesh", "Punjab", "Haryana"
+    ],
+    "pests": [
+      {
+        "name": "Thrips",
+        "conditions": "Both"
+      },
+      {
+        "name": "Mites",
+        "conditions": "R/Dry"
+      },
+      {
+        "name": "Aphids",
+        "conditions": "Both"
+      },
+      {
+        "name": "Whitefly",
+        "conditions": "Both, Vector"
+      },
+      {
+        "name": "Fruit Borer",
+        "conditions": "Both"
+      }
+    ],
+    "diseases": [
+      {
+        "name": "Anthracnose",
+        "conditions": "I/Wet"
+      },
+      {
+        "name": "Powdery Mildew",
+        "conditions": "Both"
+      },
+      {
+        "name": "Bacterial Leaf Spot",
+        "conditions": "I/Wet"
+      },
+      {
+        "name": "Fusarium Wilt",
+        "conditions": "Soil/Stress"
+      },
+      {
+        "name": "Viral Diseases",
+        "conditions": "Vector"
+      }
+    ]
+  },
+  {
+    "id": "cotton",
+    "name": "Cotton",
+    "scientificName": "Gossypium hirsutum",
+    "description": "Important cash crop used for textile production",
+    "iconResId": 2131165311,
+    "growingRegions": [
+      "Andhra Pradesh", "Telangana", "Tamil Nadu", "Karnataka", "Kerala",
+      "Gujarat", "Rajasthan", "Uttar Pradesh", "Jharkhand", "Bihar",
+      "Madhya Pradesh", "Punjab", "Haryana"
+    ],
+    "pests": [
+      {
+        "name": "Bollworms (Pink, American, Spotted)",
+        "conditions": "Both"
+      },
+      {
+        "name": "Jassids",
+        "conditions": "Both"
+      },
+      {
+        "name": "Whiteflies",
+        "conditions": "I-North, Vector"
+      },
+      {
+        "name": "Aphids",
+        "conditions": "Both"
+      },
+      {
+        "name": "Thrips",
+        "conditions": "Both"
+      }
+    ],
+    "diseases": [
+      {
+        "name": "Bacterial Blight",
+        "conditions": "I/Wet"
+      },
+      {
+        "name": "Fusarium Wilt",
+        "conditions": "R/Rd>B"
+      },
+      {
+        "name": "Verticillium Wilt",
+        "conditions": "I/B>Rd"
+      },
+      {
+        "name": "Root Rot",
+        "conditions": "Stress/Drainage"
+      },
+      {
+        "name": "Leaf Curl Virus",
+        "conditions": "I/Vector"
+      }
+    ]
+  },
+  {
+    "id": "maize",
+    "name": "Maize",
+    "scientificName": "Zea mays",
+    "description": "Versatile crop used for food, feed, and industrial purposes",
+    "iconResId": 2131165312,
+    "growingRegions": [
+      "Andhra Pradesh", "Telangana", "Tamil Nadu", "Karnataka", "Kerala",
+      "Gujarat", "Rajasthan", "Uttar Pradesh", "Jharkhand", "Bihar",
+      "Madhya Pradesh", "Punjab", "Haryana"
+    ],
+    "pests": [
+      {
+        "name": "Stem Borers (Spotted)",
+        "conditions": "R/Kharif"
+      },
+      {
+        "name": "Stem Borers (Pink)",
+        "conditions": "I/Rabi"
+      },
+      {
+        "name": "Fall Armyworm",
+        "conditions": "Both, Major"
+      },
+      {
+        "name": "Shoot Fly",
+        "conditions": "Both"
+      },
+      {
+        "name": "Aphids",
+        "conditions": "I"
+      },
+      {
+        "name": "Termites",
+        "conditions": "R/Rd"
+      }
+    ],
+    "diseases": [
+      {
+        "name": "Leaf Blights (TLB, MLB)",
+        "conditions": "I/Wet"
+      },
+      {
+        "name": "Downy Mildews",
+        "conditions": "I/Wet"
+      },
+      {
+        "name": "Stalk Rots (Charcoal)",
+        "conditions": "R/Stress"
+      },
+      {
+        "name": "Stalk Rots (Others)",
+        "conditions": "I/Wet/Drainage"
+      }
+    ]
+  },
+  {
+    "id": "tomato",
+    "name": "Tomato",
+    "scientificName": "Solanum lycopersicum",
+    "description": "Popular vegetable crop grown throughout India",
+    "iconResId": 2131165313,
+    "growingRegions": [
+      "Andhra Pradesh", "Telangana", "Tamil Nadu", "Karnataka", "Kerala",
+      "Gujarat", "Rajasthan", "Uttar Pradesh", "Jharkhand", "Bihar",
+      "Madhya Pradesh", "Punjab", "Haryana"
+    ],
+    "pests": [
+      {
+        "name": "Fruit Borer",
+        "conditions": "Both"
+      },
+      {
+        "name": "Whitefly",
+        "conditions": "Both, Vector"
+      },
+      {
+        "name": "Leaf Miner",
+        "conditions": "Both"
+      },
+      {
+        "name": "Aphids",
+        "conditions": "Both"
+      },
+      {
+        "name": "Mites",
+        "conditions": "R/Dry"
+      },
+      {
+        "name": "Nematodes",
+        "conditions": "Rd/Sandy"
+      }
+    ],
+    "diseases": [
+      {
+        "name": "Early Blight",
+        "conditions": "I/Wet"
+      },
+      {
+        "name": "Late Blight",
+        "conditions": "I/Wet"
+      },
+      {
+        "name": "Septoria",
+        "conditions": "I/Wet"
+      },
+      {
+        "name": "Bacterial Wilt",
+        "conditions": "Soil/Wet"
+      },
+      {
+        "name": "Fusarium Wilt",
+        "conditions": "Soil"
+      },
+      {
+        "name": "ToLCV",
+        "conditions": "Vector"
+      }
+    ]
+  },
+  {
+    "id": "okra",
+    "name": "Okra",
+    "scientificName": "Abelmoschus esculentus",
+    "description": "Popular vegetable known as bhindi or lady's finger",
+    "iconResId": 2131165314,
+    "growingRegions": [
+      "Andhra Pradesh", "Telangana", "Tamil Nadu", "Karnataka", "Kerala",
+      "Gujarat", "Rajasthan", "Uttar Pradesh", "Jharkhand", "Bihar",
+      "Madhya Pradesh", "Punjab", "Haryana"
+    ],
+    "pests": [
+      {
+        "name": "Jassids",
+        "conditions": "Both"
+      },
+      {
+        "name": "Aphids",
+        "conditions": "Both"
+      },
+      {
+        "name": "Whitefly",
+        "conditions": "Both, Vector"
+      },
+      {
+        "name": "Shoot/Fruit Borer",
+        "conditions": "Both"
+      },
+      {
+        "name": "Mites",
+        "conditions": "R/Dry"
+      }
+    ],
+    "diseases": [
+      {
+        "name": "YVMV",
+        "conditions": "Vector, Major"
+      },
+      {
+        "name": "Powdery Mildew",
+        "conditions": "Humid"
+      },
+      {
+        "name": "Fusarium Wilt",
+        "conditions": "Soil"
+      },
+      {
+        "name": "Damping-off",
+        "conditions": "Wet/Drainage"
+      }
+    ]
+  },
+  {
+    "id": "rice",
+    "name": "Rice",
+    "scientificName": "Oryza sativa",
+    "description": "A staple food crop in India grown in paddy fields",
+    "iconResId": 2131165315,
+    "growingRegions": [
+      "Andhra Pradesh", "Telangana", "Tamil Nadu", "Karnataka", "Kerala",
+      "Gujarat", "Rajasthan", "Uttar Pradesh", "Jharkhand", "Bihar",
+      "Madhya Pradesh", "Punjab", "Haryana"
+    ],
+    "pests": [
+      {
+        "name": "Stem Borer",
+        "conditions": "I"
+      },
+      {
+        "name": "BPH",
+        "conditions": "I, Major"
+      },
+      {
+        "name": "WBPH",
+        "conditions": "I"
+      },
+      {
+        "name": "GLH",
+        "conditions": "Both, Vector"
+      },
+      {
+        "name": "Leaf Folder",
+        "conditions": "I"
+      },
+      {
+        "name": "Gundhi Bug",
+        "conditions": "R-Upland"
+      }
+    ],
+    "diseases": [
+      {
+        "name": "Blast",
+        "conditions": "Both"
+      },
+      {
+        "name": "BLB",
+        "conditions": "I, Major"
+      },
+      {
+        "name": "Sheath Blight",
+        "conditions": "I"
+      },
+      {
+        "name": "Tungro Virus",
+        "conditions": "I/Vector"
+      },
+      {
+        "name": "False Smut",
+        "conditions": "I/Wet at flowering"
+      }
+    ]
+  },
+  {
+    "id": "wheat",
+    "name": "Wheat",
+    "scientificName": "Triticum aestivum",
+    "description": "A major grain crop grown across Northern India",
+    "iconResId": 2131165316,
+    "growingRegions": [
+      "Andhra Pradesh", "Telangana", "Tamil Nadu", "Karnataka", "Kerala",
+      "Gujarat", "Rajasthan", "Uttar Pradesh", "Jharkhand", "Bihar",
+      "Madhya Pradesh", "Punjab", "Haryana"
+    ],
+    "pests": [
+      {
+        "name": "Aphids",
+        "conditions": "I"
+      },
+      {
+        "name": "Termites",
+        "conditions": "R/Rd"
+      },
+      {
+        "name": "Brown Wheat Mite",
+        "conditions": "R/Dry"
+      }
+    ],
+    "diseases": [
+      {
+        "name": "Rust (Yellow)",
+        "conditions": "I"
+      },
+      {
+        "name": "Rust (Brown, Black)",
+        "conditions": "Major"
+      },
+      {
+        "name": "Loose Smut",
+        "conditions": "Seed"
+      },
+      {
+        "name": "Powdery Mildew",
+        "conditions": "I/Humid"
+      },
+      {
+        "name": "Karnal Bunt",
+        "conditions": "I/Humid at flowering"
+      }
+    ]
+  },
+  {
+    "id": "soybean",
+    "name": "Soybean",
+    "scientificName": "Glycine max",
+    "description": "Legume grown for its protein-rich seeds",
+    "iconResId": 2131165317,
+    "growingRegions": [
+      "Andhra Pradesh", "Telangana", "Tamil Nadu", "Karnataka", "Kerala",
+      "Gujarat", "Rajasthan", "Uttar Pradesh", "Jharkhand", "Bihar",
+      "Madhya Pradesh", "Punjab", "Haryana"
+    ],
+    "pests": [
+      {
+        "name": "Girdle Beetle",
+        "conditions": "R/B"
+      },
+      {
+        "name": "Stem Fly",
+        "conditions": "R"
+      },
+      {
+        "name": "Semiloopers",
+        "conditions": "R"
+      },
+      {
+        "name": "Whitefly",
+        "conditions": "R, Vector"
+      },
+      {
+        "name": "Pod Borers",
+        "conditions": "R"
+      }
+    ],
+    "diseases": [
+      {
+        "name": "Rust",
+        "conditions": "R/Humid"
+      },
+      {
+        "name": "Anthracnose",
+        "conditions": "R/Wet"
+      },
+      {
+        "name": "Root Rot",
+        "conditions": "R/Drainage-B"
+      },
+      {
+        "name": "Charcoal Rot",
+        "conditions": "R/Stress"
+      },
+      {
+        "name": "YMV",
+        "conditions": "R/Vector"
+      }
+    ]
+  },
+  {
+    "id": "pigeon_pea",
+    "name": "Pigeon Pea",
+    "scientificName": "Cajanus cajan",
+    "description": "Important pulse crop known as arhar or toor dal",
+    "iconResId": 2131165318,
+    "growingRegions": [
+      "Andhra Pradesh", "Telangana", "Tamil Nadu", "Karnataka", "Kerala",
+      "Gujarat", "Rajasthan", "Uttar Pradesh", "Jharkhand", "Bihar",
+      "Madhya Pradesh", "Punjab", "Haryana"
+    ],
+    "pests": [
+      {
+        "name": "Pod Borer Complex",
+        "conditions": "R, Major"
+      },
+      {
+        "name": "Pod Fly",
+        "conditions": "R"
+      },
+      {
+        "name": "Blister Beetles",
+        "conditions": "R"
+      }
+    ],
+    "diseases": [
+      {
+        "name": "Fusarium Wilt",
+        "conditions": "R, Soil, Major"
+      },
+      {
+        "name": "Sterility Mosaic Disease",
+        "conditions": "R/Vector"
+      },
+      {
+        "name": "Phytophthora Blight",
+        "conditions": "R/Waterlogging-B"
+      }
+    ]
+  },
+  {
+    "id": "watermelon",
+    "name": "Watermelon",
+    "scientificName": "Citrullus lanatus",
+    "description": "Popular summer fruit crop in India",
+    "iconResId": 2131165319,
+    "growingRegions": [
+      "Andhra Pradesh", "Telangana", "Tamil Nadu", "Karnataka", "Kerala",
+      "Gujarat", "Rajasthan", "Uttar Pradesh", "Jharkhand", "Bihar",
+      "Madhya Pradesh", "Punjab", "Haryana"
+    ],
+    "pests": [
+      {
+        "name": "Fruit Fly",
+        "conditions": "Both, Major"
+      },
+      {
+        "name": "Aphids",
+        "conditions": "Both, Vector"
+      },
+      {
+        "name": "Whitefly",
+        "conditions": "Both, Vector"
+      },
+      {
+        "name": "Red Pumpkin Beetle",
+        "conditions": "Seedlings"
+      }
+    ],
+    "diseases": [
+      {
+        "name": "Downy Mildew",
+        "conditions": "I/Wet"
+      },
+      {
+        "name": "Powdery Mildew",
+        "conditions": "Humid"
+      },
+      {
+        "name": "Anthracnose",
+        "conditions": "I/Wet"
+      },
+      {
+        "name": "Fusarium Wilt",
+        "conditions": "Soil, Major"
+      },
+      {
+        "name": "Viral Diseases",
+        "conditions": "Vector"
+      }
+    ]
+  }
+]

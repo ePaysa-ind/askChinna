@@ -11,8 +11,6 @@ package com.example.askchinna.di
 
 import android.content.Context
 import com.example.askchinna.data.remote.ApiKeyProvider
-import com.example.askchinna.util.Constants
-import com.example.askchinna.util.NetworkExceptionHandler
 import com.example.askchinna.util.NetworkStateMonitor
 import dagger.Module
 import dagger.Provides
@@ -40,9 +38,13 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val CACHE_SIZE = 10L * 1024 * 1024        // 10 MB
-    private const val CACHE_MAX_AGE = 1                    // in days
-    private const val CACHE_MAX_STALE = 7                  // in days
+    private const val CACHE_SIZE = 20L * 1024 * 1024       // 20 MB for better performance
+    private const val CACHE_MAX_AGE = 1                    // 1 day for MVP
+    private const val CACHE_MAX_STALE = 3                  // 3 days for MVP
+    private const val MAX_RETRIES = 3                      // Maximum retry attempts
+    private const val RETRY_DELAY_MS = 1000L              // Initial delay between retries
+    private const val RETRY_MULTIPLIER = 2.0f             // Exponential backoff multiplier
+    private const val MAX_RETRY_DELAY_MS = 15000L         // Maximum delay between retries
 
     /**
      * Provides OkHttp cache instance.
@@ -63,13 +65,22 @@ object NetworkModule {
     fun provideApiKeyInterceptor(
         apiKeyProvider: ApiKeyProvider
     ): Interceptor = Interceptor { chain ->
-        val key = runBlocking(Dispatchers.IO) { apiKeyProvider.getGeminiApiKey() }
-        val original = chain.request()
-        val newUrl = original.url.newBuilder()
-            .addQueryParameter("key", key)
-            .build()
-        val newRequest = original.newBuilder().url(newUrl).build()
-        chain.proceed(newRequest)
+        try {
+            val key = runBlocking(Dispatchers.IO) {
+                apiKeyProvider.getGeminiApiKey()
+            }
+            if (key.isBlank()) {
+                throw SecurityException("API key not found")
+            }
+            val original = chain.request()
+            val newUrl = original.url.newBuilder()
+                .addQueryParameter("key", key)
+                .build()
+            val newRequest = original.newBuilder().url(newUrl).build()
+            chain.proceed(newRequest)
+        } catch (e: Exception) {
+            throw SecurityException("Failed to add API key: ${e.message}", e)
+        }
     }
 
     /**
@@ -110,6 +121,41 @@ object NetworkModule {
     }
 
     /**
+     * Interceptor for retrying failed requests with exponential backoff.
+     */
+    @Singleton
+    @Provides
+    @Named("retryInterceptor")
+    fun provideRetryInterceptor(): Interceptor = Interceptor { chain ->
+        var retryCount = 0
+        var currentDelay = RETRY_DELAY_MS
+        var response = chain.proceed(chain.request())
+
+        while (!response.isSuccessful && retryCount < MAX_RETRIES) {
+            val isRetryable = when (response.code) {
+                408, 429, 500, 502, 503, 504 -> true // Timeout, rate limit, server errors
+                else -> false
+            }
+            
+            if (!isRetryable) break
+            
+            response.close()
+            retryCount++
+            
+            // Exponential backoff with jitter
+            val delayWithJitter = currentDelay + (0..1000).random()
+            Thread.sleep(minOf(delayWithJitter, MAX_RETRY_DELAY_MS))
+            
+            // Update delay for next retry
+            currentDelay = (currentDelay * RETRY_MULTIPLIER).toLong()
+            
+            response = chain.proceed(chain.request())
+        }
+
+        response
+    }
+
+    /**
      * HTTP logging interceptor for debugging network calls.
      */
     @Singleton
@@ -117,8 +163,8 @@ object NetworkModule {
     @Named("loggingInterceptor")
     fun provideLoggingInterceptor(): HttpLoggingInterceptor =
         HttpLoggingInterceptor().apply {
-            level = if (Constants.DEBUG) HttpLoggingInterceptor.Level.BODY
-            else HttpLoggingInterceptor.Level.NONE
+            level = HttpLoggingInterceptor.Level.BODY  // Set to BODY for development
+            // In production, you would use: HttpLoggingInterceptor.Level.NONE
         }
 
     /**
@@ -131,17 +177,18 @@ object NetworkModule {
         @Named("apiKeyInterceptor") apiKeyInterceptor: Interceptor,
         @Named("offlineCacheInterceptor") offlineCacheInterceptor: Interceptor,
         @Named("cacheInterceptor") cacheInterceptor: Interceptor,
-        @Named("loggingInterceptor") loggingInterceptor: HttpLoggingInterceptor,
-        networkExceptionHandler: NetworkExceptionHandler
+        @Named("retryInterceptor") retryInterceptor: Interceptor,
+        @Named("loggingInterceptor") loggingInterceptor: HttpLoggingInterceptor
     ): OkHttpClient = OkHttpClient.Builder()
         .cache(cache)
         .addInterceptor(apiKeyInterceptor)
         .addInterceptor(offlineCacheInterceptor)
         .addNetworkInterceptor(cacheInterceptor)
+        .addInterceptor(retryInterceptor)
         .addInterceptor(loggingInterceptor)
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
-        .writeTimeout(30, TimeUnit.SECONDS)
+        .connectTimeout(15, TimeUnit.SECONDS)  // Reduced for MVP
+        .readTimeout(15, TimeUnit.SECONDS)     // Reduced for MVP
+        .writeTimeout(15, TimeUnit.SECONDS)    // Reduced for MVP
         .retryOnConnectionFailure(true)
         .build()
 
@@ -154,7 +201,7 @@ object NetworkModule {
     fun provideGeminiRetrofit(
         okHttpClient: OkHttpClient
     ): Retrofit = Retrofit.Builder()
-        .baseUrl(Constants.GEMINI_API_BASE_URL)
+        .baseUrl("https://generativelanguage.googleapis.com/")  // Direct URL instead of constant
         .client(okHttpClient)
         .addConverterFactory(GsonConverterFactory.create())
         .build()

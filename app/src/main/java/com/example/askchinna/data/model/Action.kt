@@ -1,14 +1,17 @@
 /**
  * File: app/src/main/java/com/example/askchinna/data/model/Action.kt
- * Copyright (c) 2025 askChinna
+ * Copyright (c) 2025 askChinna App
  * Created: April 29, 2025
- * Version: 1.0
+ * Updated: May 13, 2025
+ * Version: 1.2
  */
 
 package com.example.askchinna.data.model
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
+import kotlinx.parcelize.RawValue
+import com.google.gson.annotations.SerializedName
 
 /**
  * Represents a recommended action to address identified crop pest/disease
@@ -17,53 +20,140 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class Action(
     /**
-     * Type of action to take - used for selecting appropriate icon
-     * Supported types include: "spray", "remove", "monitor", "fertilize", "water"
+     * Unique identifier for the action.
      */
-    val actionType: String,
+    @SerializedName("id")
+    val id: String,
 
     /**
-     * Detailed description of the action to be taken
-     * Written in simple language for easy understanding
+     * Title of the action.
      */
+    @SerializedName("title")
+    val title: String,
+
+    /**
+     * Description of the action.
+     */
+    @SerializedName("description")
     val description: String,
 
     /**
-     * Optional time frame for completing the action
-     * e.g., "Immediately", "Within 3 days", "Weekly"
+     * Priority level of the action (1-5).
      */
-    val timeFrame: String? = null,
+    @SerializedName("priority")
+    val priority: Int,
 
     /**
-     * Optional severity level (1-3) indicating importance of the action
-     * 1 = Low priority, 2 = Medium priority, 3 = High priority
+     * Category of the action.
      */
-    val priority: Int = 2,
+    @SerializedName("category")
+    val category: ActionCategory,
 
     /**
-     * Optional additional information for the action
-     * Can include dosage information, tools needed, etc.
+     * Status of the action.
      */
-    val additionalInfo: String? = null,
+    @SerializedName("status")
+    val status: ActionStatus = ActionStatus.PENDING,
 
     /**
-     * Display title for the action
-     * If not provided, will use a capitalized version of the action type
+     * Timestamp when the action was created.
      */
-    val actionTitle: String = actionType.replaceFirstChar { it.uppercase() }
+    @SerializedName("createdAt")
+    val createdAt: Long = System.currentTimeMillis(),
+
+    /**
+     * Timestamp when the action was last updated.
+     */
+    @SerializedName("updatedAt")
+    val updatedAt: Long = System.currentTimeMillis(),
+
+    /**
+     * Timestamp when the action was completed.
+     */
+    @SerializedName("completedAt")
+    val completedAt: Long? = null,
+
+    /**
+     * Additional notes for the action.
+     */
+    @SerializedName("notes")
+    val notes: String? = null,
+
+    /**
+     * Resources needed for the action.
+     */
+    @SerializedName("resources")
+    val resources: List<String> = emptyList(),
+
+    /**
+     * Steps to complete the action.
+     */
+    @SerializedName("steps")
+    val steps: @RawValue List<ActionStep> = emptyList()
 ) : Parcelable {
 
     /**
      * Predefined action types as constants
      * Used for consistent type references
      */
-    companion object {
-        object ActionType {
-            const val SPRAY = "spray"
-            const val WATER = "water"
-            const val FERTILIZE = "fertilize"
-            const val REMOVE = "remove"
-            const val MONITOR = "monitor"
-        }
-    }
+    companion object
 }
+
+/**
+ * Represents a category of action.
+ */
+enum class ActionCategory {
+    PEST_CONTROL,
+    PRUNING,
+    MONITORING,
+
+}
+
+/**
+ * Represents the status of an action.
+ */
+enum class ActionStatus {
+    PENDING,
+
+}
+
+/**
+ * Represents a step in an action.
+ */
+data class ActionStep(
+    /**
+     * Unique identifier for the step.
+     */
+    @SerializedName("id")
+    val id: String,
+
+    /**
+     * Description of the step.
+     */
+    @SerializedName("description")
+    val description: String,
+
+    /**
+     * Whether the step is completed.
+     */
+    @SerializedName("isCompleted")
+    val isCompleted: Boolean = false,
+
+    /**
+     * Order of the step in the action.
+     */
+    @SerializedName("order")
+    val order: Int,
+
+    /**
+     * Estimated time to complete the step in minutes.
+     */
+    @SerializedName("estimatedTimeMinutes")
+    val estimatedTimeMinutes: Int = 0,
+
+    /**
+     * Additional notes for the step.
+     */
+    @SerializedName("notes")
+    val notes: String? = null
+)

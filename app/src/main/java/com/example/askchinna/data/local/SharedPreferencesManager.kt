@@ -7,173 +7,277 @@ package com.example.askchinna.data.local
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.core.content.edit
 import com.example.askchinna.data.model.UsageLimit
 import com.example.askchinna.data.model.User
-import com.example.askchinna.util.Constants
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
+import android.util.Log
 
+/**
+ * Manages local storage using SharedPreferences and EncryptedSharedPreferences.
+ * Handles user data, session information, and sensitive data storage.
+ *
+ * @property context Application context for accessing SharedPreferences
+ */
 @Singleton
 class SharedPreferencesManager @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
     companion object {
-        private const val PREFS_FILE_NAME           = "askchinna_prefs"
+        private const val PREFS_FILE_NAME = "askchinna_prefs"
+        private const val ENCRYPTED_PREFS_FILE_NAME = "askchinna_encrypted_prefs"
 
-        // Basic prefs keys
-        private const val KEY_SESSION_START_TIME     = "session_start_time"
-        private const val KEY_SESSION_REMAINING_TIME = "session_remaining_time"
-        private const val KEY_ONBOARDING_COMPLETED   = "onboarding_completed"
-        private const val KEY_SELECTED_LANGUAGE      = "selected_language"
-        private const val KEY_LAST_CROP_SELECTION    = "last_crop_selection"
+        // Session keys
+        private const val KEY_SESSION_START_TIME = "session_start_time"
+        private const val KEY_AUTH_STATE = "auth_state"
 
-        // User profile keys
-        private const val KEY_DISPLAY_NAME           = "display_name"
-        private const val KEY_LOCAL_USER_ID          = "local_user_id"
-        private const val KEY_LOCAL_USER_MOBILE      = "local_user_mobile"
-        private const val KEY_LOCAL_USER_DISPLAY_NAME= "local_user_display_name"
-        private const val KEY_LOCAL_USER_IS_VERIFIED = "local_user_is_verified"
-        private const val KEY_LOCAL_USER_USAGE_COUNT = "local_user_usage_count"
+        // Usage tracking keys
+        private const val KEY_USAGE_COUNT = "usage_count"
+        private const val KEY_USAGE_RESET_DATE = "usage_reset_date"
 
-        // "Secure" keys
-        private const val KEY_API_KEY                = "api_key"
-        private const val KEY_AUTH_TOKEN             = "auth_token"
+        // User data keys
+        private const val KEY_USER_ID = "user_id"
+        private const val KEY_USER_MOBILE = "user_mobile"
+        private const val KEY_USER_NAME = "user_name"
+        private const val KEY_DISPLAY_NAME_TEMP = "temp_display_name"
 
-        // Session/auth & usage‑tracking keys
-        private const val KEY_AUTH_STATE             = "auth_state"
-        private const val KEY_USAGE_COUNT            = "usage_count"
-        private const val KEY_USAGE_RESET_DATE       = "usage_reset_date"
+        // Encrypted keys
+        private const val KEY_API_KEY = "api_key"
+        private const val KEY_AUTH_TOKEN = "auth_token"
+
+        private const val KEY_ONBOARDING_COMPLETED = "onboarding_completed"
+
+        // Constants
+        const val MAX_MONTHLY_IDENTIFICATIONS = 5
     }
 
-    private val prefs: SharedPreferences =
-        context.getSharedPreferences(PREFS_FILE_NAME, Context.MODE_PRIVATE)
+    private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_FILE_NAME, Context.MODE_PRIVATE)
 
-    //–– Session timing ––
+    private var encryptedPrefs: SharedPreferences? = null
+    private val TAG = "SharedPreferencesManager"
+    
+    private fun getEncryptedPrefs(): SharedPreferences {
+        if (encryptedPrefs == null) {
+            try {
+                // Check Android version for encryption support
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                    val keyGenParameterSpec = androidx.security.crypto.MasterKeys.AES256_GCM_SPEC
+                    val mainKeyAlias = androidx.security.crypto.MasterKeys.getOrCreate(keyGenParameterSpec)
+
+                    encryptedPrefs = EncryptedSharedPreferences.create(
+                        ENCRYPTED_PREFS_FILE_NAME,
+                        mainKeyAlias,
+                        context,
+                        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+                    )
+                    Log.d(TAG, "Encrypted preferences initialized successfully")
+                } else {
+                    // Fall back to regular prefs for older Android versions
+                    Log.d(TAG, "Android version < M, using regular preferences")
+                    encryptedPrefs = prefs
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to create encrypted preferences, falling back to regular prefs", e)
+                
+                // Check if this is a keyset corruption error
+                if (e.message?.contains("invalid tag") == true || 
+                    e.cause?.message?.contains("invalid tag") == true) {
+                    Log.w(TAG, "Detected corrupted keyset, attempting to recreate...")
+                    
+                    try {
+                        // Delete the corrupted encrypted preferences file
+                        val encryptedPrefsFile = context.getSharedPreferences(ENCRYPTED_PREFS_FILE_NAME, Context.MODE_PRIVATE)
+                        encryptedPrefsFile.edit().clear().apply()
+                        
+                        // Delete the physical files if they exist
+                        val prefsDir = context.filesDir.parentFile?.resolve("shared_prefs")
+                        val encryptedFile = prefsDir?.resolve("$ENCRYPTED_PREFS_FILE_NAME.xml")
+                        val keysetFile = prefsDir?.resolve("${ENCRYPTED_PREFS_FILE_NAME}_keyset__")
+                        
+                        encryptedFile?.delete()
+                        keysetFile?.delete()
+                        
+                        // Try creating again with fresh files
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                            val keyGenParameterSpec = androidx.security.crypto.MasterKeys.AES256_GCM_SPEC
+                            val mainKeyAlias = androidx.security.crypto.MasterKeys.getOrCreate(keyGenParameterSpec)
+                            
+                            encryptedPrefs = EncryptedSharedPreferences.create(
+                                ENCRYPTED_PREFS_FILE_NAME,
+                                mainKeyAlias,
+                                context,
+                                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+                            )
+                            Log.d(TAG, "Successfully recreated encrypted preferences after corruption")
+                        } else {
+                            encryptedPrefs = prefs
+                        }
+                    } catch (recreateError: Exception) {
+                        Log.e(TAG, "Failed to recreate encrypted preferences, using regular prefs", recreateError)
+                        encryptedPrefs = prefs
+                    }
+                } else {
+                    // Other types of errors, just fallback
+                    encryptedPrefs = prefs
+                }
+            }
+        }
+        return encryptedPrefs!!
+    }
+
+    /**
+     * Initialize the SharedPreferencesManager.
+     * Attempts to set up encrypted preferences, falls back to regular if fails.
+     */
+    fun initialize() {
+        try {
+            // Try to initialize encrypted preferences
+            val encPrefs = getEncryptedPrefs()
+            encPrefs.edit().putString("init_test", "test").apply()
+            encPrefs.getString("init_test", null)
+            encPrefs.edit().remove("init_test").apply()
+            Log.d(TAG, "Encrypted preferences initialized successfully")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to initialize encrypted preferences, using regular prefs as fallback", e)
+            // Don't throw exception, just log and continue
+        }
+    }
+
+    // Session Management
     fun saveSessionStartTime(timeMillis: Long) =
         prefs.edit { putLong(KEY_SESSION_START_TIME, timeMillis) }
 
     fun getSessionStartTime(): Long =
         prefs.getLong(KEY_SESSION_START_TIME, 0L)
 
-    fun saveSessionRemainingTime(timeMillis: Long) =
-        prefs.edit { putLong(KEY_SESSION_REMAINING_TIME, timeMillis) }
+    // Auth State
+    fun saveAuthState(isAuthenticated: Boolean) {
+        prefs.edit { putBoolean(KEY_AUTH_STATE, isAuthenticated) }
+    }
 
-    fun getSessionRemainingTime(): Long =
-        prefs.getLong(KEY_SESSION_REMAINING_TIME, 0L)
+    fun getAuthState(): Boolean {
+        return prefs.getBoolean(KEY_AUTH_STATE, false)
+    }
 
-    //–– Onboarding & language ––
-    fun setOnboardingCompleted(completed: Boolean) =
-        prefs.edit { putBoolean(KEY_ONBOARDING_COMPLETED, completed) }
+    private fun getUsageCount(): Int =
+        prefs.getInt(KEY_USAGE_COUNT, 0)
 
-    fun isOnboardingCompleted(): Boolean =
-        prefs.getBoolean(KEY_ONBOARDING_COMPLETED, false)
-
-    fun saveSelectedLanguage(code: String) =
-        prefs.edit { putString(KEY_SELECTED_LANGUAGE, code) }
-
-    fun getSelectedLanguage(): String =
-        prefs.getString(KEY_SELECTED_LANGUAGE, "en") ?: "en"
-
-    //–– Last crop ––
-    fun saveLastCropSelection(cropId: String) =
-        prefs.edit { putString(KEY_LAST_CROP_SELECTION, cropId) }
-
-    fun getLastCropSelection(): String? =
-        prefs.getString(KEY_LAST_CROP_SELECTION, null)
-
-    //–– Display name ––
-    fun saveDisplayName(name: String) =
-        prefs.edit { putString(KEY_DISPLAY_NAME, name) }
-
-    fun getDisplayName(): String =
-        prefs.getString(KEY_DISPLAY_NAME, "") ?: ""
-
-    fun clearDisplayName() =
-        prefs.edit { remove(KEY_DISPLAY_NAME) }
-
-    //–– Local user storage ––
-    fun saveLocalUser(user: User) {
+    // User Data
+    fun saveUser(user: User) {
         prefs.edit {
-            putString(KEY_LOCAL_USER_ID, user.uid)
-            putString(KEY_LOCAL_USER_MOBILE, user.mobileNumber)
-            putString(KEY_LOCAL_USER_DISPLAY_NAME, user.displayName)
-            putBoolean(KEY_LOCAL_USER_IS_VERIFIED, user.isVerified)
-            putInt(KEY_LOCAL_USER_USAGE_COUNT, user.usageCount)
+            putString(KEY_USER_ID, user.uid)
+            putString(KEY_USER_MOBILE, user.mobileNumber)
+            putString(KEY_USER_NAME, user.displayName)
         }
     }
 
-    fun getLocalUser(): User {
-        val uid      = prefs.getString(KEY_LOCAL_USER_ID, "") ?: ""
-        val mobile   = prefs.getString(KEY_LOCAL_USER_MOBILE, "") ?: ""
-        val display  = prefs.getString(KEY_LOCAL_USER_DISPLAY_NAME, "") ?: ""
-        val verified = prefs.getBoolean(KEY_LOCAL_USER_IS_VERIFIED, false)
-        val usage    = prefs.getInt(KEY_LOCAL_USER_USAGE_COUNT, 0)
+    fun getUser(): User? {
+        val uid = prefs.getString(KEY_USER_ID, null) ?: return null
+        val mobile = prefs.getString(KEY_USER_MOBILE, null) ?: return null
+        val name = prefs.getString(KEY_USER_NAME, "") ?: ""
 
-        // Create User object with only the fields we have in SharedPreferences,
-        // leaving Firebase-specific fields as their defaults
         return User(
             uid = uid,
             mobileNumber = mobile,
-            displayName = display,
-            isVerified = verified,
-            usageCount = usage
+            displayName = name,
+            isVerified = true,
+            usageCount = getUsageCount()
         )
     }
 
-    //–– Auth state ––
-    fun saveAuthState(isAuthenticated: Boolean) =
-        prefs.edit { putBoolean(KEY_AUTH_STATE, isAuthenticated) }
-
-    fun getAuthState(): Boolean =
-        prefs.getBoolean(KEY_AUTH_STATE, false)
-
-    //–– Convenience ––
-    fun saveUser(user: User) = saveLocalUser(user)
-
-    fun getUser(): User? {
-        val uid = prefs.getString(KEY_LOCAL_USER_ID, "") ?: ""
-        return if (uid.isBlank()) null else getLocalUser()
+    // Display Name Temporary Storage
+    fun saveDisplayName(displayName: String) {
+        prefs.edit { putString(KEY_DISPLAY_NAME_TEMP, displayName) }
     }
 
-    //–– Usage limit persistence ––
-    fun saveUsageLimit(limit: UsageLimit) {
+    fun getDisplayName(): String {
+        return prefs.getString(KEY_DISPLAY_NAME_TEMP, "") ?: ""
+    }
+
+    fun clearDisplayName() {
+        prefs.edit { remove(KEY_DISPLAY_NAME_TEMP) }
+    }
+
+    // Usage Limit
+    fun saveUsageLimit(usageLimit: UsageLimit) {
         prefs.edit {
-            putInt(KEY_USAGE_COUNT, limit.usageCount)
-            putLong(KEY_USAGE_RESET_DATE, limit.lastUpdated.time)
+            putInt(KEY_USAGE_COUNT, usageLimit.usageCount)
+            putLong(KEY_USAGE_RESET_DATE, usageLimit.lastUpdated.time)
         }
     }
 
     fun getUsageLimit(): UsageLimit? {
-        if (!prefs.contains(KEY_USAGE_COUNT) || !prefs.contains(KEY_USAGE_RESET_DATE)) {
-            return null
-        }
-        val count       = prefs.getInt(KEY_USAGE_COUNT, 0)
-        val resetMillis = prefs.getLong(KEY_USAGE_RESET_DATE, 0L)
-        val resetDate   = Date(resetMillis)
-        val isLimitReached = count >= Constants.MAX_MONTHLY_IDENTIFICATIONS
-        return UsageLimit(count, resetDate, isLimitReached)
+        val count = prefs.getInt(KEY_USAGE_COUNT, 0)
+        val lastUpdated = prefs.getLong(KEY_USAGE_RESET_DATE, 0L)
+        if (lastUpdated == 0L) return null
+
+        return UsageLimit(
+            usageCount = count,
+            lastUpdated = Date(lastUpdated),
+            isLimitReached = count >= MAX_MONTHLY_IDENTIFICATIONS
+        )
     }
 
-    //–– API key & token ––
-    fun saveApiKey(apiKey: String) =
-        prefs.edit { putString(KEY_API_KEY, apiKey) }
+    fun saveAuthToken(token: String) {
+        try {
+            getEncryptedPrefs().edit().putString(KEY_AUTH_TOKEN, token).apply()
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to save auth token", e)
+            // Don't throw, just log
+        }
+    }
 
-    fun getApiKey(): String =
-        prefs.getString(KEY_API_KEY, "") ?: ""
+    fun getAuthToken(): String? {
+        return try {
+            getEncryptedPrefs().getString(KEY_AUTH_TOKEN, null)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to get auth token", e)
+            null
+        }
+    }
 
-    fun saveAuthToken(token: String) =
-        prefs.edit { putString(KEY_AUTH_TOKEN, token) }
+    /**
+     * Checks if onboarding has been completed
+     */
+    fun isOnboardingCompleted(): Boolean {
+        return prefs.getBoolean(KEY_ONBOARDING_COMPLETED, false)
+    }
 
-    fun getAuthToken(): String =
-        prefs.getString(KEY_AUTH_TOKEN, "") ?: ""
+    /**
+     * Sets onboarding completion status
+     */
+    fun setOnboardingCompleted(completed: Boolean) {
+        prefs.edit().putBoolean(KEY_ONBOARDING_COMPLETED, completed).apply()
+    }
 
-    fun clearAuthToken() =
-        prefs.edit { remove(KEY_AUTH_TOKEN) }
+    /**
+     * Clear all stored data.
+     * This should be called on logout.
+     */
+    fun clearAll() {
+        try {
+            prefs.edit().clear().apply()
+            encryptedPrefs?.edit()?.clear()?.apply()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error clearing preferences", e)
+        }
+    }
 
-    //–– Clear all on logout ––
-    fun clearAll() =
-        prefs.edit { clear() }
+    /**
+     * Cleanup resources.
+     */
+    fun cleanup() {
+        // No cleanup needed for SharedPreferences
+    }
 }
+
+/**
+ * Exception thrown when there's a security-related error in SharedPreferencesManager.
+ */
+class SecurityException(message: String, cause: Throwable? = null) : Exception(message, cause)

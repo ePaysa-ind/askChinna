@@ -1,5 +1,12 @@
 # AskChinna Project Rules
 
+## Change Log
+- 2025-05-04: Refactored DateTimeUtils to a Kotlin object (utility singleton) and removed DI usage.
+- 2025-05-04: Added project error tracking file (BUILD_ERRORS.md) for systematic build error management.
+
+## Error Tracking
+- All build errors must be copied to BUILD_ERRORS.md (or build_errors.log) at the project root after each build. This enables systematic tracking and resolution of issues.
+
 > ⚠️ CRITICAL RULE: Do not make any changes unless the root cause is shown to the user and the user confirms the change.
 
 > 📝 IMPORTANT NOTE: The user is not a developer and requires detailed guidance. All code changes must include:
@@ -15,6 +22,7 @@
    - Ensure basic image capture and analysis works
    - Implement essential offline capabilities
    - Basic user authentication and session management
+   - OTP verification with proper network handling
 
 2. **Performance Over Features**
    - Optimize for low-end devices
@@ -28,6 +36,7 @@
      * Authentication failures
      * Image capture/upload failures
      * Basic data persistence errors
+     * OTP verification and resend failures
    - Provide clear user feedback for critical errors
    - Implement basic retry mechanisms for network operations
    - Log critical errors for debugging
@@ -138,6 +147,31 @@ After any dependency or version changes:
 3. Check for any new lint warnings
 4. Verify runtime behavior
 
+### ViewModel Testing Requirements
+1. **Dependencies**:
+   - Use `androidx.arch.core:core-testing` for ViewModel testing
+   - Include `androidx.lifecycle:lifecycle-runtime-testing` for lifecycle testing
+   - Add `org.jetbrains.kotlinx:kotlinx-coroutines-test` for coroutine testing
+
+2. **Test Structure**:
+   - Test ViewModel initialization
+   - Test state management
+   - Test error handling
+   - Test coroutine scopes
+   - Test data binding
+
+3. **Mocking Requirements**:
+   - Mock repositories
+   - Mock network calls
+   - Mock database operations
+   - Mock user interactions
+
+4. **Verification Steps**:
+   - Verify state updates
+   - Verify error states
+   - Verify loading states
+   - Verify data transformations
+
 ## 7. Emergency Rollback Plan
 If issues are found:
 1. Revert version changes
@@ -228,3 +262,80 @@ implementation("group:artifact:newVersion")
 
 ### D. Build Configuration Template
 ```
+```
+
+## 9. Manifest and Resource Rules
+1. **Manifest Requirements**:
+   ```
+   □ All activities must be declared
+   □ All permissions must be justified
+   □ All features must be declared
+   □ All activities must have proper themes
+   □ All activities must have proper export flags
+   □ All activities must have proper intent filters
+   ```
+
+2. **Resource Requirements**:
+   ```
+   □ All strings must be externalized
+   □ All dimensions must be in dimens.xml
+   □ All colors must be in colors.xml
+   □ All styles must be in styles.xml
+   □ All themes must be in themes.xml
+   □ All raw data must be in raw/
+   ```
+
+3. **Resource Organization**:
+   ```
+   □ Values must be in appropriate XML files
+   □ Drawables must be in drawable/
+   □ Layouts must be in layout/
+   □ Raw data must be in raw/
+   □ Mipmaps must be in mipmap/
+   ```
+
+4. **Resource Naming**:
+   ```
+   □ Use lowercase with underscores
+   □ Prefix with type (ic_, bg_, etc.)
+   □ Use descriptive names
+   □ Follow Android conventions
+   ```
+
+## 10. Build Process Rules
+1. **Pre-Build Checklist**:
+   ```
+   □ Verify manifest completeness
+   □ Verify resource availability
+   □ Verify dependency alignment
+   □ Verify version compatibility
+   □ Verify permission declarations
+   ```
+
+2. **Build Steps**:
+   ```
+   □ Clean project
+   □ Build debug APK
+   □ Run basic tests
+   □ Verify resources
+   □ Check for warnings
+   ```
+
+3. **Post-Build Verification**:
+   ```
+   □ Verify APK size
+   □ Check resource inclusion
+   □ Verify manifest merging
+   □ Check for missing resources
+   □ Verify signing configuration
+   ```
+
+## 11. Room Entity Rules
+1. **Custom Getter Methods**:
+   ```
+   □ Always annotate custom getter methods with @Ignore if Room manages the property
+   □ Only one getter should be used by Room for each property
+   □ Avoid duplicate property and method names for Room fields
+   ```
+
+> **Reference:** For canonical examples of correct view binding and data binding setup, see [chkd_files.md](chkd_files.md).

@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  ~ Copyright (c) 2025 askChinna App
-  ~ Created: April 28, 2025
-  ~ Version: 1.0
-  -->
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -18,9 +14,9 @@
         android:layout_height="?attr/actionBarSize"
         android:background="@color/colorPrimary"
         android:elevation="4dp"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintEnd_toEndOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -33,9 +29,9 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/back"
                 android:src="@drawable/ic_back"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:tint="@android:color/white" />
 
             <TextView
@@ -45,147 +41,101 @@
                 android:text="@string/preview_image"
                 android:textAppearance="@style/TextAppearance.AppCompat.Title"
                 android:textColor="@android:color/white"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/btnBack"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintStart_toEndOf="@id/btnBack"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.appcompat.widget.Toolbar>
 
-    <!-- Session Timer View -->
-    <include
+    <!-- Session Timer -->
+    <com.example.askchinna.ui.home.SessionTimerView
         android:id="@+id/sessionTimerView"
-        layout="@layout/view_session_timer"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/toolbar" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Content Layout -->
+    <!-- Network Status View -->
+    <com.example.askchinna.ui.common.NetworkStatusView
+        android:id="@+id/networkStatusView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/sessionTimerView" />
+
+    <!-- Main Content -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/contentLayout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/sessionTimerView">
+        app:layout_constraintTop_toBottomOf="@id/networkStatusView">
 
-        <!-- Crop Information -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/cardCropInfo"
-            android:layout_width="match_parent"
+        <!-- Crop Info -->
+        <TextView
+            android:id="@+id/tvCropName"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
-            android:layout_marginEnd="16dp"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="4dp"
+            android:textAppearance="?attr/textAppearanceHeadline6"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toTopOf="parent" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="16dp">
-
-                <ImageView
-                    android:id="@+id/ivCropIcon"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:contentDescription="@string/crop_icon"
-                    tools:src="@drawable/crop_icons/ic_tomato" />
-
-                <TextView
-                    android:id="@+id/tvCropName"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Large"
-                    android:textStyle="bold"
-                    tools:text="Tomato" />
-
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
+        <ImageView
+            android:id="@+id/ivCropIcon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:contentDescription="@string/crop_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvCropName" />
 
         <!-- Image Preview -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/cardImagePreview"
-            android:layout_width="match_parent"
+        <ImageView
+            android:id="@+id/ivPreview"
+            android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="2dp"
-            app:layout_constraintBottom_toTopOf="@+id/imageQualityView"
+            android:layout_margin="16dp"
+            android:scaleType="centerInside"
+            app:layout_constraintBottom_toTopOf="@id/imageQualityView"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/cardCropInfo">
-
-            <ImageView
-                android:id="@+id/ivPreview"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:contentDescription="@string/plant_image_preview"
-                android:scaleType="centerCrop"
-                tools:src="@android:color/darker_gray" />
-
-        </androidx.cardview.widget.CardView>
+            app:layout_constraintTop_toBottomOf="@id/ivCropIcon"
+            android:contentDescription="@string/preview_image" />
 
         <!-- Image Quality View -->
         <com.example.askchinna.ui.identification.ImageQualityView
             android:id="@+id/imageQualityView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
+            android:layout_margin="16dp"
             android:visibility="gone"
-            app:layout_constraintBottom_toTopOf="@+id/btnLayout"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            tools:visibility="visible" />
+            app:layout_constraintBottom_toTopOf="@id/btnSubmit" />
 
-        <!-- Buttons Layout -->
-        <LinearLayout
-            android:id="@+id/btnLayout"
-            android:layout_width="match_parent"
+        <!-- Submit Button -->
+        <Button
+            android:id="@+id/btnSubmit"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
             android:layout_marginBottom="16dp"
-            android:orientation="horizontal"
+            android:text="@string/submit_for_identification"
+            app:layout_constraintBottom_toTopOf="@id/btnRetake"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <!-- Retake Button -->
+        <Button
+            android:id="@+id/btnRetake"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="32dp"
+            android:text="@string/retake"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnRetake"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:layout_weight="1"
-                android:padding="12dp"
-                android:text="@string/retake"
-                android:textSize="16sp"
-                app:icon="@drawable/ic_camera" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSubmit"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_weight="1"
-                android:enabled="false"
-                android:padding="12dp"
-                android:text="@string/submit_for_identification"
-                android:textSize="16sp"
-                app:icon="@drawable/ic_identification" />
-
-        </LinearLayout>
+            app:layout_constraintStart_toStartOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -194,42 +144,22 @@
         android:id="@+id/loadingView"
         layout="@layout/view_loading"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/sessionTimerView"
-        tools:visibility="gone" />
+        android:layout_height="match_parent"
+        android:visibility="gone" />
 
     <!-- Error View -->
     <include
         android:id="@+id/errorView"
         layout="@layout/view_error"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/sessionTimerView"
-        tools:visibility="gone" />
+        android:layout_height="match_parent"
+        android:visibility="gone" />
 
-    <!-- Image Upload View (for showing upload progress) -->
+    <!-- Image‐upload overlay -->
     <com.example.askchinna.ui.identification.ImageUploadView
         android:id="@+id/imageUploadView"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/sessionTimerView"
-        tools:visibility="gone" />
-
-    <!-- Network Status View -->
-    <include
-        android:id="@+id/networkStatusView"
-        layout="@layout/view_network_status"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        tools:visibility="visible" />
+        android:layout_height="match_parent"
+        android:visibility="gone"  />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,26 +1,38 @@
-package com.example.askchinna.data.model
 /**
- * File: app/src/main/java/com/example/askchinna/data/model/Crop.kt
- * Copyright (c) 2025 askChinna
- * Created: April 28, 2025
- * Version: 1.0
+ * file path: app/src/main/java/com/example/askchinna/data/model/Crop.kt
+ * Copyright (c) 2025 askChinna App
+ * Created: April 29, 2025
+ * Updated: May 13, 2025
+ * Version: 1.4
  */
 
+package com.example.askchinna.data.model
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
+import com.google.gson.annotations.SerializedName
 
 /**
  * Data class representing a crop supported by the askChinna app
- * Contains all necessary information for displaying crops in the selection screen
- * and for processing in the identification flow
+ * Contains essential information for crop selection and identification
  */
 @Parcelize
 data class Crop(
+    /**
+     * Unique identifier for the crop.
+     */
+    @SerializedName("id")
     val id: String,
-    val name: String,
-    val iconResId: Int,
-    val commonPests: List<String> = emptyList(),
-    val commonDiseases: List<String> = emptyList()
-) : Parcelable
 
+    /**
+     * Name of the crop.
+     */
+    @SerializedName("name")
+    val name: String,
+
+    /**
+     * Resource ID for the crop's icon.
+     */
+    @SerializedName("iconResId")
+    val iconResId: Int = 0
+) : Parcelable

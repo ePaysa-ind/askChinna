@@ -19,3 +19,27 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+# ----------------------------------------------------------------------
+#  DataBinding Keep Rules
+# ----------------------------------------------------------------------
+-keep class androidx.databinding.** { *; }
+-keep class com.example.askchinna.databinding.** { *; }  # Replace with your package name!
+-keep class * implements androidx.databinding.DataBinderMapper { *; }
+-keep @androidx.databinding.BindingMethods class * { *; }
+-keep @androidx.databinding.BindingAdapter class * { *; }
+-keep class android.databinding.** { *; }
+-keep class net.example.**databinding.** { *; } # Add these if you use other package names
+-keep class com.example.askchinna.**databinding.** { *; } # Replace with your package name!
+
+-keepnames class androidx.databinding.** {
+    *;
+}
+-keepnames class android.databinding.** {
+    *;
+}
+-keepnames class net.example.**databinding.** {
+    *;
+} # Add these if you use other package names
+-keepnames class com.example.askchinna.**databinding.** {
+    *;
+}

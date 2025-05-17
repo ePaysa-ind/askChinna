@@ -1,21 +1,32 @@
 /**
  * Copyright (c) 2025 askChinna App
  * Created: April 28, 2025
- * Version: 1.0
+ * Updated: May 6, 2025
+ * Version: 1.3
+ * 
+ * Change Log:
+ * 1.3 - May 6, 2025
+ * - Fixed view binding initialization
+ * - Fixed resource references
+ * - Added proper error handling
+ * - Improved resource management
+ * - Enhanced documentation
  */
 package com.example.askchinna.ui.identification
 
 import android.content.Context
 import android.util.AttributeSet
+import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
 import com.example.askchinna.R
 import com.example.askchinna.databinding.ViewImageQualityBinding
 
 /**
- * Custom view to display image quality analysis results.
- * Shows visual feedback on image resolution, focus, and brightness.
+ * Custom view that displays the results of image quality analysis.
+ * Shows visual feedback for resolution, focus, and brightness.
  */
 class ImageQualityView @JvmOverloads constructor(
     context: Context,
@@ -23,138 +34,141 @@ class ImageQualityView @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : LinearLayout(context, attrs, defStyleAttr) {
 
-    private val binding: ViewImageQualityBinding
+    // Changed to direct initialization with non-nullable val
+    private val binding: ViewImageQualityBinding = ViewImageQualityBinding.inflate(
+        LayoutInflater.from(context), this, true
+    )
 
     init {
-        orientation = VERTICAL
+        try {
+            orientation = VERTICAL
 
-        // Inflate layout
-        binding = ViewImageQualityBinding.inflate(
-            LayoutInflater.from(context),
-            this,
-            true
-        )
+            // Load custom attributes if any
+            attrs?.let {
+                val typedArray = context.obtainStyledAttributes(it, R.styleable.ImageQualityView)
+                try {
+                    // Apply attributes
+                    val textColor = typedArray.getColor(
+                        R.styleable.ImageQualityView_qualityTextColor,
+                        ContextCompat.getColor(context, R.color.text_primary)
+                    )
+                    val iconSize = typedArray.getDimensionPixelSize(
+                        R.styleable.ImageQualityView_qualityIconSize,
+                        resources.getDimensionPixelSize(R.dimen.icon_size_medium)
+                    )
+
+                    binding.tvQualityStatus.setTextColor(textColor)
+                    binding.ivQualityStatus.layoutParams.width = iconSize
+                    binding.ivQualityStatus.layoutParams.height = iconSize
+                } finally {
+                    typedArray.recycle()
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error initializing ImageQualityView", e)
+            throw e
+        }
     }
 
     /**
-     * Set image quality analysis results and update the UI
-     * @param imageQuality The result of image quality analysis
+     * Sets the image quality result and updates the UI accordingly
      */
-    fun setImageQuality(imageQuality: IdentificationViewModel.ImageQualityResult) {
-        // Update overall quality status
-        binding.tvQualityStatus.apply {
-            val statusText = if (imageQuality.isAcceptable) {
+    fun setImageQuality(result: IdentificationViewModel.ImageQualityResult) {
+        try {
+            // Resolution check
+            updateQualityIndicator(
+                binding.ivResolution,
+                binding.tvResolution,
+                result.isResolutionOk
+            )
+
+            // Focus check
+            updateQualityIndicator(
+                binding.ivFocus,
+                binding.tvFocus,
+                result.isFocused
+            )
+
+            // Brightness check
+            updateQualityIndicator(
+                binding.ivBrightness,
+                binding.tvBrightness,
+                result.isBrightEnough
+            )
+
+            // Show error message if any
+            if (result.errorMessage != null) {
+                binding.tvErrorMessage.visibility = View.VISIBLE
+                binding.tvErrorMessage.text = result.errorMessage
+            } else {
+                binding.tvErrorMessage.visibility = View.GONE
+            }
+
+            // Update overall status
+            val overallStatus = if (result.isAcceptable) {
                 context.getString(R.string.image_quality_good)
             } else {
                 context.getString(R.string.image_quality_poor)
             }
-
-            val statusColor = if (imageQuality.isAcceptable) {
-                ContextCompat.getColor(context, R.color.colorSuccess)
-            } else {
-                ContextCompat.getColor(context, R.color.colorWarning)
-            }
-
-            text = statusText
-            setTextColor(statusColor)
-        }
-
-        // Update quality icon
-        binding.ivQualityStatus.apply {
-            val iconRes = if (imageQuality.isAcceptable) {
-                R.drawable.ic_severity_low
-            } else {
-                R.drawable.ic_severity_medium
-            }
-
-            setImageResource(iconRes)
-
-            val tintColor = if (imageQuality.isAcceptable) {
-                ContextCompat.getColor(context, R.color.colorSuccess)
-            } else {
-                ContextCompat.getColor(context, R.color.colorWarning)
-            }
-
-            setColorFilter(tintColor)
-        }
-
-        // Update individual quality metrics
-        updateQualityMetric(
-            binding.ivResolution,
-            binding.tvResolution,
-            imageQuality.isResolutionOk,
-            R.string.image_resolution_good,
-            R.string.image_resolution_poor
-        )
-
-        updateQualityMetric(
-            binding.ivFocus,
-            binding.tvFocus,
-            imageQuality.isFocused,
-            R.string.image_focus_good,
-            R.string.image_focus_poor
-        )
-
-        updateQualityMetric(
-            binding.ivBrightness,
-            binding.tvBrightness,
-            imageQuality.isBrightEnough,
-            R.string.image_brightness_good,
-            R.string.image_brightness_poor
-        )
-
-        // Show error message if any
-        imageQuality.errorMessage?.let { message ->
-            binding.tvErrorMessage.apply {
-                text = message
-                visibility = VISIBLE
-            }
-        } ?: run {
-            binding.tvErrorMessage.visibility = GONE
+            binding.tvQualityStatus.text = overallStatus
+            binding.tvQualityStatus.setTextColor(
+                ContextCompat.getColor(
+                    context,
+                    if (result.isAcceptable) R.color.success
+                    else R.color.error
+                )
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting image quality", e)
         }
     }
 
     /**
-     * Update a specific quality metric UI
+     * Updates a quality indicator with the given state
      */
-    private fun updateQualityMetric(
-        iconView: android.widget.ImageView,
-        textView: android.widget.TextView,
-        isGood: Boolean,
-        goodStringRes: Int,
-        poorStringRes: Int
+    private fun updateQualityIndicator(
+        iconView: View,
+        textView: View,
+        isGood: Boolean
     ) {
-        // Set icon
-        iconView.apply {
-            val iconRes = if (isGood) {
-                R.drawable.ic_severity_low
-            } else {
-                R.drawable.ic_warning
+        try {
+            if (iconView is android.widget.ImageView) {
+                iconView.setImageResource(
+                    if (isGood) R.drawable.ic_check_circle
+                    else R.drawable.ic_error
+                )
             }
-
-            setImageResource(iconRes)
-
-            val tintColor = if (isGood) {
-                ContextCompat.getColor(context, R.color.colorSuccess)
-            } else {
-                ContextCompat.getColor(context, R.color.colorWarning)
+            
+            if (textView is android.widget.TextView) {
+                textView.setTextColor(
+                    ContextCompat.getColor(
+                        context,
+                        if (isGood) R.color.success
+                        else R.color.error
+                    )
+                )
             }
-
-            setColorFilter(tintColor)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error updating quality indicator", e)
         }
+    }
 
-        // Set text
-        textView.apply {
-            val stringRes = if (isGood) goodStringRes else poorStringRes
-            text = context.getString(stringRes)
-
-            val textColor = if (isGood) {
-                ContextCompat.getColor(context, R.color.colorSuccess)
-            } else {
-                ContextCompat.getColor(context, R.color.colorWarning)
-            }
-
-            setTextColor(textColor)
+    /**
+     * Resets the view to its initial state
+     */
+    fun reset() {
+        try {
+            binding.tvErrorMessage.visibility = View.GONE
+            binding.tvQualityStatus.text = context.getString(R.string.image_quality_unknown)
+            binding.tvQualityStatus.setTextColor(ContextCompat.getColor(context, R.color.text_secondary))
+        } catch (e: Exception) {
+            Log.e(TAG, "Error resetting view", e)
         }
+    }
+
+    // No need to set binding to null in onDetachedFromWindow since it's a val
+
+    companion object {
+        private const val TAG = "ImageQualityView"
     }
 }

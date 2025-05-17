@@ -107,9 +107,8 @@
     </FrameLayout>
 
     <!-- Error state -->
-    <include
+    <com.example.askchinna.ui.components.ErrorView
         android:id="@+id/viewError"
-        layout="@layout/view_error"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:visibility="gone"

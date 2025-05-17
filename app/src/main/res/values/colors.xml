@@ -48,4 +48,35 @@
     <color name="colorSuccess">#4CAF50</color>
     <color name="network_status_background">#FFF3E0</color>
     <color name="colorWarning">#FFC107</color>
+    <color name="colorWarningDark">#FFA000</color>
+    <color name="confidence_high"> #4CAF50</color>
+    <color name="confidence_medium">#FF9800</color>
+    <color name="confidence_low">#F44336</color>
+    <color name="colorSuccessDark">#388E3C</color>
+    <color name="colorSuccessLight">#A5D6A7</color>
+    <color name="success">#4CAF50</color>
+    <color name="colorWarningLight">#FFECB3</color>
+    <color name="timer_critical">#F44336</color> <!-- Red -->
+    <color name="timer_critical_text">#FFFFFF</color> <!-- White -->
+    <color name="timer_warning">#FFC107</color> <!-- Amber -->
+    <color name="timer_warning_text">#000000</color> <!-- Black -->
+    <color name="timer_normal">#4CAF50</color> <!-- Green -->
+    <color name="timer_normal_text">#FFFFFF</color> <!-- White -->
+    <color name="timer_critical_background">#F44333</color> <!-- Light Red -->
+    <color name="progress_primary">?attr/colorPrimary</color>
+    <color name="colorPremiumText"> #FF9800</color>
+    <color name="colorPremiumBackground">#FFF3E0</color>
+    <color name="colorPremiumBackgroundDark">#FF9800</color>
+    <color name="colorPremiumProgress">#FF9800</color>
+    <color name="colorWarningText">#000000</color>
+    <color name="colorNormalText">#FFFFFF</color>
+    <color name="colorNormalProgress">#4CAF50</color>
+    <color name="colorNormalBackground">#4CAF50</color>
+    <color name="colorWarningProgress">#FFC107</color>
+    <color name="premium">#FFD700</color>
+     <color name="network_available">#4CAF50</color>
+     <color name="network_unavailable">#F44336</color>
+
+
+    <!-- Custom attributes for SessionTimerView -->
 </resources>

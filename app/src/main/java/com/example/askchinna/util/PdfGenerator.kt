@@ -2,7 +2,8 @@
  * File: app/src/main/java/com/example/askchinna/util/PdfGenerator.kt
  * Copyright (c) 2025 askChinna
  * Created: April 29, 2025
- * Version: 1.0
+ * Updated: May 4, 2025
+ * Version: 1.1
  */
 
 package com.example.askchinna.util
@@ -435,4 +436,152 @@ class PdfGenerator @Inject constructor(
         }
     }
 
+    /**
+     * Generates a PDF document with the given content.
+     *
+     * @param title The title of the document
+     * @param content The content to include
+     * @param images List of images to embed
+     * @param outputFile The file to save the PDF to
+     * @return true if successful, false otherwise
+     */
+    fun generatePdf(
+        title: String,
+        content: String,
+        images: List<Bitmap>,
+        outputFile: File
+    ): Boolean {
+        var document: PdfDocument? = null
+        var outputStream: FileOutputStream? = null
+
+        try {
+            document = PdfDocument()
+            val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create()
+            val page = document.startPage(pageInfo)
+            var currentCanvas = page.canvas
+
+            // Draw title
+            val paint = android.graphics.Paint().apply {
+                textSize = 24f
+                color = android.graphics.Color.BLACK
+            }
+            currentCanvas.drawText(title, 50f, 50f, paint)
+
+            // Draw content
+            paint.textSize = 12f
+            val lines = content.split("\n")
+            var y = 100f
+            for (line in lines) {
+                currentCanvas.drawText(line, 50f, y, paint)
+                y += 20f
+            }
+
+            // Draw images
+            var imageY = y + 50f
+            for (image in images) {
+                if (imageY + image.height > 800f) {
+                    document.finishPage(page)
+                    val newPage = document.startPage(pageInfo)
+                    currentCanvas = newPage.canvas
+                    imageY = 50f
+                }
+                currentCanvas.drawBitmap(image, 50f, imageY, null)
+                imageY += image.height + 20f
+            }
+
+            document.finishPage(page)
+
+            // Save the document
+            outputStream = FileOutputStream(outputFile)
+            document.writeTo(outputStream)
+            return true
+        } catch (e: Exception) {
+            Log.e(TAG, "Error generating PDF", e)
+            return false
+        } finally {
+            try {
+                outputStream?.close()
+            } catch (e: IOException) {
+                Log.e(TAG, "Error closing output stream", e)
+            }
+            document?.close()
+        }
+    }
+
+    /**
+     * Generates a PDF document with a single image.
+     *
+     * @param image The image to include
+     * @param outputFile The file to save the PDF to
+     * @return true if successful, false otherwise
+     */
+    fun generateImagePdf(image: Bitmap, outputFile: File): Boolean {
+        var document: PdfDocument? = null
+        var outputStream: FileOutputStream? = null
+
+        try {
+            document = PdfDocument()
+            val pageInfo = PdfDocument.PageInfo.Builder(image.width, image.height, 1).create()
+            val page = document.startPage(pageInfo)
+            val canvas = page.canvas
+
+            canvas.drawBitmap(image, 0f, 0f, null)
+            document.finishPage(page)
+
+            outputStream = FileOutputStream(outputFile)
+            document.writeTo(outputStream)
+            return true
+        } catch (e: Exception) {
+            Log.e(TAG, "Error generating image PDF", e)
+            return false
+        } finally {
+            try {
+                outputStream?.close()
+            } catch (e: IOException) {
+                Log.e(TAG, "Error closing output stream", e)
+            }
+            document?.close()
+        }
+    }
+
+    /**
+     * Generates a PDF document with multiple images.
+     *
+     * @param images List of images to include
+     * @param outputFile The file to save the PDF to
+     * @return true if successful, false otherwise
+     */
+    fun generateMultiImagePdf(images: List<Bitmap>, outputFile: File): Boolean {
+        var document: PdfDocument? = null
+        var outputStream: FileOutputStream? = null
+
+        try {
+            document = PdfDocument()
+            var pageNumber = 1
+
+            for (image in images) {
+                val pageInfo = PdfDocument.PageInfo.Builder(image.width, image.height, pageNumber).create()
+                val page = document.startPage(pageInfo)
+                val canvas = page.canvas
+
+                canvas.drawBitmap(image, 0f, 0f, null)
+                document.finishPage(page)
+                pageNumber++
+            }
+
+            outputStream = FileOutputStream(outputFile)
+            document.writeTo(outputStream)
+            return true
+        } catch (e: Exception) {
+            Log.e(TAG, "Error generating multi-image PDF", e)
+            return false
+        } finally {
+            try {
+                outputStream?.close()
+            } catch (e: IOException) {
+                Log.e(TAG, "Error closing output stream", e)
+            }
+            document?.close()
+        }
+    }
 }

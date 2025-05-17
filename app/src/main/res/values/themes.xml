@@ -6,9 +6,9 @@
       Copyright (c) 2025 askChinna
       File: app/src/main/res/values/themes.xml
       Created: April 30, 2025
-      Version: 1.0.2
+      Version: 1.1.0
 
-      Minimal View‑layer theme. All color theming happens in Compose.
+      Traditional Android theme - Compose removed for better compatibility
     -->
     <style name="Theme.AskChinna" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Edge‑to‑edge transparent bars -->

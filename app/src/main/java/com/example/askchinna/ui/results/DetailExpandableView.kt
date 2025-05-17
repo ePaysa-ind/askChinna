@@ -1,22 +1,23 @@
-/*
+/**
+ * file path: app/src/main/java/com/example/askchinna/ui/results/DetailExpandableView.kt
  * Copyright (c) 2025 askChinna App
  * Created: April 29, 2025
- * Version: 1.0
+ * Updated: May 4, 2025
+ * Version: 1.1
  */
 
 package com.example.askchinna.ui.results
 
 import android.content.Context
 import android.util.AttributeSet
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
-import android.view.animation.AccelerateDecelerateInterpolator
-import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.TextView
-import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
+import androidx.databinding.DataBindingUtil
 import com.example.askchinna.R
+import com.example.askchinna.databinding.ViewDetailExpandableBinding
 
 /**
  * Custom view that displays expandable detailed information
@@ -26,123 +27,152 @@ class DetailExpandableView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
-) : CardView(context, attrs, defStyleAttr) {
+) : LinearLayout(context, attrs, defStyleAttr) {
 
-    private val titleView: TextView
-    private val contentView: TextView
-    private val expandIcon: ImageView
-    private val headerContainer: LinearLayout
-    private val contentContainer: LinearLayout
-    private val iconView: ImageView
-    private val severityIcon: ImageView
-
+    private val binding: ViewDetailExpandableBinding
     private var isExpanded = false
-    private var animationDuration = 300L // Animation duration in milliseconds
+    private var onExpandListener: ((Boolean) -> Unit)? = null
+
+    companion object {
+        private const val TAG = "DetailExpandableView"
+    }
 
     init {
-        // Inflate the layout
-        LayoutInflater.from(context).inflate(R.layout.view_detail_expandable, this, true)
+        orientation = VERTICAL
+        binding = DataBindingUtil.inflate(
+            LayoutInflater.from(context),
+            R.layout.view_detail_expandable,
+            this,
+            true
+        )
+        binding.isExpanded = isExpanded
+        setupClickListeners()
+    }
 
-        // Initialize views
-        titleView = findViewById(R.id.text_detail_title)
-        contentView = findViewById(R.id.text_detail_content)
-        expandIcon = findViewById(R.id.image_expand_collapse)
-        headerContainer = findViewById(R.id.layout_header)
-        contentContainer = findViewById(R.id.layout_expandable_content)
-        iconView = findViewById(R.id.image_detail_icon)
-        severityIcon = findViewById(R.id.image_severity)
-
-        // Set up click listener for expanding/collapsing
-        headerContainer.setOnClickListener {
-            toggleExpanded()
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        // Find the nearest lifecycle owner
+        var parent = parent
+        while (parent != null) {
+            if (parent is androidx.lifecycle.LifecycleOwner) {
+                binding.lifecycleOwner = parent
+                break
+            }
+            parent = parent.parent
         }
+    }
 
-        // Initially collapse the content
-        contentContainer.visibility = View.GONE
-        expandIcon.setImageResource(R.drawable.ic_expand)
+    override fun onDetachedFromWindow() {
+        binding.lifecycleOwner = null
+        super.onDetachedFromWindow()
+    }
+
+    private fun setupClickListeners() {
+        binding.layoutHeader.setOnClickListener {
+            toggleExpansion()
+        }
+    }
+
+    fun setOnExpandListener(listener: (Boolean) -> Unit) {
+        onExpandListener = listener
     }
 
     /**
      * Sets the title text for this detail view
      */
     fun setTitle(title: String) {
-        titleView.text = title
+        try {
+            if (title.isBlank()) {
+                Log.e(TAG, "Invalid title: blank")
+                return
+            }
+
+            binding.textDetailTitle.text = title
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting title", e)
+        }
     }
 
     /**
      * Sets the detailed content text
      */
     fun setContent(content: String) {
-        contentView.text = content
+        try {
+            if (content.isBlank()) {
+                Log.e(TAG, "Invalid content: blank")
+                return
+            }
+
+            binding.textDetailContentExpanded.text = content
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting content", e)
+        }
     }
 
     /**
      * Sets the icon for this detail view
-     * @param iconResId Resource ID of the icon to display
+     * @param resourceId Resource ID of the icon to display
      */
-    fun setIcon(iconResId: Int) {
-        iconView.setImageResource(iconResId)
+    fun setIcon(resourceId: Int) {
+        try {
+            binding.imageDetailIcon.setImageResource(resourceId)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting icon", e)
+        }
     }
 
     /**
      * Sets the severity level which determines the icon shown
-     * @param severity Severity level (HIGH, MEDIUM, LOW)
+     * @param severity The severity level (HIGH, MEDIUM, LOW)
      */
     fun setSeverity(severity: Severity) {
-        val iconRes = when (severity) {
-            Severity.HIGH -> R.drawable.ic_severity_high
-            Severity.MEDIUM -> R.drawable.ic_severity_medium
-            Severity.LOW -> R.drawable.ic_severity_low
+        try {
+            val iconResId = when (severity) {
+                Severity.HIGH -> R.drawable.ic_severity_high
+                Severity.MEDIUM -> R.drawable.ic_severity_medium
+                Severity.LOW -> R.drawable.ic_severity_low
+            }
+            binding.imageSeverity.setImageResource(iconResId)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting severity", e)
         }
-        severityIcon.setImageResource(iconRes)
     }
 
     /**
-     * Sets the initial expansion state of the view
-     * @param expanded Whether the view should be expanded initially
+     * Sets the severity level which determines the icon shown
+     * @param resourceId Resource ID of the icon to display
      */
-    fun setExpanded(expanded: Boolean) {
-        if (expanded != isExpanded) {
-            toggleExpanded(false) // Toggle without animation
+    fun setSeverityIcon(resourceId: Int) {
+        try {
+            binding.imageSeverity.setImageResource(resourceId)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting severity icon", e)
         }
     }
 
     /**
      * Toggles the expanded/collapsed state with animation
-     * @param animate Whether to animate the transition
      */
-    private fun toggleExpanded(animate: Boolean = true) {
+    private fun toggleExpansion() {
         isExpanded = !isExpanded
+        binding.isExpanded = isExpanded
+        onExpandListener?.invoke(isExpanded)
+    }
 
-        // Update the expand/collapse icon
-        expandIcon.setImageResource(
-            if (isExpanded) R.drawable.ic_collapse else R.drawable.ic_expand
-        )
-
-        if (animate) {
-            if (isExpanded) {
-                // Expand with animation
-                contentContainer.visibility = View.VISIBLE
-                contentContainer.alpha = 0f
-                contentContainer.animate()
-                    .alpha(1f)
-                    .setDuration(animationDuration)
-                    .setInterpolator(AccelerateDecelerateInterpolator())
-                    .start()
-            } else {
-                // Collapse with animation
-                contentContainer.animate()
-                    .alpha(0f)
-                    .setDuration(animationDuration)
-                    .setInterpolator(AccelerateDecelerateInterpolator())
-                    .withEndAction {
-                        contentContainer.visibility = View.GONE
-                    }
-                    .start()
-            }
-        } else {
-            // No animation, just set visibility
-            contentContainer.visibility = if (isExpanded) View.VISIBLE else View.GONE
+    /**
+     * Resets the view to its initial state
+     */
+    fun reset() {
+        try {
+            binding.textDetailTitle.text = ""
+            binding.textDetailContentExpanded.text = ""
+            binding.imageDetailIcon.setImageResource(R.drawable.ic_warning)
+            binding.imageSeverity.setImageResource(R.drawable.ic_severity_medium)
+            binding.imageExpandCollapse.setImageResource(R.drawable.ic_expand)
+            isExpanded = false
+            binding.isExpanded = isExpanded
+        } catch (e: Exception) {
+            Log.e(TAG, "Error resetting view", e)
         }
     }
 

@@ -113,6 +113,18 @@
                 android:layout_height="wrap_content"
                 android:visibility="gone" />
 
+            <!-- Thank You Message -->
+            <TextView
+                android:id="@+id/text_thank_you"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center"
+                android:text="@string/thank_you_feedback"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>

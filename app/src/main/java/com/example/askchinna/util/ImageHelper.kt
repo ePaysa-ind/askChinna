@@ -2,7 +2,8 @@
  * File: app/src/main/java/com/example/askchinna/util/ImageHelper.kt
  * Copyright (c) 2025 askChinna
  * Created: April 29, 2025
- * Version: 1.0
+ * Updated: May 4, 2025
+ * Version: 1.1
  */
 
 package com.example.askchinna.util
@@ -11,11 +12,10 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
-import android.media.ExifInterface
+import androidx.exifinterface.media.ExifInterface
 import android.net.Uri
-import android.os.Build
 import android.util.Log
-import androidx.core.content.FileProvider
+import android.util.LruCache
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -26,6 +26,9 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.abs
+import androidx.core.graphics.scale
+import androidx.core.graphics.createBitmap
 
 
 /**
@@ -41,6 +44,114 @@ class ImageHelper @Inject constructor(
         private const val TEMP_IMG_PREFIX = "ASKCHINNA_IMG_"
         private const val TEMP_IMG_SUFFIX = ".jpg"
         private const val DATE_FORMAT = "yyyyMMdd_HHmmss"
+        private const val MEMORY_CACHE_SIZE = 1024 * 1024 * 10 // 10MB
+        private const val DISK_CACHE_SIZE = 1024 * 1024 * 50L // 50MB
+        private const val DISK_CACHE_DIR = "image_cache"
+        private const val MAX_IMAGE_SIZE = 1920 // Max width or height for processed images
+    }
+
+    // Memory cache for bitmap images
+    private val memoryCache: LruCache<String, Bitmap> = object : LruCache<String, Bitmap>(MEMORY_CACHE_SIZE) {
+        override fun sizeOf(key: String, bitmap: Bitmap): Int {
+            return bitmap.byteCount / 1024
+        }
+        
+        override fun entryRemoved(evicted: Boolean, key: String, oldValue: Bitmap, newValue: Bitmap?) {
+            if (evicted) {
+                // When bitmap is evicted from memory cache, recycle it
+                if (!oldValue.isRecycled) {
+                    oldValue.recycle()
+                }
+            }
+        }
+    }
+    
+    // Disk cache directory
+    private val diskCacheDir: File by lazy {
+        File(context.cacheDir, DISK_CACHE_DIR).apply {
+            if (!exists()) mkdirs()
+        }
+    }
+    
+    // Cache management methods
+    private fun getBitmapFromMemCache(key: String): Bitmap? {
+        return memoryCache.get(key)
+    }
+    
+    private fun addBitmapToMemCache(key: String, bitmap: Bitmap) {
+        if (getBitmapFromMemCache(key) == null) {
+            memoryCache.put(key, bitmap)
+        }
+    }
+    
+    private fun getBitmapFromDiskCache(key: String): File? {
+        val filename = key.hashCode().toString()
+        val file = File(diskCacheDir, filename)
+        return if (file.exists()) file else null
+    }
+    
+    private fun addBitmapToDiskCache(key: String, bitmap: Bitmap) {
+        val filename = key.hashCode().toString()
+        val file = File(diskCacheDir, filename)
+        try {
+            FileOutputStream(file).use { out ->
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error saving to disk cache", e)
+        }
+    }
+    
+    private fun saveBitmapToFile(bitmap: Bitmap, quality: Int): File? {
+        return try {
+            val file = createTempImageFile()
+            FileOutputStream(file).use { out ->
+                bitmap.compress(Bitmap.CompressFormat.JPEG, quality, out)
+            }
+            file
+        } catch (e: Exception) {
+            Log.e(TAG, "Error saving bitmap to file", e)
+            null
+        }
+    }
+    
+    // Clear caches when memory is low
+    fun clearCaches() {
+        memoryCache.evictAll()
+        diskCacheDir.listFiles()?.forEach { it.delete() }
+    }
+    
+    /**
+     * Loads image progressively - first low quality, then high quality
+     * @param imageUri URI of the image to load
+     * @param callback Callback for progressive loading
+     */
+    fun loadImageProgressively(imageUri: Uri, callback: (Bitmap?, Boolean) -> Unit) {
+        // Load low quality version first
+        try {
+            context.contentResolver.openInputStream(imageUri)?.use { inputStream ->
+                val options = BitmapFactory.Options().apply {
+                    inSampleSize = 8 // Very low quality for quick preview
+                    inPreferredConfig = Bitmap.Config.RGB_565
+                }
+                val lowQualityBitmap = BitmapFactory.decodeStream(inputStream, null, options)
+                callback(lowQualityBitmap, false) // false = not final quality
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error loading low quality image", e)
+        }
+        
+        // Load high quality version
+        try {
+            context.contentResolver.openInputStream(imageUri)?.use { inputStream ->
+                val bitmap = decodeSampledBitmapFromStream(inputStream)
+                val rotatedBitmap = rotateImageIfRequired(bitmap, imageUri)
+                callback(rotatedBitmap, true) // true = final quality
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error loading high quality image", e)
+            callback(null, true)
+        }
     }
 
     /**
@@ -60,19 +171,6 @@ class ImageHelper @Inject constructor(
     }
 
     /**
-     * Gets content URI for a file using FileProvider
-     * @param file File to get URI for
-     * @return Content URI for the file
-     */
-    fun getUriForFile(file: File): Uri {
-        return FileProvider.getUriForFile(
-            context,
-            "${context.packageName}.fileprovider",
-            file
-        )
-    }
-
-    /**
      * Compress image for upload, optimized for low-end devices
      * @param imageUri URI of the image to compress
      * @param quality Compression quality (0-100)
@@ -80,12 +178,29 @@ class ImageHelper @Inject constructor(
      */
     fun compressImage(imageUri: Uri, quality: Int = Constants.IMAGE_QUALITY_COMPRESSION): File? {
         return try {
+            val cacheKey = imageUri.toString()
+            
+            // Check memory cache first
+            val cachedBitmap = getBitmapFromMemCache(cacheKey)
+            if (cachedBitmap != null) {
+                return saveBitmapToFile(cachedBitmap, quality)
+            }
+            
+            // Check disk cache
+            val diskCachedFile = getBitmapFromDiskCache(cacheKey)
+            if (diskCachedFile?.exists() == true) {
+                return diskCachedFile
+            }
+            
             val inputStream = context.contentResolver.openInputStream(imageUri) ?: return null
             val bitmap = decodeSampledBitmapFromStream(inputStream)
             inputStream.close()
 
             // Rotate bitmap if needed based on EXIF data
             val rotatedBitmap = rotateImageIfRequired(bitmap, imageUri)
+            
+            // Add to memory cache
+            addBitmapToMemCache(cacheKey, rotatedBitmap)
 
             // Create compressed file
             val compressedFile = createTempImageFile()
@@ -163,8 +278,11 @@ class ImageHelper @Inject constructor(
         }
 
         // Decode bitmap with inSampleSize set
-        return BitmapFactory.decodeStream(inputStream, null, options) ?:
-        Bitmap.createBitmap(Constants.MIN_IMAGE_RESOLUTION_WIDTH, Constants.MIN_IMAGE_RESOLUTION_HEIGHT, Bitmap.Config.RGB_565)
+        return BitmapFactory.decodeStream(inputStream, null, options) ?: createBitmap(
+            Constants.MIN_IMAGE_RESOLUTION_WIDTH,
+            Constants.MIN_IMAGE_RESOLUTION_HEIGHT,
+            Bitmap.Config.RGB_565
+        )
     }
 
     /**
@@ -177,18 +295,8 @@ class ImageHelper @Inject constructor(
         try {
             val input = context.contentResolver.openInputStream(uri) ?: return bitmap
 
-            val ei = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            val ei =
                 ExifInterface(input)
-            } else {
-                // For older devices, try to get file path
-                val path = getPathFromUri(uri)
-                if (path != null) {
-                    ExifInterface(path)
-                } else {
-                    input.close()
-                    return bitmap
-                }
-            }
 
             input.close()
 
@@ -221,33 +329,11 @@ class ImageHelper @Inject constructor(
         val rotatedBitmap = Bitmap.createBitmap(
             source, 0, 0, source.width, source.height, matrix, true
         )
-        // Don't recycle source here as it might be used elsewhere
-        return rotatedBitmap
-    }
-
-    /**
-     * Attempts to get file path from URI
-     * @param uri URI to get path for
-     * @return File path string or null
-     */
-    private fun getPathFromUri(uri: Uri): String? {
-        try {
-            // For MediaStore content URIs
-            context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-                if (cursor.moveToFirst()) {
-                    val columnIndex = cursor.getColumnIndexOrThrow("_data")
-                    return cursor.getString(columnIndex)
-                }
-            }
-
-            // For file URI
-            if (uri.scheme == "file") {
-                return uri.path
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error getting path from URI: ${e.message}")
+        // Recycle source bitmap if it's different from rotated
+        if (source != rotatedBitmap && !source.isRecycled) {
+            source.recycle()
         }
-        return null
+        return rotatedBitmap
     }
 
     /**
@@ -256,14 +342,9 @@ class ImageHelper @Inject constructor(
      * @param bitmap Input bitmap to analyze
      * @return Quality score from 0-100
      */
-    fun calculateImageQuality(bitmap: Bitmap): Int {
+    private fun calculateImageQuality(bitmap: Bitmap): Int {
         // Create smaller bitmap for analysis to save memory
-        val scaledBitmap = Bitmap.createScaledBitmap(
-            bitmap,
-            bitmap.width / 4,
-            bitmap.height / 4,
-            false
-        )
+        val scaledBitmap = bitmap.scale(bitmap.width / 4, bitmap.height / 4, false)
 
         val brightnessScore = calculateBrightnessScore(scaledBitmap)
         val contrastScore = calculateContrastScore(scaledBitmap)
@@ -293,8 +374,8 @@ class ImageHelper @Inject constructor(
         val samplingRate = 5
         var sampledPixels = 0
 
-        for (i in 0 until pixels.size step samplingRate) {
-            val pixel = pixels[i]
+        for (i in pixels.indices step samplingRate) {
+            val pixel: Int = pixels[i]
             val r = (pixel shr 16) and 0xff
             val g = (pixel shr 8) and 0xff
             val b = pixel and 0xff
@@ -332,7 +413,7 @@ class ImageHelper @Inject constructor(
         // Sample pixels to find min and max brightness
         val samplingRate = 5
 
-        for (i in 0 until pixels.size step samplingRate) {
+        for (i in pixels.indices step samplingRate) {
             val pixel = pixels[i]
             val r = (pixel shr 16) and 0xff
             val g = (pixel shr 8) and 0xff
@@ -394,7 +475,7 @@ class ImageHelper @Inject constructor(
                 val grayRight = getGrayScale(pixels[right])
 
                 // Simplified Laplacian calculation (4-neighborhood)
-                val laplacian = Math.abs(4 * grayCenter - grayTop - grayBottom - grayLeft - grayRight)
+                val laplacian = abs(4 * grayCenter - grayTop - grayBottom - grayLeft - grayRight)
 
                 sumLaplacian += laplacian
                 sampleCount++
@@ -426,48 +507,6 @@ class ImageHelper @Inject constructor(
     }
 
     /**
-     * Check if image size is within allowed limit
-     * @param uri URI of the image
-     * @return true if within limit, false otherwise
-     */
-    fun isImageSizeWithinLimit(uri: Uri): Boolean {
-        try {
-            val inputStream = context.contentResolver.openInputStream(uri) ?: return false
-            val fileSize = inputStream.available()
-            inputStream.close()
-
-            val fileSizeMB = fileSize / (1024f * 1024f)
-            return fileSizeMB <= Constants.MAX_IMAGE_SIZE_MB
-        } catch (e: Exception) {
-            Log.e(TAG, "Error checking image size: ${e.message}")
-            return false
-        }
-    }
-
-    /**
-     * Check if image resolution meets minimum requirements
-     * @param uri URI of the image
-     * @return true if resolution is sufficient, false otherwise
-     */
-    fun isImageResolutionSufficient(uri: Uri): Boolean {
-        try {
-            val options = BitmapFactory.Options().apply {
-                inJustDecodeBounds = true
-            }
-
-            val inputStream = context.contentResolver.openInputStream(uri) ?: return false
-            BitmapFactory.decodeStream(inputStream, null, options)
-            inputStream.close()
-
-            return options.outWidth >= Constants.MIN_IMAGE_RESOLUTION_WIDTH &&
-                    options.outHeight >= Constants.MIN_IMAGE_RESOLUTION_HEIGHT
-        } catch (e: Exception) {
-            Log.e(TAG, "Error checking image resolution: ${e.message}")
-            return false
-        }
-    }
-
-    /**
      * Delete temporary images to free up space
      * Should be called periodically to clean up storage
      */
@@ -487,4 +526,151 @@ class ImageHelper @Inject constructor(
             Log.e(TAG, "Error cleaning up temp images: ${e.message}")
         }
     }
+
+    /**
+     * Clear in-memory image cache to free up memory
+     * Should be called when app needs to reduce memory usage
+     */
+    fun clearImageCache() {
+        try {
+            memoryCache.evictAll()
+            Log.d(TAG, "Image cache cleared successfully")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error clearing image cache: ${e.message}")
+        }
+    }
+
+    /**
+     * Compresses a bitmap with specified quality
+     * @param bitmap Bitmap to compress
+     * @param quality Compression quality (0-100)
+     * @return Compressed bitmap
+     */
+    fun compressBitmap(bitmap: Bitmap, quality: Int): Bitmap {
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, quality, byteArrayOutputStream)
+        val compressedData = byteArrayOutputStream.toByteArray()
+
+        return BitmapFactory.decodeByteArray(compressedData, 0, compressedData.size) ?: bitmap
+    }
+
+    /**
+     * Resizes a bitmap to specified dimensions
+     * @param bitmap Bitmap to resize
+     * @param width Target width
+     * @param height Target height
+     * @return Resized bitmap
+     */
+    fun resizeBitmap(bitmap: Bitmap, width: Int, height: Int): Bitmap {
+        return bitmap.scale(width, height)
+    }
+
+    /**
+     * Gets a bitmap from URI
+     * @param uri URI to get bitmap from
+     * @return Bitmap from URI
+     */
+    fun getBitmapFromUri(uri: Uri): Bitmap? {
+        return try {
+            val inputStream = context.contentResolver.openInputStream(uri) ?: return null
+            val bitmap = BitmapFactory.decodeStream(inputStream)
+            inputStream.close()
+            bitmap
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting bitmap from URI: ${e.message}")
+            null
+        }
+    }
+
+    /**
+     * Assess image quality
+     * @param bitmap Bitmap to assess
+     * @return Quality score (0-100)
+     */
+    fun assessImageQuality(bitmap: Bitmap): Int {
+        return calculateImageQuality(bitmap)
+    }
+
+    /**
+     * Save image to cache directory
+     * @param bitmap Bitmap to save
+     * @param fileName Name for the file
+     * @return File where image was saved
+     */
+    fun saveImageToCache(bitmap: Bitmap, fileName: String): File {
+        val cacheFile = File(context.cacheDir, fileName)
+        val outputStream = FileOutputStream(cacheFile)
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
+        outputStream.flush()
+        outputStream.close()
+        return cacheFile
+    }
+
+    /**
+     * Optimize image for upload, ensuring it's under specified size limit
+     * @param bitmap Bitmap to optimize
+     * @param maxSizeBytes Maximum size in bytes
+     * @return Optimized bitmap
+     */
+    fun optimizeImageForUpload(bitmap: Bitmap, maxSizeBytes: Int): Bitmap {
+        var quality = 100
+        var outputStream = ByteArrayOutputStream()
+        var optimizedBitmap = bitmap
+
+        // First try just compressing with reducing quality
+        while (quality > 10) {
+            outputStream = ByteArrayOutputStream()
+            optimizedBitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream)
+            if (outputStream.size() <= maxSizeBytes) {
+                break
+            }
+            quality -= 10
+        }
+
+        // If still too large, reduce dimensions
+        if (outputStream.size() > maxSizeBytes) {
+            var scale = 0.9f
+            while (scale > 0.1f) {
+                val width = (bitmap.width * scale).toInt()
+                val height = (bitmap.height * scale).toInt()
+                optimizedBitmap = bitmap.scale(width, height)
+
+                outputStream = ByteArrayOutputStream()
+                optimizedBitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream)
+
+                if (outputStream.size() <= maxSizeBytes) {
+                    break
+                }
+                scale -= 0.1f
+            }
+        }
+
+        return optimizedBitmap
+    }
+
+    /**
+     * Get image orientation in degrees
+     * @param imagePath Path to image file
+     * @return Orientation in degrees (0, 90, 180, 270)
+     */
+    fun getImageOrientation(imagePath: String): Int {
+        try {
+            val exif = ExifInterface(imagePath)
+            val orientation = exif.getAttributeInt(
+                ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_NORMAL
+            )
+
+            return when (orientation) {
+                ExifInterface.ORIENTATION_ROTATE_90 -> 90
+                ExifInterface.ORIENTATION_ROTATE_180 -> 180
+                ExifInterface.ORIENTATION_ROTATE_270 -> 270
+                else -> 0
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting image orientation: ${e.message}")
+            return 0
+        }
+    }
+
 }

@@ -11,6 +11,15 @@
 
     <!-- Network Status -->
     <string name="network_offline">You are offline. Some features may be limited.</string>
+    <string name="offline_mode_active">You are currently offline</string>
+    <string name="offline">Offline</string>
+    <string name="ok">OK</string>
+    <string name="network_available">Network Available</string>
+    <string name="network_unavailable">Network Unavailable</string>
+    
+    <!-- Main Activity -->
+    <string name="error_initialization">Failed to initialize app</string>
+    <string name="retry">Retry</string>
 
     <!-- Authentication - Login -->
     <string name="title_login">Login</string>
@@ -38,10 +47,15 @@
     <string name="resend_otp_countdown">Resend OTP in %1$d s</string>
     <string name="otp_instructions">Please enter the 6-digit verification code sent to your mobile number via SMS</string>
     <string name="otp_resent_success">OTP has been resent</string>
+    <string name="reset_password_otp_sent">OTP sent to %1$s. Please check your messages.</string> <!--used in forgotpasswordactivity.kt-->
 
     <!-- OTP Resend Dialog -->
     <string name="title_resend_otp">Resend OTP</string>
     <string name="resend_otp_message">Enter your mobile number to receive a new OTP</string>
+    <string name="title_forgot_password">Forgot Password</string>
+    <string name="forgot_password_instructions">Enter your registered mobile number to receive a password reset link</string>
+    <string name="btn_send_reset_link">Send Reset Link</string>
+    <string name="btn_reset_password">Reset Password</string>
 
     <!-- Home Screen -->
     <string name="title_home">Home</string>
@@ -53,6 +67,9 @@
     <string name="confirm_logout">Are you sure you want to logout?</string>
     <string name="btn_yes">Yes</string>
     <string name="btn_no">No</string>
+    <string name="unlimited">Unlimited</string>
+    <string name="usage_count_format">%1$d of %2$d used</string>
+    <string name="remaining_count_format">%1$d remaining</string>
 
     <!-- Missing strings from Home Screen -->
     <string name="welcome">Welcome</string>
@@ -60,6 +77,7 @@
     <string name="identification_icon">Identification Icon</string>
     <string name="start_identification">Start Identification</string>
     <string name="identification_description">Use your camera to capture plant images and identify diseases or pests</string>
+    <string name="onboarding_welcome_title">Welcome to askChinna></string>
 
     <!-- Session Timer -->
     <string name="session_timer">Session: %1$d:%2$02d</string>
@@ -94,7 +112,14 @@
     <!-- Error Messages -->
     <string name="error_loading_crops">Unable to load crops. Please check your connection and try again.</string>
     <string name="error_network_unavailable">Network unavailable. Please check your connection.</string>
-    <string name="retry">Retry</string>
+    <string name="session_expired">Session expired. Please login again.</string>
+    <string name="session_expired_title">Session Expired</string>
+    
+    <string name="session_expired_action">Login Again</string>
+    <string name="session_expired_cancel">Cancel</string>
+    <string name="start_new_session">Start a new session</string>
+    <string name="usage_limit_reached_title">Usage Limit Reached</string>
+    <string name="error_invalid_data">Invalid data</string>
 
     <!-- Image Capture -->
     <string name="title_capture_image">Capture Image</string>
@@ -118,6 +143,13 @@
     <string name="btn_upload">Upload</string>
     <string name="image_quality_good">Good image quality</string>
     <string name="image_quality_poor">Poor image quality. Consider retaking.</string>
+    <string name="image_resolution_good">Image resolution is good</string>
+    <string name="image_resolution_poor">Image resolution is poor. Consider retaking.</string>
+    <string name="image_focus_good">Image is in focus</string>
+    <string name="image_focus_blurry">Image is blurry. Consider retaking.</string>
+    <string name="image_brightness_good">Image brightness is good</string>
+    <string name="image_brightness_poor">Image brightness is poor. Consider retaking.</string>
+    <string name="image_focus_poor">Image is not in focus. Consider retaking.</string>
 
     <!-- Missing strings from Image Preview -->
     <string name="preview_image">Preview Image</string>
@@ -148,6 +180,22 @@
     <string name="identifying">Identifying disease…</string>
     <string name="identification_complete">Identification complete</string>
     <string name="identification_failed">Identification failed</string>
+    <string name="internet_required_for_identification">Internet connection is required for identification</string>
+    <string name="camera_permission_denied">Camera permission denied</string>
+    <string name="no_camera_app_available">No camera app available</string>
+    <string name="image_capture_help_message">Please ensure the image is clear and well-lit for accurate identification</string>
+    <string name="error_creating_image_file">Error creating image file</string>
+    <string name="low_quality_image_title">Low Quality Image</string>
+    <string name="low_quality_image_message">The image quality is too low for accurate identification. Please retake the photo.</string>
+    <string name="timer_critical">Critical Timer</string>
+    <string name="timer_critical_text">Your session is about to expire. Please take action.</string>
+    <string name="timer_warning">Warning Timer</string>
+    <string name="timer_warning_text">Your session will expire soon. Please take action.</string>
+    <string name="timer_info">Session Timer</string>
+    <string name="timer_info_message">Your session is active. Please complete your tasks.</string>
+    <string name="timer_normal">Normal Timer</string>
+    <string name="timer_normal_text">Your session is active. Please continue.</string>
+
 
     <!-- Results -->
     <string name="title_results">Identification Results</string>
@@ -167,10 +215,30 @@
     <string name="error_api">Service error. Please try again later.</string>
     <string name="error_auth_failed">Authentication failed</string>
     <string name="error_session_expired">Session expired. Please login again.</string>
+    <string name="loading_tip_offline">You can still use the app in offline mode, but some features may be limited.</string>
+    <string name="loading_tip_online">You are online. All features are available.</string>
+    <string name="loading_tip_connectivity">Please check your internet connection.</string>
+    <string name="loading_tip_lightning">Lightning icon</string>
+    <string name="loading_tip_network">Network icon</string>
+    <string name="loading_tip_session">Session icon</string>
+    <string name="loading_tip_position">Position icon</string>
+    <string name="loading_tip_low_light">Low light icon</string>
     <!-- Onboarding -->
     <string name="skip">Skip</string>
     <string name="next">Next</string>
     <string name="onboarding_image_description">Onboarding screen illustration</string>
+    <string name="onboarding_welcome">Welcome to askChinna</string>
+    <string name="onboarding_welcome_description">Your personal agricultural assistant</string>
+    <string name="onboarding_identify">Identify Crop Diseases</string>
+    <string name="onboarding_crop_selection_title">Select your crop</string>
+    <string name="onboarding_crop_selection_description">Choose the crop you want to check for diseases</string>
+    <string name="onboarding_camera_title">Capture or upload an image</string>
+    <string name="onboarding_camera_description">Take a clear picture of the affected plant part or upload from your gallery</string>
+    <string name="onboarding_results_title">Get instant results</string>
+    <string name="onboarding_results_description">Receive identification results and recommended actions</string>
+    <string name="onboarding_limits_title">Usage Limits</string>
+    <string name="onboarding_limits_description">You have a limited number of identifications per month</string>
+    <string name="onboarding_get_started">Get Started</string>
     <!-- SummaryView.kt support -->
     <string name="confidence_percent">Confidence: %1$d%%</string>
     <string name="confidence_high">High Confidence</string>
@@ -189,28 +257,50 @@
     <!-- Error & Feedback -->
     <string name="error_icon_description">Error icon</string>
     <string name="feedback_prompt">Was this identification helpful?</string>
-    <string name="action_icon">Action icon</string>
+    <string name="action_icon">Action Icon</string>
+    <string name="error_unknown">Something went wrong</string>
+    <string name="error_network_failure">Network failure</string>
+    <string name="error_otp_send_failed">Failed to send OTP</string>
+
     <!-- Feedback -->
     <string name="feedback_helpful">Helpful</string>
     <string name="feedback_partially_helpful">Partially Helpful</string>
     <string name="feedback_not_helpful">Not Helpful</string>
     <string name="submit_feedback">Submit Feedback</string>
-    <string name="feedback_submitted">Feedback Submitted</string>
     <string name="thank_you_feedback">Thank you for your feedback!</string>
+    <string name="error_feedback_submission">Failed to submit feedback</string>
 
     <!-- Image Quality -->
     <string name="image_quality">Image Quality</string>
     <string name="resolution">Resolution</string>
     <string name="focus">Focus</string>
     <string name="brightness">Brightness</string>
+    <string name="proceed_anyway">Proceed Anyway</string>
+    <string name="retake_photo">Retake Photo</string>
+    <string name="image_quality_warning_title">Low Quality Image</string>
+    <string name="image_quality_warning_message">The image quality is too low for accurate identification. Please retake the photo.</string>
+    <string name="proceed">Proceed Anyway</string>
+    <string name="error_no_network">No network connection available</string>
+    <string name="network_error_title">Network Error</string>
+    <string name="network_error_message">Please check your internet connection and try again.</string>
+    <string name="error_quality_check">Image quality check failed</string>
+    <string name="image_quality_error">Poor image quality</string>
+    <string name="image_quality_unknown">Image Quality: Unknown</string>
+    <string name="resolution_check">Resolution Check</string>
+    <string name="focus_check">Focus Check</string>
+    <string name="brightness_check">Brightness Check</string>
+    <string name="success">Success</string>
+    <string name="error_upload">Upload failed</string>
+    <string name="upload_progress">Uploading: %1$d%%</string>
+    <string name="upload_success">Upload successful</string>
 
     <!-- Upload -->
     <string name="upload_status">Upload Status</string>
     <string name="cancel">Cancel</string>
 
     <!-- Loading -->
-    <string name="loading_message">Processing your request...</string>
-    <string name="loading_tip">This usually takes 10-15 seconds</string>
+    <string name="loading_message">Processing your request…</string>
+    <string name="loading_tip">This usually takes 10–15 seconds</string>
 
     <!-- Network -->
     <string name="network_status_icon">Network status icon</string>
@@ -221,13 +311,78 @@
     <string name="warning_icon">Warning icon</string>
     <string name="session_expiring_soon">Your session is expiring soon</string>
 
-
-
     <!-- Usage Limit -->
     <string name="usage_icon">Usage icon</string>
     <string name="usage_limit">Usage Limit</string>
-
+    <string name="unlimited_usage">Unlimited Usage</string>
+    <string name="premium_text">Premium</string>
+    <string name="premium_progress">Premium Progress</string>
+    <string name="remaining_counts">Remaining Counts</string>
+    <string name="remaining_count">Remaining Count</string>
+    <string name="normal_text">Normal</string>
+    <string name="normal_progress">Normal Progress</string>
+    <string name="progress_primary">Primary Progress</string>
     <!-- Menu -->
     <string name="logout">Logout</string>
+
+    <string name="usage_limit_title">Usage Limit</string>
+    <string name="premium_user">Premium User</string>
+
+    <!-- Feedback -->
+    <string name="text_action_plan_title">Recommended Actions</string>
+    <string name="layout_actions">Actions Layout</string>
+    <string name="image_action_plan_icon">Action Plan Icon</string>
+    <string name="rating_bar">Rating Bar</string>
+    <string name="text_feedback_comment">Feedback Comment</string>
+    <string name="image_feedback_icon">Feedback Icon</string>
+    <string name="text_thank_you">Thank you for your feedback!</string>
+
+    <!-- Error Messages -->
+    <string name="error_navigation">Navigation error</string>
+    <string name="error_state_handling">State handling error</string>
+    <string name="error_observer_setup">Observer setup error</string>
+    <string name="error_retry">Retry error</string>
+    <string name="error_pdf_export">PDF export error</string>
+    <string name="error_ui_setup">UI setup error</string>
+    <string name="error_image_not_found">Image not found</string>
+    <string name="error_image_loading">Image loading error</string>
+    <string name="error_ui_state">UI state error</string>
+    <string name="error_result_display">Result display error</string>
+
+    <!-- Permissions -->
+    <string name="camera_permission_rationale">Camera permission is required to capture images of plants for disease identification</string>
+    <string name="storage_permission_rationale">Storage permission is required to access and save plant images</string>
+    <string name="permission_required">Permission Required</string>
+
+    <!-- Settings -->
+    <string name="settings">Settings</string>
+
+    <!-- Error Messages -->
+    <string name="error_image_capture">Failed to capture image</string>
+    <string name="error_image_selection">Failed to select image</string>
+    <string name="error_crop_selection">No crop selected</string>
+    <string name="error_not_initialized">App is not initialized. Please restart.</string>
+
+    <string name="permission_denied">Permission Denied</string>
+    <string name="capture_image_help">To get the best results:\n\n1. Ensure good lighting\n2. Focus on the affected area\n3. Keep the camera steady\n4. Avoid shadows and glare</string>
+
+    <!-- Action Plan -->
+    <string name="error_loading_actions">Error loading actions</string>
+
+    <!-- DetailExpandableView -->
+    <string name="detail_icon">Detail Icon</string>
+    <string name="severity_icon">Severity Level</string>
+    
+    <!-- Home Activity -->
+    <string name="session_expired_message">Your session has expired. Please start a new session.</string>
+    <string name="no_network_title">No Network</string>
+    <string name="no_network_message">Please check your internet connection and try again.</string>
+    <string name="upgrade_title">Upgrade to Premium</string>
+    <string name="upgrade_message">Upgrade to premium to get unlimited identifications and more features.</string>
+    <string name="upgrade">Upgrade</string>
+    <string name="help_title">Help</string>
+    <string name="help_message">Need help? Contact our support team.</string>
+
+    <string name="usage_limit_format">Usage left: %1$d</string>
 
 </resources>

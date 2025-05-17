@@ -1,44 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingVertical="12dp">
+    android:orientation="horizontal"
+    android:padding="@dimen/spacing_medium">
 
     <ImageView
         android:id="@+id/image_action_icon"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="@dimen/icon_size_medium"
+        android:layout_height="@dimen/icon_size_medium"
+        android:layout_gravity="center_vertical"
         android:contentDescription="@string/action_icon"
-        android:padding="4dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        tools:src="@drawable/ic_spray" />
+        tools:src="@drawable/ic_warning" />
 
-    <TextView
-        android:id="@+id/text_action_title"
+    <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:textAppearance="?attr/textAppearanceSubtitle1"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/image_action_icon"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="Apply Fungicide" />
+        android:layout_marginStart="@dimen/spacing_medium"
+        android:layout_weight="1"
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/text_action_description"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="4dp"
-        android:textAppearance="?attr/textAppearanceBody2"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/image_action_icon"
-        app:layout_constraintTop_toBottomOf="@id/text_action_title"
-        tools:text="Apply copper-based fungicide early in the morning. Spray on both sides of leaves." />
+        <TextView
+            android:id="@+id/text_action_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle2"
+            tools:text="Action Title" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <TextView
+            android:id="@+id/text_action_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_tiny"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+            tools:text="Action Description" />
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -10,9 +10,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.askchinna.data.model.UIState
-import com.askchinna.data.repository.UserRepository
-import com.askchinna.util.SimpleCoroutineUtils
+import com.example.askchinna.data.model.UIState
+import com.example.askchinna.data.repository.UserRepository
+import com.example.askchinna.util.SimpleCoroutineUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch

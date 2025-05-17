@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2025 askChinna App
+  ~ Created: May 3, 2025
+  ~ Version: 1.2
+-->
+<resources>
+    <!-- Custom attributes for SessionTimerView -->
+    <declare-styleable name="SessionTimerView">
+        <attr name="timerNormalColor" format="color" />
+        <attr name="timerNormalTextColor" format="color" />
+        <attr name="timerWarningColor" format="color" />
+        <attr name="timerWarningTextColor" format="color" />
+        <attr name="timerCriticalColor" format="color" />
+        <attr name="timerCriticalTextColor" format="color" />
+        <attr name="timerCriticalTextSize" format="dimension" />
+    </declare-styleable>
+
+    <!-- ImageQualityView attributes -->
+    <declare-styleable name="ImageQualityView">
+        <attr name="qualityTextColor" format="color" />
+        <attr name="qualityIconSize" format="dimension" />
+    </declare-styleable>
+    <!--networkstatusview attributes-->
+    <declare-styleable name="NetworkStatusView">
+         <attr name="textColor" format="color"/>
+         <attr name="iconSize" format="dimension"/>
+     </declare-styleable>
+
+    -->
+
+    <!-- ImageUploadView attributes -->
+    <declare-styleable name="ImageUploadView">
+        <attr name="uploadProgressColor" format="color" />
+        <attr name="uploadTextColor" format="color" />
+        <attr name="uploadIconSize" format="dimension" />
+    </declare-styleable>
+
+    <!-- UsageLimitView attributes -->
+    <declare-styleable name="UsageLimitView">
+        <attr name="usageLimitTextColor" format="color" />
+        <attr name="usageLimitProgressColor" format="color" />
+    </declare-styleable>
+
+    <!-- ErrorView attributes -->
+    <declare-styleable name="ErrorView">
+        <attr name="errorMessage" format="string" />
+        <attr name="showRetryButton" format="boolean" />
+        <attr name="errorIcon" format="reference" />
+    </declare-styleable>
+
+    <!-- LoadingView attributes -->
+    <declare-styleable name="LoadingView">
+        <!-- Custom loading message -->
+        <attr name="loadingMessage" format="string" />
+        <!-- Whether to show tip text -->
+        <attr name="showTip" format="boolean" />
+        <!-- Size of the circular indicator -->
+        <attr name="indicatorSize" format="dimension" />
+        <!-- Color of the circular indicator -->
+        <attr name="indicatorColor" format="color" />
+    </declare-styleable>
+
+    <!-- ActionPlanView attributes -->
+    <declare-styleable name="ActionPlanView">
+        <attr name="actionTextColor" format="color" />
+        <attr name="actionIconSize" format="dimension" />
+    </declare-styleable>
+
+    <!-- DetailExpandableView attributes -->
+    <declare-styleable name="DetailExpandableView">
+        <attr name="detailTextColor" format="color" />
+        <attr name="detailIconSize" format="dimension" />
+    </declare-styleable>
+
+    <!-- FeedbackView attributes -->
+    <declare-styleable name="FeedbackView">
+        <attr name="feedbackTextColor" format="color" />
+        <attr name="feedbackIconSize" format="dimension" />
+    </declare-styleable>
+
+    <!-- SummaryView attributes -->
+    <declare-styleable name="SummaryView">
+        <attr name="summaryTextColor" format="color" />
+        <attr name="summaryIconSize" format="dimension" />
+    </declare-styleable>
+</resources>

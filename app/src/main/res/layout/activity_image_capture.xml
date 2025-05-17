@@ -66,12 +66,20 @@
     </androidx.appcompat.widget.Toolbar>
 
     <!-- Session Timer View -->
-    <include
+    <com.example.askchinna.ui.home.SessionTimerView
         android:id="@+id/sessionTimerView"
-        layout="@layout/view_session_timer"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/toolbar" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Network Status View -->
+    <com.example.askchinna.ui.common.NetworkStatusView
+        android:id="@+id/networkStatusView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/sessionTimerView" />
 
     <!-- Crop Information -->
     <androidx.cardview.widget.CardView
@@ -99,7 +107,7 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:contentDescription="@string/crop_icon"
-                tools:src="@drawable/crop_icons/ic_tomato" />
+                tools:src="@drawable/ic_tomato" />
 
             <TextView
                 android:id="@+id/tvCropName"
@@ -223,16 +231,5 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.card.MaterialCardView>
-
-    <!-- Network Status View -->
-    <include
-        android:id="@+id/networkStatusView"
-        layout="@layout/view_network_status"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        tools:visibility="visible" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

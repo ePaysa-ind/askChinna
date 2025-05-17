@@ -114,7 +114,7 @@ class OnboardingPagerAdapter(
                 context.resources.getLayout(onboardingPageLayoutId)
             } catch (e: Exception) {
                 // If the layout doesn't exist, create it
-                createOnboardingPageLayout(context)
+                createOnboardingPageLayout()
             }
         }
 
@@ -122,7 +122,7 @@ class OnboardingPagerAdapter(
          * Creates the onboarding page layout programmatically
          * This is a fallback mechanism in case the layout file is missing
          */
-        private fun createOnboardingPageLayout(context: Context) {
+        private fun createOnboardingPageLayout() {
             // This would normally create the layout XML file
             // In a real app, we would ensure the layout exists in resources
             // For this implementation, we assume the layout exists

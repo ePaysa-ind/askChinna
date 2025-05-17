@@ -3,7 +3,8 @@ package com.example.askchinna.ui.auth
  * OtpVerificationActivity.kt
  * Copyright © 2025 askChinna
  * Created: April 28, 2025
- * Version: 1.0
+ * Updated: April 29, 2025
+ * Version: 1.2
  */
 
 import android.content.Intent
@@ -12,13 +13,14 @@ import android.os.CountDownTimer
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.askchinna.R
-import com.askchinna.data.model.UIState
-import com.askchinna.databinding.ActivityOtpVerificationBinding
-import com.askchinna.ui.home.HomeActivity
-import com.askchinna.util.NetworkStateMonitor
+import com.example.askchinna.R
+import com.example.askchinna.data.model.UIState
+import com.example.askchinna.databinding.ActivityOtpVerificationBinding
+import com.example.askchinna.ui.home.HomeActivity
+import com.example.askchinna.util.NetworkStateMonitor
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -41,7 +43,7 @@ class OtpVerificationActivity : AppCompatActivity() {
     private var countDownTimer: CountDownTimer? = null
 
     @Inject
-    lateinit var networkMonitor: NetworkStateMonitor
+    lateinit var networkStateMonitor: NetworkStateMonitor
 
     private var mobileNumber: String = ""
     private var isRegistration: Boolean = false
@@ -51,53 +53,57 @@ class OtpVerificationActivity : AppCompatActivity() {
         binding = ActivityOtpVerificationBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Get data from intent
+        setupBackButtonHandling()
+        initializeData()
+        setupOtpInputValidation()
+        setupClickListeners()
+        startResendTimer()
+        observeViewModel()
+        setupNetworkMonitoring()
+    }
+
+    private fun initializeData() {
         intent.extras?.let { extras ->
             viewModel.setVerificationId(extras.getString(EXTRA_VERIFICATION_ID, ""))
             mobileNumber = extras.getString(EXTRA_MOBILE_NUMBER, "")
             isRegistration = extras.getBoolean(EXTRA_IS_REGISTRATION, false)
+            binding.textViewMobileNumber.text = getString(R.string.otp_sent_to, mobileNumber)
+        } ?: run {
+            showError(getString(R.string.error_invalid_data))
+            finish()
         }
+    }
 
-        // Set mobile number in UI
-        binding.textViewMobileNumber.text = getString(R.string.otp_sent_to, mobileNumber)
-
-        // Setup OTP input validation
-        setupOtpInputValidation()
-
-        // Setup click listeners
-        setupClickListeners()
-
-        // Start resend timer
-        startResendTimer()
-
-        // Observe ViewModel states
-        observeViewModel()
-
-        // Setup network monitoring
-        setupNetworkMonitoring()
+    private fun setupBackButtonHandling() {
+        val callback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                finish()
+            }
+        }
+        onBackPressedDispatcher.addCallback(this, callback)
     }
 
     private fun setupOtpInputValidation() {
         binding.editTextOtp.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-
             override fun afterTextChanged(s: Editable?) {
                 val otp = s.toString().trim()
-
-                // Enable verify button only if OTP has 6 digits
                 val isValid = otp.length == 6 && otp.matches(Regex("[0-9]{6}"))
-                binding.buttonVerify.isEnabled = isValid
+                val isAvailable = networkStateMonitor.isNetworkAvailable()
+                binding.buttonVerify.isEnabled = isValid && isAvailable
             }
         })
     }
 
     private fun setupClickListeners() {
-        // Verify button click
         binding.buttonVerify.setOnClickListener {
+            val isAvailable = networkStateMonitor.isNetworkAvailable()
+            if (!isAvailable) {
+                showError(getString(R.string.error_no_network))
+                return@setOnClickListener
+            }
             val otp = binding.editTextOtp.text.toString().trim()
-
             if (isRegistration) {
                 viewModel.completeRegistration(otp)
             } else {
@@ -105,28 +111,27 @@ class OtpVerificationActivity : AppCompatActivity() {
             }
         }
 
-        // Resend OTP click
         binding.textViewResendOtp.setOnClickListener {
+            val isAvailable = networkStateMonitor.isNetworkAvailable()
+            if (!isAvailable) {
+                showError(getString(R.string.error_no_network))
+                return@setOnClickListener
+            }
             if (binding.textViewResendOtp.isEnabled) {
-                viewModel.resendOtp(mobileNumber, this)
+                viewModel.resendOtp(mobileNumber, this@OtpVerificationActivity)
                 startResendTimer()
             }
         }
 
-        // Back button click
         binding.imageButtonBack.setOnClickListener {
-            onBackPressed()
+            onBackPressedDispatcher.onBackPressed()
         }
     }
 
     private fun startResendTimer() {
-        // Disable resend button
         binding.textViewResendOtp.isEnabled = false
-
-        // Cancel existing timer if any
         countDownTimer?.cancel()
 
-        // Start countdown timer for resend OTP
         countDownTimer = object : CountDownTimer(OTP_RESEND_TIMEOUT_MS, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 val seconds = millisUntilFinished / 1000
@@ -141,13 +146,12 @@ class OtpVerificationActivity : AppCompatActivity() {
     }
 
     private fun observeViewModel() {
-        // Observe OTP verification state
         viewModel.verificationState.observe(this) { state ->
             when (state) {
                 is UIState.Loading -> {
                     showLoading(true)
                 }
-                is UIState.Success -> {
+                is UIState.Success<*> -> {
                     showLoading(false)
                     navigateToHome()
                 }
@@ -155,33 +159,30 @@ class OtpVerificationActivity : AppCompatActivity() {
                     showLoading(false)
                     showError(state.message)
                 }
-                else -> { /* No-op */ }
+                else -> {
+                    showLoading(false)
+                }
             }
         }
 
-        // Observe OTP resend state
         viewModel.resendState.observe(this) { state ->
             when (state) {
-                is UIState.Loading -> {
-                    // Already handled by resend timer
-                }
-                is UIState.Success -> {
+                is UIState.Success<*> -> {
                     showMessage(getString(R.string.otp_resent_success))
                 }
                 is UIState.Error -> {
                     showError(state.message)
                 }
-                else -> { /* No-op */ }
+                else -> {}
             }
         }
     }
 
     private fun setupNetworkMonitoring() {
-        networkMonitor.isNetworkAvailable.observe(this) { isAvailable ->
-            binding.networkStatusView.visibility = if (!isAvailable) View.VISIBLE else View.GONE
-            binding.buttonVerify.isEnabled = isAvailable &&
-                    binding.editTextOtp.text.toString().length == 6
-        }
+        networkStateMonitor.startMonitoring()
+        val isAvailable = networkStateMonitor.isNetworkAvailable()
+        binding.networkStatusView.visibility = if (isAvailable) View.GONE else View.VISIBLE
+        binding.buttonVerify.isEnabled = isAvailable && binding.editTextOtp.text.toString().length == 6
     }
 
     private fun showLoading(isLoading: Boolean) {
@@ -190,7 +191,19 @@ class OtpVerificationActivity : AppCompatActivity() {
     }
 
     private fun showError(message: String) {
-        Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
+        Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG)
+            .setAction(R.string.retry) {
+                val isAvailable = networkStateMonitor.isNetworkAvailable()
+                if (isAvailable) {
+                    val otp = binding.editTextOtp.text.toString().trim()
+                    if (isRegistration) {
+                        viewModel.completeRegistration(otp)
+                    } else {
+                        viewModel.verifyOtp(otp)
+                    }
+                }
+            }
+            .show()
     }
 
     private fun showMessage(message: String) {
@@ -207,5 +220,6 @@ class OtpVerificationActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         countDownTimer?.cancel()
+        networkStateMonitor.stopMonitoring()
     }
 }

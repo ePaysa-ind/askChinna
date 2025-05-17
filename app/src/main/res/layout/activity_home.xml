@@ -12,6 +12,7 @@
     android:layout_height="match_parent"
     tools:context=".ui.home.HomeActivity">
 
+    <!-- Top app bar -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -19,25 +20,27 @@
         android:background="?attr/colorPrimary"
         android:elevation="4dp"
         android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:popupTheme="@style/ThemeOverlay.MaterialComponents.Light"
         app:layout_constraintTop_toTopOf="parent"
-        app:popupTheme="@style/ThemeOverlay.MaterialComponents.Light" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- Scrollable content -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:fillViewport="true"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar">
+        app:layout_constraintEnd_toEndOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="16dp">
 
+            <!-- User info card -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/layoutUserInfo"
                 android:layout_width="0dp"
@@ -45,9 +48,9 @@
                 android:background="@drawable/bg_rounded_card"
                 android:elevation="2dp"
                 android:padding="16dp"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+                app:layout_constraintEnd_toEndOf="parent">
 
                 <ImageView
                     android:id="@+id/ivUserIcon"
@@ -55,8 +58,8 @@
                     android:layout_height="48dp"
                     android:contentDescription="@string/user_icon"
                     android:src="@drawable/ic_user"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent" />
 
                 <TextView
                     android:id="@+id/tvWelcome"
@@ -65,56 +68,61 @@
                     android:layout_marginStart="16dp"
                     android:text="@string/welcome"
                     android:textSize="16sp"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/ivUserIcon"
-                    app:layout_constraintTop_toTopOf="@+id/ivUserIcon" />
+                    app:layout_constraintTop_toTopOf="@id/ivUserIcon"
+                    app:layout_constraintStart_toEndOf="@id/ivUserIcon"
+                    app:layout_constraintEnd_toEndOf="parent" />
 
                 <TextView
                     android:id="@+id/tvUserName"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
                     android:textSize="18sp"
                     android:textStyle="bold"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="@+id/tvWelcome"
-                    app:layout_constraintTop_toBottomOf="@+id/tvWelcome"
-                    tools:text="John Doe" />
+                    tools:text="John Doe"
+                    app:layout_constraintTop_toBottomOf="@id/tvWelcome"
+                    app:layout_constraintStart_toStartOf="@id/tvWelcome"
+                    app:layout_constraintEnd_toEndOf="parent" />
 
                 <TextView
                     android:id="@+id/tvUserRole"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
+                    android:visibility="gone"
                     android:background="@drawable/bg_rounded_tag"
                     android:paddingStart="8dp"
                     android:paddingTop="2dp"
                     android:paddingEnd="8dp"
                     android:paddingBottom="2dp"
                     android:textSize="12sp"
-                    app:layout_constraintStart_toStartOf="@+id/tvUserName"
-                    app:layout_constraintTop_toBottomOf="@+id/tvUserName"
-                    tools:text="Free" />
+                    tools:text="Free"
+                    app:layout_constraintTop_toBottomOf="@id/tvUserName"
+                    app:layout_constraintStart_toStartOf="@id/tvUserName" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <com.askchinna.ui.home.SessionTimerView
+            <!-- Session timer -->
+            <com.example.askchinna.ui.home.SessionTimerView
                 android:id="@+id/sessionTimerView"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/layoutUserInfo"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/layoutUserInfo" />
+                app:layout_constraintEnd_toEndOf="parent" />
 
-            <com.askchinna.ui.home.UsageLimitView
+            <!-- Usage limit -->
+            <com.example.askchinna.ui.home.UsageLimitView
                 android:id="@+id/usageLimitView"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/sessionTimerView"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/sessionTimerView" />
+                app:layout_constraintEnd_toEndOf="parent" />
 
+            <!-- Identification card -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardIdentification"
                 android:layout_width="0dp"
@@ -122,9 +130,9 @@
                 android:layout_marginTop="24dp"
                 app:cardCornerRadius="8dp"
                 app:cardElevation="4dp"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/usageLimitView"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/usageLimitView">
+                app:layout_constraintEnd_toEndOf="parent">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
@@ -137,8 +145,8 @@
                         android:layout_height="64dp"
                         android:contentDescription="@string/identification_icon"
                         android:src="@drawable/ic_identification"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toStartOf="parent" />
 
                     <TextView
                         android:id="@+id/tvIdentificationTitle"
@@ -148,9 +156,9 @@
                         android:text="@string/start_identification"
                         android:textSize="18sp"
                         android:textStyle="bold"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toEndOf="@+id/ivIdentificationIcon"
-                        app:layout_constraintTop_toTopOf="@+id/ivIdentificationIcon" />
+                        app:layout_constraintTop_toTopOf="@id/ivIdentificationIcon"
+                        app:layout_constraintStart_toEndOf="@id/ivIdentificationIcon"
+                        app:layout_constraintEnd_toEndOf="parent" />
 
                     <TextView
                         android:id="@+id/tvIdentificationDescription"
@@ -158,9 +166,9 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:text="@string/identification_description"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="@+id/tvIdentificationTitle"
-                        app:layout_constraintTop_toBottomOf="@+id/tvIdentificationTitle" />
+                        app:layout_constraintTop_toBottomOf="@id/tvIdentificationTitle"
+                        app:layout_constraintStart_toStartOf="@id/tvIdentificationTitle"
+                        app:layout_constraintEnd_toEndOf="parent" />
 
                     <Button
                         android:id="@+id/btnStartIdentification"
@@ -169,13 +177,14 @@
                         android:layout_marginTop="16dp"
                         android:drawableStart="@drawable/ic_camera"
                         android:text="@string/start_identification"
-                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/tvIdentificationDescription"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/tvIdentificationDescription" />
+                        app:layout_constraintEnd_toEndOf="parent" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.cardview.widget.CardView>
 
+            <!-- Help button -->
             <Button
                 android:id="@+id/btnHelp"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -184,22 +193,23 @@
                 android:layout_marginTop="16dp"
                 android:drawableStart="@drawable/ic_help"
                 android:text="@string/help"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/cardIdentification"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/cardIdentification" />
+                app:layout_constraintEnd_toEndOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
 
+    <!-- Global loading spinner -->
     <ProgressBar
         android:id="@+id/progressBar"
         style="?android:attr/progressBarStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -50,7 +50,7 @@
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textInputLayoutOtp"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="48dp"
         android:hint="@string/hint_enter_otp"
@@ -60,7 +60,7 @@
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/editTextOtp"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:gravity="center"
             android:inputType="number"
@@ -71,7 +71,7 @@
     <!-- Verify Button -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonVerify"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:enabled="false"
@@ -131,9 +131,8 @@
         tools:visibility="visible" />
 
     <!-- Network Status View -->
-    <include
+    <com.example.askchinna.ui.common.NetworkStatusView
         android:id="@+id/networkStatusView"
-        layout="@layout/view_network_status"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:visibility="gone"

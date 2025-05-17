@@ -151,9 +151,8 @@
         tools:visibility="visible" />
 
     <!-- Network Status View -->
-    <include
+    <com.example.askchinna.ui.common.NetworkStatusView
         android:id="@+id/networkStatusView"
-        layout="@layout/view_network_status"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:visibility="gone"

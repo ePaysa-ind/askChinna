@@ -9,40 +9,29 @@
 
 package com.example.askchinna.util
 
-import android.content.Context
 import android.util.Log
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.askchinna.data.local.SharedPreferencesManager
 import com.example.askchinna.data.model.UsageLimit
 import com.example.askchinna.data.model.User
-import com.example.askchinna.util.Constants
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import java.util.Date
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class SessionManager @Inject constructor(
-    @ApplicationContext private val context: Context,
     private val sharedPreferencesManager: SharedPreferencesManager
 ) {
-    companion object {
-        private const val TAG = "SessionManager"
-        private const val DEFAULT_SESSION_TIMEOUT_MINUTES = 10
-    }
+    private val TAG = "SessionManager"
 
     private val _isSessionActive       = MutableStateFlow(false)
     val isSessionActive: Flow<Boolean> = _isSessionActive
 
     private val _sessionStartTime       = MutableLiveData<Long>()
-    val sessionStartTime: LiveData<Long> = _sessionStartTime
 
     private val _timeRemainingSeconds   = MutableLiveData<Int>()
-    val timeRemainingSeconds: LiveData<Int> = _timeRemainingSeconds
 
     private val _currentUser            = MutableStateFlow<User?>(null)
     val currentUser: Flow<User?> = _currentUser
@@ -58,32 +47,44 @@ class SessionManager @Inject constructor(
     /**
      * Starts a new user session.
      */
-    fun startSession(user: User, usageLimit: UsageLimit) {
-        val now = System.currentTimeMillis()
-        Log.i(TAG, "Starting session for user=${user.uid} at $now")
-        _sessionStartTime.value = now
-        _isSessionActive.value  = true
-        _currentUser.value      = user
-        _usageLimit.value       = usageLimit
-        updateTimeRemaining()
+    fun startSession(user: User, usageLimit: UsageLimit): Boolean {
+        return try {
+            val now = System.currentTimeMillis()
+            Log.i(TAG, "Starting session for user=${user.uid} at $now")
+            _sessionStartTime.value = now
+            _isSessionActive.value  = true
+            _currentUser.value      = user
+            _usageLimit.value       = usageLimit
+            updateTimeRemaining()
 
-        sharedPreferencesManager.saveSessionStartTime(now)
-        sharedPreferencesManager.saveAuthState(true)
-        sharedPreferencesManager.saveUser(user)
-        sharedPreferencesManager.saveUsageLimit(usageLimit)
+            sharedPreferencesManager.saveSessionStartTime(now)
+            sharedPreferencesManager.saveAuthState(true)
+            sharedPreferencesManager.saveUser(user)
+            sharedPreferencesManager.saveUsageLimit(usageLimit)
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Error starting session", e)
+            false
+        }
     }
 
     /**
      * Ends the current user session.
      */
-    fun endSession() {
-        Log.i(TAG, "Ending session")
-        _isSessionActive.value       = false
-        _sessionStartTime.value      = 0L
-        _timeRemainingSeconds.value  = 0
+    fun endSession(): Boolean {
+        return try {
+            Log.i(TAG, "Ending session")
+            _isSessionActive.value       = false
+            _sessionStartTime.value      = 0L
+            _timeRemainingSeconds.value  = 0
 
-        sharedPreferencesManager.saveSessionStartTime(0L)
-        sharedPreferencesManager.saveAuthState(false)
+            sharedPreferencesManager.saveSessionStartTime(0L)
+            sharedPreferencesManager.saveAuthState(false)
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Error ending session", e)
+            false
+        }
     }
 
     /**
@@ -118,8 +119,8 @@ class SessionManager @Inject constructor(
         val elapsedSec = TimeUnit.MILLISECONDS
             .toSeconds(System.currentTimeMillis() - start)
             .toInt()
-        val remainSec = (DEFAULT_SESSION_TIMEOUT_MINUTES * 60) - elapsedSec
-        _timeRemainingSeconds.value = remainSec.coerceAtLeast(0)
+        val remainSec = (Constants.SESSION_TIMEOUT_MINUTES * 60) - elapsedSec
+        _timeRemainingSeconds.value = remainSec.coerceAtLeast(0).toInt()
 
         Log.d(TAG, "Time remaining (sec) = ${_timeRemainingSeconds.value}")
     }
@@ -136,14 +137,14 @@ class SessionManager @Inject constructor(
         }
 
         val storedStart = sharedPreferencesManager.getSessionStartTime()
-        val storedUser  = sharedPreferencesManager.getUser()
+        val storedUser = sharedPreferencesManager.getUser()
         val storedLimit = sharedPreferencesManager.getUsageLimit()
         Log.d(TAG, "Stored start=$storedStart, user=$storedUser, limit=$storedLimit")
 
         if (storedStart > 0L && storedUser != null && storedLimit != null) {
             _sessionStartTime.value = storedStart
-            _currentUser.value      = storedUser
-            _usageLimit.value       = storedLimit
+            _currentUser.value = storedUser
+            _usageLimit.value = storedLimit
 
             if (!DateTimeUtils.hasSessionExpired(storedStart)) {
                 Log.d(TAG, "Restored active session")
@@ -161,19 +162,31 @@ class SessionManager @Inject constructor(
     /**
      * Updates only the user in session and persists it.
      */
-    fun updateUser(user: User) {
-        Log.d(TAG, "Updating current user to ${user.uid}")
-        _currentUser.value = user
-        sharedPreferencesManager.saveUser(user)
+    fun updateUser(user: User): Boolean {
+        return try {
+            Log.d(TAG, "Updating current user to ${user.uid}")
+            _currentUser.value = user
+            sharedPreferencesManager.saveUser(user)
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Error updating user", e)
+            false
+        }
     }
 
     /**
      * Updates the usage limit in memory and prefs.
      */
-    fun updateUsageLimit(limit: UsageLimit) {
-        Log.d(TAG, "Updating usage limit: $limit")
-        _usageLimit.value = limit
-        sharedPreferencesManager.saveUsageLimit(limit)
+    fun updateUsageLimit(limit: UsageLimit): Boolean {
+        return try {
+            Log.d(TAG, "Updating usage limit: $limit")
+            _usageLimit.value = limit
+            sharedPreferencesManager.saveUsageLimit(limit)
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Error updating usage limit", e)
+            false
+        }
     }
 
     /**
@@ -181,35 +194,9 @@ class SessionManager @Inject constructor(
      */
     fun hasExceededUsageLimit(): Boolean {
         val limit = _usageLimit.value ?: return false
-        val exceeded = limit.usageCount >= Constants.MAX_MONTHLY_IDENTIFICATIONS
+        val exceeded = limit.usageCount >= Constants.MAX_IDENTIFICATIONS_PER_MONTH
         Log.d(TAG, "hasExceededUsageLimit = $exceeded")
         return exceeded
-    }
-
-    /**
-     * Increments the usage count (new Date) and persists the updated UsageLimit.
-     * Returns the new UsageLimit.
-     */
-    fun incrementUsageCount(): UsageLimit {
-        val current = _usageLimit.value
-            ?: UsageLimit(0, Date(), isLimitReached = false)
-
-        val withinWindow = DateTimeUtils.isWithinLastNDays(
-            current.lastUpdated, Constants.DAYS_IN_MONTH
-        )
-
-        val newCount = if (withinWindow) {
-            current.usageCount + 1
-        } else {
-            1
-        }
-        val newDate = Date()
-        val newLimitReached = newCount >= Constants.MAX_MONTHLY_IDENTIFICATIONS
-        val next = UsageLimit(newCount, newDate, newLimitReached)
-
-        Log.i(TAG, "incrementUsageCount: from=${current.usageCount} to=$newCount, reached=$newLimitReached")
-        updateUsageLimit(next)
-        return next
     }
 
     /**
@@ -220,10 +207,10 @@ class SessionManager @Inject constructor(
         val left = if (current != null && DateTimeUtils.isWithinLastNDays(
                 current.lastUpdated, Constants.DAYS_IN_MONTH
             )) {
-            (Constants.MAX_MONTHLY_IDENTIFICATIONS - current.usageCount)
+            (Constants.MAX_IDENTIFICATIONS_PER_MONTH - current.usageCount)
                 .coerceAtLeast(0)
         } else {
-            Constants.MAX_MONTHLY_IDENTIFICATIONS
+            Constants.MAX_IDENTIFICATIONS_PER_MONTH
         }
         Log.d(TAG, "getIdentificationsLeft = $left")
         return left
@@ -244,7 +231,7 @@ class SessionManager @Inject constructor(
     fun getCurrentUser(): User? = _currentUser.value
 
     /**
-     * Detect if we’re within the last minute of session expiry.
+     * Detect if we're within the last minute of session expiry.
      */
     fun isSessionTimeoutApproaching(): Boolean {
         val remain = _timeRemainingSeconds.value ?: 0
@@ -252,4 +239,5 @@ class SessionManager @Inject constructor(
         Log.d(TAG, "isSessionTimeoutApproaching = $approaching")
         return approaching
     }
+
 }

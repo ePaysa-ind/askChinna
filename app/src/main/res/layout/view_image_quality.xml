@@ -13,33 +13,22 @@
     android:padding="16dp"
     android:background="@drawable/bg_rounded_card">
 
-    <!-- Overall Quality Status -->
-    <LinearLayout
+    <TextView
+        android:id="@+id/tvQualityStatus"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingBottom="8dp">
+        android:text="@string/image_quality_unknown"
+        android:textSize="16sp"
+        android:textStyle="bold" />
 
-        <ImageView
-            android:id="@+id/ivQualityStatus"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:contentDescription="@string/image_quality"
-            app:tint="@color/colorSuccess"
-            tools:src="@drawable/ic_severity_low" />
-
-        <TextView
-            android:id="@+id/tvQualityStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-            android:textStyle="bold"
-            tools:text="Image Quality: Good"
-            tools:textColor="@color/colorSuccess" />
-
-    </LinearLayout>
+    <ImageView
+        android:id="@+id/ivQualityStatus"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginTop="8dp"
+        android:contentDescription="@string/image_quality"
+        app:tint="@color/colorSuccess"
+        tools:src="@drawable/ic_severity_low" />
 
     <View
         android:layout_width="match_parent"

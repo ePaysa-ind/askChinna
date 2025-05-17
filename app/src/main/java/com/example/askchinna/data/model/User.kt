@@ -1,59 +1,71 @@
-package com.example.askchinna.data.model
-
 /**
- * app/src/main/java/com/askchinna/data/model/User.kt
- * Copyright © 2025 askChinna
- * Created: April 28, 2025
+ * file path: app/src/main/java/com/example/askchinna/data/model/User.kt
+ * Copyright (c) 2025 askChinna App
+ * Created: April 29, 2025
+ * Updated: May 4, 2025
  * Version: 1.1
  */
+
+package com.example.askchinna.data.model
+
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.ServerTimestamp
+import com.google.gson.annotations.SerializedName
 
 /**
- * Data class representing a user in the application.
- * Uses mobile number as primary identifier instead of email.
+ * Represents a user in the application.
+ * Contains user information and preferences.
  */
 data class User(
-    @DocumentId
-    val uid: String = "",
+    /**
+     * Unique identifier for the user.
+     */
+    @SerializedName("uid")
+    val uid: String,
 
-    // Mobile number with country code (India +91)
-    val mobileNumber: String = "",
+    /**
+     * User's mobile number.
+     */
+    @SerializedName("mobileNumber")
+    val mobileNumber: String,
 
-    // User's display name (optional)
-    val displayName: String = "",
+    /**
+     * User's display name.
+     */
+    @SerializedName("displayName")
+    val displayName: String,
 
-    // Track registration date
-    @ServerTimestamp
-    val createdAt: Timestamp? = null,
-
-    // Track last login date
-    @ServerTimestamp
-    val lastLogin: Timestamp? = null,
-
-    // Track usage for limits (5 uses per 30 days)
-    val usageCount: Int = 0,
-
-    // When usage count was last reset
-    val usageResetDate: Timestamp? = null,
-
-    // Whether user account is verified
+    /**
+     * User's verification status.
+     */
+    @SerializedName("isVerified")
     val isVerified: Boolean = false,
 
-    // Which language user prefers (for minimal text UI)
+    /**
+     * User's usage count.
+     */
+    @SerializedName("usageCount")
+    val usageCount: Int = 0,
+
+    /**
+     * User's preferred language.
+     */
+    @SerializedName("preferredLanguage")
     val preferredLanguage: String = "en",
 
-    // For offline authentication
-    val authToken: String = ""
-) {
     /**
-     * Check if user has reached usage limit (5 uses per 30 days)
+     * User's last login timestamp.
      */
-    fun hasReachedUsageLimit(): Boolean {
-        return usageCount >= 5
-    }
+    @SerializedName("lastLogin")
+    val lastLogin: Long = System.currentTimeMillis(),
 
+    /**
+     * User's account creation timestamp.
+     */
+    @SerializedName("createdAt")
+    val createdAt: Long = System.currentTimeMillis()
+) {
     /**
      * Checks if this is a valid user object with necessary data
      */
@@ -66,15 +78,14 @@ data class User(
      */
     fun toMap(): Map<String, Any?> {
         return mapOf(
+            "uid" to uid,
             "mobileNumber" to mobileNumber,
             "displayName" to displayName,
-            "createdAt" to createdAt,
-            "lastLogin" to lastLogin,
-            "usageCount" to usageCount,
-            "usageResetDate" to usageResetDate,
             "isVerified" to isVerified,
-            "preferredLanguage" to preferredLanguage
-            // Note: authToken is not stored in Firestore for security
+            "usageCount" to usageCount,
+            "preferredLanguage" to preferredLanguage,
+            "lastLogin" to lastLogin,
+            "createdAt" to createdAt
         )
     }
 
@@ -87,12 +98,11 @@ data class User(
                 uid = uid,
                 mobileNumber = data["mobileNumber"] as? String ?: "",
                 displayName = data["displayName"] as? String ?: "",
-                createdAt = data["createdAt"] as? Timestamp,
-                lastLogin = data["lastLogin"] as? Timestamp,
-                usageCount = (data["usageCount"] as? Long)?.toInt() ?: 0,
-                usageResetDate = data["usageResetDate"] as? Timestamp,
                 isVerified = data["isVerified"] as? Boolean ?: false,
-                preferredLanguage = data["preferredLanguage"] as? String ?: "en"
+                usageCount = (data["usageCount"] as? Long)?.toInt() ?: 0,
+                preferredLanguage = data["preferredLanguage"] as? String ?: "en",
+                lastLogin = (data["lastLogin"] as? Timestamp)?.seconds ?: System.currentTimeMillis(),
+                createdAt = (data["createdAt"] as? Timestamp)?.seconds ?: System.currentTimeMillis()
             )
         }
     }

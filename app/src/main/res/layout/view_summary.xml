@@ -1,86 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merge xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    tools:parentTag="androidx.cardview.widget.CardView">
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <LinearLayout
+    <data>
+        <import type="android.view.View" />
+    </data>
+
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        app:cardCornerRadius="8dp"
+        app:cardElevation="2dp">
 
-        <!-- Title section with crop name and icon -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="16dp">
+            android:padding="@dimen/card_padding">
 
             <ImageView
-                android:id="@+id/image_crop_icon"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:id="@+id/imageCropIcon"
+                android:layout_width="@dimen/icon_size_medium"
+                android:layout_height="@dimen/icon_size_medium"
                 android:layout_gravity="center_vertical"
                 android:contentDescription="@string/crop_icon"
-                android:src="@drawable/ic_tomato" />
+                tools:src="@drawable/ic_identification" />
 
-            <TextView
-                android:id="@+id/text_crop_name"
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_marginStart="8dp"
                 android:layout_weight="1"
-                android:textAppearance="?attr/textAppearanceHeadline6"
-                tools:text="Tomato" />
+                android:orientation="vertical"
+                android:layout_marginStart="@dimen/margin_medium">
 
+                <TextView
+                    android:id="@+id/textCropName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
+                    tools:text="Crop Name" />
+
+                <TextView
+                    android:id="@+id/textIssueName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+                    tools:text="Issue Name" />
+
+                <ProgressBar
+                    android:id="@+id/progressConfidence"
+                    style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/margin_small"
+                    android:max="100"
+                    tools:progress="75" />
+
+                <TextView
+                    android:id="@+id/textConfidence"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/margin_small"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                    tools:text="Confidence: 75%" />
+            </LinearLayout>
         </LinearLayout>
-
-        <!-- Issue name with larger text -->
-        <TextView
-            android:id="@+id/text_issue_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:textAppearance="?attr/textAppearanceHeadline5"
-            android:textStyle="bold"
-            tools:text="Early Blight" />
-
-        <!-- Confidence level section -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/confidence_label"
-                android:textAppearance="?attr/textAppearanceBody2" />
-
-            <ProgressBar
-                android:id="@+id/progress_confidence"
-                style="?android:attr/progressBarStyleHorizontal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:max="100"
-                tools:progress="85" />
-
-            <TextView
-                android:id="@+id/text_confidence"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:gravity="end"
-                android:textAppearance="?attr/textAppearanceBody2"
-                tools:text="85%" />
-
-        </LinearLayout>
-
-    </LinearLayout>
-
-</merge>
+    </androidx.cardview.widget.CardView>
+</layout>

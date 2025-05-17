@@ -1,159 +1,149 @@
 package com.example.askchinna.ui.home
-/**
- * app/src/main/java/com/askchinna/ui/home/SessionTimerManager.kt
- * Copyright © 2025 askChinna
- * Created: April 28, 2025
- * Version: 1.0
- */
 
-import android.content.Context
-import android.os.CountDownTimer
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.askchinna.data.local.SharedPreferencesManager
-import dagger.hilt.android.qualifiers.ApplicationContext
-import java.util.concurrent.TimeUnit
+import com.example.askchinna.util.Constants
+import kotlinx.coroutines.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Manages session timing for enforcing 10-minute maximum sessions
+ * app/src/main/java/com/example/askchinna/ui/home/SessionTimerManager.kt
+ * Copyright © 2025 askChinna
+ * Created: May 3, 2025
+ * Version: 1.2
+ *
+ * Manages a countdown-based session timer. Exposes LiveData for
+ * remaining time, running state, and expiration.
  */
 @Singleton
-class SessionTimerManager @Inject constructor(
-    @ApplicationContext private val context: Context,
-    private val sharedPreferencesManager: SharedPreferencesManager
-) {
-    companion object {
-        private const val SESSION_DURATION_MILLIS = 10 * 60 * 1000L // 10 minutes in milliseconds
-        private const val COUNTDOWN_INTERVAL = 1000L // 1 second
-    }
+class SessionTimerManager @Inject constructor() {
+    // total session duration in ms
+    private val initialMillis = Constants.MAX_SESSION_DURATION_MINUTES * 60_000L
 
-    private var countDownTimer: CountDownTimer? = null
+    private val _remainingTime = MutableLiveData(initialMillis)
+    val remainingTimeMillis: LiveData<Long> = _remainingTime
 
-    // LiveData for remaining time in milliseconds
-    private val _remainingTimeMillis = MutableLiveData<Long>()
-    val remainingTimeMillis: LiveData<Long> = _remainingTimeMillis
+    private val _isRunning = MutableLiveData(false)
 
-    // LiveData for timer state (running/paused)
-    private val _isTimerRunning = MutableLiveData<Boolean>()
-    val isTimerRunning: LiveData<Boolean> = _isTimerRunning
+    private val _isExpired = MutableLiveData(false)
+    val isSessionExpired: LiveData<Boolean> = _isExpired
 
-    // LiveData for session expiration
-    private val _isSessionExpired = MutableLiveData<Boolean>()
-    val isSessionExpired: LiveData<Boolean> = _isSessionExpired
+    private var timerJob: Job? = null
+    private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
-    /**
-     * Start or resume the session timer
-     */
+    /** Starts or resumes the countdown. No‐op if already running. */
     fun startTimer() {
-        // First check if we have a saved session in progress
-        val savedTimeMillis = sharedPreferencesManager.getSessionRemainingTime()
+        try {
+            if (_isRunning.value == true) return
+            _isExpired.value = false
+            _isRunning.value = true
 
-        // Calculate remaining time
-        val currentTimeMillis = System.currentTimeMillis()
-        val sessionStartMillis = sharedPreferencesManager.getSessionStartTime()
-        val elapsedMillis = if (sessionStartMillis > 0) currentTimeMillis - sessionStartMillis else 0
-
-        // Calculate remaining time (either from saved value or by calculating elapsed time)
-        val remainingMillis = if (savedTimeMillis > 0) {
-            savedTimeMillis
-        } else if (elapsedMillis > 0 && elapsedMillis < SESSION_DURATION_MILLIS) {
-            SESSION_DURATION_MILLIS - elapsedMillis
-        } else {
-            SESSION_DURATION_MILLIS
-        }
-
-        // If timer already expired, notify and don't start
-        if (remainingMillis <= 0) {
-            _remainingTimeMillis.value = 0L
-            _isSessionExpired.value = true
-            _isTimerRunning.value = false
-            return
-        }
-
-        // Cancel any existing timer
-        countDownTimer?.cancel()
-
-        // Start new timer with remaining time
-        countDownTimer = object : CountDownTimer(remainingMillis, COUNTDOWN_INTERVAL) {
-            override fun onTick(millisUntilFinished: Long) {
-                _remainingTimeMillis.value = millisUntilFinished
-                // Save current time to preferences
-                sharedPreferencesManager.saveSessionRemainingTime(millisUntilFinished)
+            timerJob = scope.launch {
+                try {
+                    while ((_remainingTime.value ?: 0L) > 0 && _isRunning.value == true) {
+                        delay(1_000L)
+                        val next = (_remainingTime.value ?: 0L) - 1_000L
+                        _remainingTime.value = next.coerceAtLeast(0L)
+                    }
+                    if ((_remainingTime.value ?: 0L) == 0L) {
+                        _isExpired.value = true
+                    }
+                } catch (e: Exception) {
+                    handleError("Timer error", e)
+                } finally {
+                    _isRunning.value = false
+                }
             }
-
-            override fun onFinish() {
-                _remainingTimeMillis.value = 0L
-                _isSessionExpired.value = true
-                _isTimerRunning.value = false
-                // Clear session data when expired
-                sharedPreferencesManager.clearSessionData()
-            }
-        }.start()
-
-        // Save session start time if starting fresh
-        if (sessionStartMillis <= 0) {
-            sharedPreferencesManager.saveSessionStartTime(currentTimeMillis)
+        } catch (e: Exception) {
+            handleError("Failed to start timer", e)
         }
-
-        _isTimerRunning.value = true
-        _isSessionExpired.value = false
     }
 
-    /**
-     * Pause the session timer
-     */
+    /** Pauses the countdown. */
     fun pauseTimer() {
-        countDownTimer?.cancel()
-        _isTimerRunning.value = false
+        try {
+            timerJob?.cancel()
+            _isRunning.value = false
+        } catch (e: Exception) {
+            handleError("Failed to pause timer", e)
+        }
+    }
 
-        // Save the current state
-        _remainingTimeMillis.value?.let {
-            sharedPreferencesManager.saveSessionRemainingTime(it)
+    /** Resets the timer to initial duration. */
+    fun resetTimer() {
+        try {
+            pauseTimer()
+            _remainingTime.value = initialMillis
+            _isExpired.value = false
+        } catch (e: Exception) {
+            handleError("Failed to reset timer", e)
+        }
+    }
+
+    /** Cleans up resources when the manager is no longer needed. */
+    fun cleanup() {
+        try {
+            pauseTimer()
+            scope.cancel()
+        } catch (e: Exception) {
+            handleError("Failed to cleanup timer", e)
         }
     }
 
     /**
-     * Reset the session timer
-     */
-    fun resetTimer() {
-        countDownTimer?.cancel()
-        _remainingTimeMillis.value = SESSION_DURATION_MILLIS
-        _isTimerRunning.value = false
-        _isSessionExpired.value = false
-
-        // Clear session data
-        sharedPreferencesManager.clearSessionData()
-    }
-
-    /**
-     * Format remaining time as MM:SS
-     * @return String Formatted time
+     * Formats remaining time as "MM:SS".
      */
     fun getFormattedTimeRemaining(): String {
-        val millis = _remainingTimeMillis.value ?: 0L
-        val minutes = TimeUnit.MILLISECONDS.toMinutes(millis)
-        val seconds = TimeUnit.MILLISECONDS.toSeconds(millis) % 60
-
-        return String.format("%02d:%02d", minutes, seconds)
+        return try {
+            val millis = _remainingTime.value ?: 0L
+            val totalSec = millis / 1000
+            val minutes = totalSec / 60
+            val seconds = totalSec % 60
+            String.format("%02d:%02d", minutes, seconds)
+        } catch (e: Exception) {
+            handleError("Failed to format time", e)
+            "00:00"
+        }
     }
 
     /**
-     * Get remaining time as percentage (for progress visualization)
-     * @return Int Percentage of time remaining
+     * Returns remaining time as percentage [0..100].
      */
     fun getRemainingTimePercentage(): Int {
-        val millis = _remainingTimeMillis.value ?: 0L
-        return ((millis.toFloat() / SESSION_DURATION_MILLIS) * 100).toInt()
+        return try {
+            val curr = _remainingTime.value ?: 0L
+            ((curr * 100) / initialMillis).toInt()
+        } catch (e: Exception) {
+            handleError("Failed to calculate time percentage", e)
+            0
+        }
     }
 
     /**
-     * Check if session is about to expire (less than 1 minute left)
-     * @return Boolean True if session is about to expire
+     * True if less than one minute remains.
      */
     fun isSessionAboutToExpire(): Boolean {
-        val millis = _remainingTimeMillis.value ?: 0L
-        return millis > 0 && millis < 60 * 1000L
+        return try {
+            val curr = _remainingTime.value ?: 0L
+            curr in 1..60_000L
+        } catch (e: Exception) {
+            handleError("Failed to check session expiration", e)
+            false
+        }
+    }
+
+    /**
+     * Handle errors in the timer manager
+     * Logs the error and updates state if needed
+     */
+    private fun handleError(message: String, e: Exception) {
+        android.util.Log.e("SessionTimerManager", message, e)
+        try {
+            _isRunning.value = false
+            _isExpired.value = true
+        } catch (e: Exception) {
+            android.util.Log.e("SessionTimerManager", "Failed to update error state", e)
+        }
     }
 }

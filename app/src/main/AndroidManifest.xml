@@ -35,5 +35,59 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".ui.auth.LoginActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AskChinna" />
+
+        <activity
+            android:name=".ui.home.HomeActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AskChinna" />
+
+        <activity
+            android:name=".ui.cropselection.CropSelectionActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AskChinna" />
+
+        <activity
+            android:name=".ui.identification.ImageCaptureActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:theme="@style/Theme.AskChinna" />
+
+        <activity
+            android:name=".ui.identification.ImagePreviewActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:theme="@style/Theme.AskChinna" />
+
+        <activity
+            android:name=".ui.results.ResultActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:theme="@style/Theme.AskChinna" />
+
+        <activity
+            android:name=".ui.onboarding.OnboardingActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AskChinna" />
+
+        <activity
+            android:name=".ui.auth.OtpVerificationActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AskChinna" />
+
+        <activity
+            android:name=".ui.auth.ForgotPasswordActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AskChinna" />
+
+        <activity
+            android:name=".ui.auth.RegisterActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AskChinna" />
+
     </application>
 </manifest>

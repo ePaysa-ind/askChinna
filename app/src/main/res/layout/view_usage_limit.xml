@@ -7,113 +7,106 @@
 -->
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:parentTag="androidx.constraintlayout.widget.ConstraintLayout">
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <androidx.cardview.widget.CardView
-        android:layout_width="0dp"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardCornerRadius="8dp"
-        app:cardElevation="2dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:padding="16dp">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/layoutContent"
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="16dp">
+            android:text="@string/usage_limit_title"
+            android:textAppearance="?attr/textAppearanceHeadline6"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Usage Limit" />
 
-            <ImageView
-                android:id="@+id/ivUsageIcon"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:contentDescription="@string/usage_icon"
-                android:src="@drawable/ic_usage"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvTitle"
+            tools:progress="3" />
 
-            <TextView
-                android:id="@+id/tvUsageTitle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:text="@string/usage_limit"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/ivUsageIcon"
-                app:layout_constraintTop_toTopOf="@+id/ivUsageIcon" />
+        <TextView
+            android:id="@+id/tvCurrentCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textAppearance="?attr/textAppearanceBody1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/progressBar"
+            tools:text="3" />
 
-            <TextView
-                android:id="@+id/tvUsageCount"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:textSize="14sp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/tvUsageTitle"
-                tools:text="Used: 2 of 5" />
+        <TextView
+            android:id="@+id/tvRemainingCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceBody1"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="@id/tvCurrentCount"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:text="2" />
 
-            <ProgressBar
-                android:id="@+id/progressBarUsage"
-                style="?android:attr/progressBarStyleHorizontal"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:max="5"
-                android:progress="2"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/tvUsageCount" />
+        <TextView
+            android:id="@+id/tvMaxCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceBody1"
+            app:layout_constraintBottom_toBottomOf="@id/tvCurrentCount"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tvCurrentCount"
+            tools:text="/ 5" />
 
-            <TextView
-                android:id="@+id/tvRemainingCount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:textSize="14sp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/progressBarUsage"
-                tools:text="Remaining: 3" />
-
-            <ImageView
-                android:id="@+id/ivWarning"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_marginStart="8dp"
-                android:contentDescription="@string/warning_icon"
-                android:src="@drawable/ic_warning"
-                android:visibility="gone"
-                app:layout_constraintBottom_toBottomOf="@+id/tvRemainingCount"
-                app:layout_constraintStart_toEndOf="@+id/tvRemainingCount"
-                app:layout_constraintTop_toTopOf="@+id/tvRemainingCount"
-                tools:visibility="visible" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
+        <TextView
+            android:id="@+id/tvPremiumStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_premium_badge"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="4dp"
+            android:text="@string/premium_user"
+            android:textAppearance="?attr/textAppearanceCaption"
+            android:textColor="@color/premium"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvCurrentCount"
+            tools:text="Premium"
+            tools:visibility="visible" />
 
         <TextView
             android:id="@+id/tvError"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:textColor="@color/colorError"
+            android:layout_marginTop="8dp"
+            android:textAppearance="?attr/textAppearanceBody2"
+            android:textColor="@color/error"
             android:visibility="gone"
-            tools:text="Error loading usage data"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvTitle"
+            tools:text="Error loading usage limit"
             tools:visibility="visible" />
 
-        <ProgressBar
-            android:id="@+id/progressBarLoading"
-            style="?android:attr/progressBarStyle"
+        <TextView
+            android:id="@+id/tvUsageLimit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:padding="16dp"
-            android:visibility="gone"
-            tools:visibility="visible" />
+            android:layout_marginTop="8dp"
+            android:textAppearance="?attr/textAppearanceBody1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvPremiumStatus"
+            tools:text="Usage left: 3" />
 
-    </androidx.cardview.widget.CardView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </merge>

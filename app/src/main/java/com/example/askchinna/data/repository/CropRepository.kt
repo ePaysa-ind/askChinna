@@ -1,95 +1,124 @@
 /**
  * File: app/src/main/java/com/example/askchinna/data/repository/CropRepository.kt
- * Copyright (c) 2025 askChinna
+ * Copyright © 2025 askChinna
  * Created: April 28, 2025
- * Version: 1.0
+ * Updated: May 16, 2025
+ * Version: 1.3
  */
 package com.example.askchinna.data.repository
 
 import android.content.Context
-import com.example.askchinna.R
+import android.util.Log
 import com.example.askchinna.data.model.Crop
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.IOException
+import kotlinx.coroutines.withTimeout
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.tasks.await
 
 /**
- * Repository for crop-related data operations
- * Responsible for loading and providing access to the list of supported crops
+ * Repository for managing crop data
  */
 @Singleton
 class CropRepository @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val gson: Gson
+    private val firestore: FirebaseFirestore
 ) {
+    private val TAG = "CropRepository"
 
-    // Cache of crops to avoid repeated loading from assets
+    // Cache crops in memory once loaded
     private var cachedCrops: List<Crop>? = null
 
     /**
-     * Gets the list of supported crops from a local JSON file
-     * Caches results to improve performance on subsequent calls
+     * Get all supported crops.
+     * This method first tries to fetch from local cache, then from local JSON,
+     * and finally from Firestore if available.
      *
-     * @return List of crops supported by the application
+     * @return List of supported crops
      */
     suspend fun getSupportedCrops(): List<Crop> = withContext(Dispatchers.IO) {
-        // Return cached crops if available
-        cachedCrops?.let { return@withContext it }
-
         try {
-            // Load crops from JSON file
-            val cropsJson = context.resources.openRawResource(R.raw.crops_data)
-                .bufferedReader()
-                .use { it.readText() }
+            // Return cached crops if available
+            cachedCrops?.let { return@withContext it }
 
-            // Parse JSON into list of Crop objects
-            val cropListType = object : TypeToken<List<Crop>>() {}.type
-            val crops = gson.fromJson<List<Crop>>(cropsJson, cropListType)
+            // Load from local JSON file as fallback
+            val crops = loadCropsFromLocalJson()
+            if (crops.isNotEmpty()) {
+                cachedCrops = crops
+                return@withContext crops
+            }
 
-            // Cache the results
-            cachedCrops = crops
-
-            return@withContext crops
-        } catch (e: IOException) {
-            // If JSON reading fails, return a hardcoded list of the 10 supported crops
-            val fallbackCrops = createFallbackCrops()
-            cachedCrops = fallbackCrops
-            return@withContext fallbackCrops
+            // As last resort, try to load from Firestore
+            return@withContext loadCropsFromFirestore()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting supported crops", e)
+            return@withContext emptyList<Crop>()
         }
     }
 
     /**
-     * Creates a fallback list of crops in case the JSON loading fails
-     * Contains the 10 crops specified in the project requirements
+     * Get a crop by its ID.
+     * This method fetches all crops and then filters for the one with the matching ID.
+     *
+     * @param cropId The ID of the crop to retrieve
+     * @return The crop with the given ID, or null if not found
      */
-    private fun createFallbackCrops(): List<Crop> {
-        return listOf(
-            Crop("chili", "Chili", R.drawable.ic_chili),
-            Crop("okra", "Okra", R.drawable.ic_okra),
-            Crop("maize", "Maize", R.drawable.ic_maize),
-            Crop("cotton", "Cotton", R.drawable.ic_cotton),
-            Crop("tomato", "Tomato", R.drawable.ic_tomato),
-            Crop("watermelon", "Watermelon", R.drawable.ic_watermelon),
-            Crop("soybean", "Soybean", R.drawable.ic_soybean),
-            Crop("rice", "Rice", R.drawable.ic_rice),
-            Crop("wheat", "Wheat", R.drawable.ic_wheat),
-            Crop("pigeon_pea", "Pigeon Pea", R.drawable.ic_pigeon_pea)
-        )
+    suspend fun getCropById(cropId: String): Crop? = withContext(Dispatchers.IO) {
+        try {
+            val crops = getSupportedCrops()
+            return@withContext crops.find { it.id == cropId }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting crop by ID: $cropId", e)
+            return@withContext null
+        }
     }
 
     /**
-     * Gets a specific crop by its ID
-     *
-     * @param cropId The unique identifier of the crop
-     * @return The crop with the specified ID or null if not found
+     * Load crops from local JSON file in assets
      */
-    suspend fun getCropById(cropId: String): Crop? {
-        val crops = getSupportedCrops()
-        return crops.find { it.id == cropId }
+    private fun loadCropsFromLocalJson(): List<Crop> {
+        return try {
+            val jsonString = context.assets.open("crops_data.json").bufferedReader().use { it.readText() }
+            Log.d(TAG, "Read JSON file: ${jsonString.take(100)}...")
+
+            val type = object : TypeToken<List<Crop>>() {}.type
+            val crops = Gson().fromJson<List<Crop>>(jsonString, type)
+
+            Log.d(TAG, "Successfully parsed ${crops.size} crops from JSON")
+            crops
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to parse crops data", e)
+            emptyList()
+        }
+    }
+
+    /**
+     * Load crops from Firestore
+     */
+    private suspend fun loadCropsFromFirestore(): List<Crop> {
+        return try {
+            val snapshot = withTimeout(10000L) { // 10 second timeout
+                firestore.collection("crops").get().await()
+            }
+            val crops = snapshot.documents.mapNotNull { doc ->
+                try {
+                    val crop = doc.toObject(Crop::class.java)
+                    crop?.copy(id = doc.id) ?: null
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error converting document to Crop", e)
+                    null
+                }
+            }
+            Log.d(TAG, "Loaded ${crops.size} crops from Firestore")
+            crops
+        } catch (e: Exception) {
+            Log.e(TAG, "Error loading crops from Firestore", e)
+            emptyList()
+        }
     }
 }

@@ -1,0 +1,20 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# AskChinna Project Rules
+
+> ⚠️ CRITICAL RULE: Do not make any changes unless the root cause is shown to the user and the user confirms the change.
+
+> 📝 IMPORTANT NOTE: The user is not a developer and requires detailed guidance. All code changes must include:
+> 1. Clear explanation of the root cause
+> 2. Step-by-step implementation instructions
+> 3. Exact code changes needed
+> 4. Verification steps for deployment
+> 5. APK build and deployment guidance
+
+Task: Generate production-ready Kotlin code for the askChinna agricultural app MVP, which helps farmers in India identify crop pests/diseases through image analysis. Most of the code is already in place, we have some compilation errors. We need to fix these errors and build the app. I am not a coder, so you will need to help me to build. Do not change multiple files at the same time, always check with me, tell me the root cause of an issue and only after my confirmation, change the code. this will minimize back and forth.
+
+// ... existing code ...
+

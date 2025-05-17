@@ -10,12 +10,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.askchinna.data.model.UIState
-import com.askchinna.data.model.User
-import com.askchinna.data.repository.UserRepository
-import com.askchinna.util.SimpleCoroutineUtils
+import com.example.askchinna.data.model.UIState
+import com.example.askchinna.data.model.User
+import com.example.askchinna.data.repository.UserRepository
+import com.example.askchinna.util.SimpleCoroutineUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -76,6 +75,7 @@ class OtpVerificationViewModel @Inject constructor(
 
     /**
      * Resend OTP to user's mobile number
+     * Use the existing sendOtp method from UserRepository
      * @param mobileNumber User's mobile number
      * @param activity Current activity for Firebase callbacks
      */
@@ -83,7 +83,7 @@ class OtpVerificationViewModel @Inject constructor(
         viewModelScope.launch(coroutineUtils.ioDispatcher) {
             _resendState.postValue(UIState.Loading())
 
-            userRepository.resendOtp(mobileNumber, activity).collect { state ->
+            userRepository.sendOtp(mobileNumber, activity).collect { state ->
                 _resendState.postValue(state)
             }
         }

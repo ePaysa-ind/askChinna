@@ -15,9 +15,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.viewModels
-import com.askchinna.R
-import com.askchinna.data.model.UIState
-import com.askchinna.databinding.DialogOtpResendBinding
+import com.example.askchinna.R
+import com.example.askchinna.data.model.UIState
+import com.example.askchinna.databinding.DialogOtpResendBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 

@@ -1,19 +1,22 @@
-/*
- * Copyright (c) 2025 askChinna App
+/**
+ * file path: app/src/main/java/com/example/askchinna/ui/common/ErrorView.kt
+ * Copyright © 2025 askChinna
  * Created: April 29, 2025
- * Version: 1.0
+ * Updated: April 29, 2025
+ * Version: 1.1
  */
 
 package com.example.askchinna.ui.common
 
 import android.content.Context
 import android.util.AttributeSet
+import android.util.Log
 import android.view.LayoutInflater
-import android.widget.Button
-import android.widget.ImageView
+import android.view.View
 import android.widget.LinearLayout
-import android.widget.TextView
+import androidx.core.content.ContextCompat
 import com.example.askchinna.R
+import com.example.askchinna.databinding.ViewErrorBinding
 
 /**
  * Custom view for displaying error states with standardized UI
@@ -25,146 +28,221 @@ class ErrorView @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : LinearLayout(context, attrs, defStyleAttr) {
 
-    private val errorIcon: ImageView
-    private val errorMessage: TextView
-    private val retryButton: Button
-
+    private var binding: ViewErrorBinding? = null
+    private var isInitialized = false
     private var onRetryClickListener: (() -> Unit)? = null
 
     init {
-        // Inflate the layout
-        LayoutInflater.from(context).inflate(R.layout.view_error, this, true)
+        try {
+            orientation = VERTICAL
+            gravity = android.view.Gravity.CENTER
+            binding = ViewErrorBinding.inflate(LayoutInflater.from(context), this, true)
 
-        // Initialize views
-        errorIcon = findViewById(R.id.image_error)
-        errorMessage = findViewById(R.id.text_error_message)
-        retryButton = findViewById(R.id.button_retry)
+            // Apply custom attributes if provided
+            attrs?.let {
+                val typedArray = context.obtainStyledAttributes(it, R.styleable.ErrorView, 0, 0)
+                try {
+                    // Set error message if provided
+                    val message = typedArray.getString(R.styleable.ErrorView_errorMessage)
+                    if (!message.isNullOrEmpty()) {
+                        setErrorMessage(message)
+                    }
 
-        // Set default orientation
-        orientation = VERTICAL
+                    // Set retry button visibility
+                    val showRetryButton = typedArray.getBoolean(R.styleable.ErrorView_showRetryButton, true)
+                    binding?.buttonRetry?.visibility = if (showRetryButton) View.VISIBLE else View.GONE
 
-        // Center content
-        gravity = android.view.Gravity.CENTER
-
-        // Apply custom attributes if provided
-        attrs?.let {
-            val typedArray = context.obtainStyledAttributes(it, R.styleable.ErrorView, 0, 0)
-            try {
-                // Set error message if provided
-                val message = typedArray.getString(R.styleable.ErrorView_errorMessage)
-                if (!message.isNullOrEmpty()) {
-                    setErrorMessage(message)
+                    // Set custom error icon if provided
+                    val iconResId = typedArray.getResourceId(
+                        R.styleable.ErrorView_errorIcon,
+                        R.drawable.ic_warning
+                    )
+                    binding?.imageError?.setImageResource(iconResId)
+                } finally {
+                    typedArray.recycle()
                 }
-
-                // Set retry button visibility
-                val showRetryButton = typedArray.getBoolean(R.styleable.ErrorView_showRetryButton, true)
-                retryButton.visibility = if (showRetryButton) VISIBLE else GONE
-
-                // Set custom error icon if provided
-                val iconResId = typedArray.getResourceId(
-                    R.styleable.ErrorView_errorIcon,
-                    R.drawable.ic_warning
-                )
-                errorIcon.setImageResource(iconResId)
-            } finally {
-                typedArray.recycle()
             }
-        }
 
-        // Set up click listener for retry button
-        retryButton.setOnClickListener {
-            onRetryClickListener?.invoke()
+            // Set up click listener for retry button
+            binding?.buttonRetry?.setOnClickListener {
+                onRetryClickListener?.invoke()
+            }
+
+            isInitialized = true
+        } catch (e: Exception) {
+            Log.e(TAG, "Error initializing ErrorView", e)
+            throw e
         }
     }
 
     /**
      * Sets the error message to display
-     *
-     * @param message The error message text
      */
     fun setErrorMessage(message: String) {
-        errorMessage.text = message
+        try {
+            if (!isInitialized) {
+                Log.w(TAG, "View not initialized")
+                return
+            }
+
+            if (message.isBlank()) {
+                Log.e(TAG, "Invalid error message: blank")
+                return
+            }
+
+            binding?.textErrorMessage?.text = message
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting error message", e)
+        }
     }
 
     /**
      * Sets the error icon to display
-     *
-     * @param iconResId Resource ID of the icon
      */
     fun setErrorIcon(iconResId: Int) {
-        errorIcon.setImageResource(iconResId)
+        try {
+            if (!isInitialized) {
+                Log.w(TAG, "View not initialized")
+                return
+            }
+
+            if (iconResId <= 0) {
+                Log.e(TAG, "Invalid icon resource ID: $iconResId")
+                return
+            }
+
+            binding?.imageError?.setImageResource(iconResId)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting error icon", e)
+        }
     }
 
     /**
      * Sets the retry button text
-     *
-     * @param text Button text
      */
     fun setRetryButtonText(text: String) {
-        retryButton.text = text
+        try {
+            if (!isInitialized) {
+                Log.w(TAG, "View not initialized")
+                return
+            }
+
+            if (text.isBlank()) {
+                Log.e(TAG, "Invalid retry button text: blank")
+                return
+            }
+
+            binding?.buttonRetry?.text = text
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting retry button text", e)
+        }
     }
 
     /**
      * Shows or hides the retry button
-     *
-     * @param show True to show, false to hide
      */
     fun showRetryButton(show: Boolean) {
-        retryButton.visibility = if (show) VISIBLE else GONE
+        try {
+            if (!isInitialized) {
+                Log.w(TAG, "View not initialized")
+                return
+            }
+
+            binding?.buttonRetry?.visibility = if (show) View.VISIBLE else View.GONE
+        } catch (e: Exception) {
+            Log.e(TAG, "Error showing/hiding retry button", e)
+        }
     }
 
     /**
      * Sets a listener for retry button clicks
-     *
-     * @param listener Callback to invoke on retry button click
      */
     fun setOnRetryClickListener(listener: () -> Unit) {
-        onRetryClickListener = listener
+        try {
+            if (!isInitialized) {
+                Log.w(TAG, "View not initialized")
+                return
+            }
+
+            onRetryClickListener = listener
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting retry click listener", e)
+        }
     }
 
     /**
      * Sets up the error view with the provided message and retry action
-     *
-     * @param message Error message to display
-     * @param retryAction Action to perform on retry button click
      */
     fun setup(message: String, retryAction: (() -> Unit)? = null) {
-        setErrorMessage(message)
+        try {
+            if (!isInitialized) {
+                Log.w(TAG, "View not initialized")
+                return
+            }
 
-        if (retryAction != null) {
-            showRetryButton(true)
-            setOnRetryClickListener(retryAction)
-        } else {
-            showRetryButton(false)
+            setErrorMessage(message)
+
+            if (retryAction != null) {
+                showRetryButton(true)
+                setOnRetryClickListener(retryAction)
+            } else {
+                showRetryButton(false)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting up error view", e)
         }
     }
 
     /**
      * Convenient method to set up a network error with standard message
-     *
-     * @param retryAction Action to perform on retry button click
      */
     fun setupNetworkError(retryAction: () -> Unit) {
-        setErrorIcon(R.drawable.ic_network_offline)
-        setErrorMessage(context.getString(R.string.error_network))
-        showRetryButton(true)
-        setOnRetryClickListener(retryAction)
+        try {
+            if (!isInitialized) {
+                Log.w(TAG, "View not initialized")
+                return
+            }
+
+            setErrorIcon(R.drawable.ic_network_offline)
+            setErrorMessage(context.getString(R.string.error_network))
+            showRetryButton(true)
+            setOnRetryClickListener(retryAction)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting up network error", e)
+        }
     }
 
     /**
      * Convenient method to set up a generic error with standard message
-     *
-     * @param retryAction Action to perform on retry button click
      */
     fun setupGenericError(retryAction: (() -> Unit)? = null) {
-        setErrorIcon(R.drawable.ic_warning)
-        setErrorMessage(context.getString(R.string.error_unknown))
+        try {
+            if (!isInitialized) {
+                Log.w(TAG, "View not initialized")
+                return
+            }
 
-        if (retryAction != null) {
-            showRetryButton(true)
-            setOnRetryClickListener(retryAction)
-        } else {
-            showRetryButton(false)
+            setErrorIcon(R.drawable.ic_warning)
+            setErrorMessage(context.getString(R.string.error_unknown))
+
+            if (retryAction != null) {
+                showRetryButton(true)
+                setOnRetryClickListener(retryAction)
+            } else {
+                showRetryButton(false)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting up generic error", e)
         }
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        binding = null
+        onRetryClickListener = null
+    }
+
+    companion object {
+        private const val TAG = "ErrorView"
     }
 }

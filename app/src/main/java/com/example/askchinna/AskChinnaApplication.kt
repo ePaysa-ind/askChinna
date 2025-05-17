@@ -2,7 +2,8 @@
  * File: app/src/main/java/com/example/askchinna/AskChinnaApplication.kt
  * Copyright (c) 2025 askChinna
  * Created: April 29, 2025
- * Version: 1.1
+ * Updated: May 5, 2025
+ * Version: 1.3
  */
 
 package com.example.askchinna
@@ -11,7 +12,7 @@ import android.app.Application
 import android.util.Log
 import com.example.askchinna.data.remote.FirestoreInitializer
 import androidx.appcompat.app.AppCompatDelegate
-import com.example.askchinna.data.local.AppDatabase  // Fixed import path
+import com.example.askchinna.data.local.AppDatabase
 import com.example.askchinna.service.DataSeedService
 import com.example.askchinna.util.ImageHelper
 import com.example.askchinna.util.NetworkStateMonitor
@@ -22,6 +23,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancel
 import javax.inject.Inject
 
 /**
@@ -35,7 +37,7 @@ class AskChinnaApplication : Application() {
         private const val TAG = "AskChinnaApplication"
     }
 
-    // Application-scoped coroutine context
+    // Application-scoped coroutine context with proper cleanup
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     @Inject
@@ -55,8 +57,6 @@ class AskChinnaApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-
-        // Initialize application components
         initializeApp()
     }
 
@@ -69,7 +69,7 @@ class AskChinnaApplication : Application() {
             FirebaseApp.initializeApp(this)
 
             // Configure Firebase Crashlytics
-            FirebaseCrashlytics.getInstance().isCrashlyticsCollectionEnabled = !BuildConfig.DEBUG
+            FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(!BuildConfig.DEBUG)
 
             // Set default night mode
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
@@ -80,15 +80,31 @@ class AskChinnaApplication : Application() {
             // Initialize database and seed data
             initializeDatabase()
 
-            // Initialize Firestore collections
-            initializeFirestore()
+            // Log that Firestore initialization is deferred
+            Log.d(TAG, "Firestore initialization deferred until after authentication")
 
             // Clean up temp files
             cleanupTempFiles()
 
         } catch (e: Exception) {
-            Log.e(TAG, "Error during app initialization: ${e.message}")
-            FirebaseCrashlytics.getInstance().recordException(e)
+            handleInitializationError(e)
+        }
+    }
+
+    /**
+     * Handle initialization errors with specific error types
+     */
+    private fun handleInitializationError(error: Exception) {
+        val errorMessage = when (error) {
+            is IllegalStateException -> "App initialization failed: ${error.message}"
+            is SecurityException -> "Security error during initialization: ${error.message}"
+            else -> "Unexpected error during initialization: ${error.message}"
+        }
+
+        Log.e(TAG, errorMessage, error)
+        FirebaseCrashlytics.getInstance().apply {
+            setCustomKey("error_type", error.javaClass.simpleName)
+            recordException(error)
         }
     }
 
@@ -98,17 +114,29 @@ class AskChinnaApplication : Application() {
     private fun initializeDatabase() {
         applicationScope.launch {
             try {
-                // Access database to ensure it's created
-                // Fixed: removed direct access to openHelper and use getInstance pattern instead
                 Log.d(TAG, "Initializing database...")
-
-                // Seed initial data
                 seedInitialData()
-
             } catch (e: Exception) {
-                Log.e(TAG, "Database initialization error: ${e.message}")
-                FirebaseCrashlytics.getInstance().recordException(e)
+                handleDatabaseError(e)
             }
+        }
+    }
+
+    /**
+     * Handle database-specific errors
+     */
+    private fun handleDatabaseError(error: Exception) {
+        val errorMessage = when (error) {
+            is IllegalStateException -> "Database initialization failed: ${error.message}"
+            is SecurityException -> "Database security error: ${error.message}"
+            else -> "Database error: ${error.message}"
+        }
+
+        Log.e(TAG, errorMessage, error)
+        FirebaseCrashlytics.getInstance().apply {
+            setCustomKey("error_type", error.javaClass.simpleName)
+            setCustomKey("error_location", "database_initialization")
+            recordException(error)
         }
     }
 
@@ -125,57 +153,163 @@ class AskChinnaApplication : Application() {
                     Log.e(TAG, "Failed to seed initial data")
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Error seeding initial data: ${e.message}")
-                FirebaseCrashlytics.getInstance().recordException(e)
+                handleDataSeedingError(e)
             }
         }
     }
 
     /**
-     * Initialize Firestore collections and documents
+     * Handle data seeding errors
      */
-    private fun initializeFirestore() {
-        applicationScope.launch {
-            try {
-                val success = firestoreInitializer.initializeCollections()
-                if (success) {
-                    Log.d(TAG, "Firestore collections initialized successfully")
-                } else {
-                    Log.e(TAG, "Failed to initialize Firestore collections")
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error initializing Firestore collections: ${e.message}")
-                FirebaseCrashlytics.getInstance().recordException(e)
-            }
+    private fun handleDataSeedingError(error: Exception) {
+        val errorMessage = when (error) {
+            is IllegalStateException -> "Data seeding failed: ${error.message}"
+            is SecurityException -> "Data seeding security error: ${error.message}"
+            else -> "Data seeding error: ${error.message}"
+        }
+
+        Log.e(TAG, errorMessage, error)
+        FirebaseCrashlytics.getInstance().apply {
+            setCustomKey("error_type", error.javaClass.simpleName)
+            setCustomKey("error_location", "data_seeding")
+            recordException(error)
         }
     }
+
+
 
     /**
      * Clean up temporary files from previous sessions
      */
     private fun cleanupTempFiles() {
-        applicationScope.launch {
-            try {
-                // Clean up image temp files
-                imageHelper.cleanupTempImages()
-            } catch (e: Exception) {
-                Log.e(TAG, "Error cleaning temp files: ${e.message}")
-            }
+        try {
+            // Clean up image temp files
+            imageHelper.cleanupTempImages()
+
+            // Clean up any other temporary files
+            // Add other temp file cleanup operations here
+
+        } catch (e: Exception) {
+            handleTempFileCleanupError(e)
+        }
+    }
+
+    /**
+     * Handle temporary file cleanup errors
+     */
+    private fun handleTempFileCleanupError(error: Exception) {
+        val errorMessage = when (error) {
+            is IllegalStateException -> "Temp file cleanup failed: ${error.message}"
+            is SecurityException -> "Temp file cleanup security error: ${error.message}"
+            else -> "Temp file cleanup error: ${error.message}"
+        }
+
+        Log.e(TAG, errorMessage, error)
+        FirebaseCrashlytics.getInstance().apply {
+            setCustomKey("error_type", error.javaClass.simpleName)
+            setCustomKey("error_location", "temp_file_cleanup")
+            recordException(error)
         }
     }
 
     override fun onTerminate() {
-        super.onTerminate()
+        try {
+            // 1. First stop all background operations
+            applicationScope.cancel()
 
-        // Stop network monitoring
-        stopMonitoring()
+            // 2. Stop network monitoring
+            stopMonitoring()
+
+            // 3. Clean up temporary files
+            cleanupTempFiles()
+
+            // 4. Close database connections
+            database.close()
+
+            // 5. Clear any cached data
+            clearCachedData()
+
+            super.onTerminate()
+        } catch (e: Exception) {
+            handleTerminationError(e)
+        }
+    }
+
+    /**
+     * Clean up any cached data in memory
+     */
+    private fun clearCachedData() {
+        try {
+            // Clear image cache
+            imageHelper.clearImageCache()
+
+            // Clear any other cached data
+            // Add other cache clearing operations here
+
+        } catch (e: Exception) {
+            handleCacheClearingError(e)
+        }
+    }
+
+    /**
+     * Handle termination errors with specific error types
+     */
+    private fun handleTerminationError(error: Exception) {
+        val errorMessage = when (error) {
+            is IllegalStateException -> "Application termination failed: ${error.message}"
+            is SecurityException -> "Application termination security error: ${error.message}"
+            else -> "Application termination error: ${error.message}"
+        }
+
+        Log.e(TAG, errorMessage, error)
+        FirebaseCrashlytics.getInstance().apply {
+            setCustomKey("error_type", error.javaClass.simpleName)
+            setCustomKey("error_location", "application_termination")
+            recordException(error)
+        }
+    }
+
+    /**
+     * Handle cache clearing errors
+     */
+    private fun handleCacheClearingError(error: Exception) {
+        val errorMessage = when (error) {
+            is IllegalStateException -> "Cache clearing failed: ${error.message}"
+            is SecurityException -> "Cache clearing security error: ${error.message}"
+            else -> "Cache clearing error: ${error.message}"
+        }
+
+        Log.e(TAG, errorMessage, error)
+        FirebaseCrashlytics.getInstance().apply {
+            setCustomKey("error_type", error.javaClass.simpleName)
+            setCustomKey("error_location", "cache_clearing")
+            recordException(error)
+        }
     }
 
     private fun startMonitoring() {
         try {
             networkStateMonitor.startMonitoring()
         } catch (e: Exception) {
-            Log.e(TAG, "Error starting network monitoring: ${e.message}")
+            handleNetworkMonitoringError(e)
+        }
+    }
+
+    /**
+     * Handle network monitoring errors with specific error types
+     */
+    private fun handleNetworkMonitoringError(error: Exception) {
+        val errorMessage = when (error) {
+            is IllegalStateException -> "Network monitoring failed: ${error.message}"
+            is SecurityException -> "Network monitoring security error: ${error.message}"
+            else -> "Network monitoring error: ${error.message}"
+        }
+
+        Log.e(TAG, errorMessage, error)
+        FirebaseCrashlytics.getInstance().apply {
+            setCustomKey("error_type", error.javaClass.simpleName)
+            setCustomKey("error_location", "network_monitoring")
+            recordException(error)
         }
     }
 
@@ -183,7 +317,7 @@ class AskChinnaApplication : Application() {
         try {
             networkStateMonitor.stopMonitoring()
         } catch (e: Exception) {
-            Log.e(TAG, "Error stopping network monitoring: ${e.message}")
+            handleNetworkMonitoringError(e)
         }
     }
 }
