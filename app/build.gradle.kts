@@ -58,11 +58,12 @@ android {
             name="GEMINI_API_KEY",
             value="\"${getGeminiApiKey()}\""
         )
-        buildConfigField(
-            type="String",
-            name="FIREBASE_API_KEY",
-            value="\"${getFirebaseApiKey()}\""
-        )
+        // Firebase API key will be retrieved at runtime from google-services.json
+        // buildConfigField(
+        //     type="String",
+        //     name="FIREBASE_API_KEY",
+        //     value="\"${getFirebaseApiKey()}\""
+        // )
 
         // Privacy‑policy URL for manifest placeholders
         manifestPlaceholders["privacyPolicyUrl"] =

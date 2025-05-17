@@ -30,6 +30,10 @@ askChinna is an Android application that helps farmers identify pests and diseas
 
 ## Setup Instructions
 
+### ⚠️ Important Security Notice
+
+**API keys must be configured locally and should NEVER be committed to version control.** See [API_KEYS_SETUP.md](API_KEYS_SETUP.md) for detailed instructions.
+
 1. Clone the repository:
 ```bash
 git clone https://github.com/ePaysa-ind/askChinna.git
@@ -37,19 +41,14 @@ git clone https://github.com/ePaysa-ind/askChinna.git
 
 2. Open in Android Studio (Arctic Fox or later)
 
-3. Set up Firebase:
-   - Create a Firebase project
-   - Add `google-services.json` to `app/` directory
-   - Enable Phone Authentication
+3. **Set up API Keys and Firebase** (Required):
+   - Follow the comprehensive guide in [API_KEYS_SETUP.md](API_KEYS_SETUP.md)
+   - This includes setting up:
+     - `local.properties` with your API keys
+     - `google-services.json` from Firebase Console
+   - Both files are excluded from Git for security
 
-4. Add API Keys:
-   - Create `local.properties` in project root
-   - Add your Gemini API key:
-   ```
-   GEMINI_API_KEY=your_api_key_here
-   ```
-
-5. Build and run the app
+4. Build and run the app
 
 ## Project Structure
 
