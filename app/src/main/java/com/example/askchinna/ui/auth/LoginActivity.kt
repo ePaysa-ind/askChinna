@@ -52,6 +52,19 @@ class LoginActivity : AppCompatActivity(), NetworkStatusView.OnRetryConnectionLi
         // Set initial button state
         binding.buttonLogin.isEnabled = false
         
+        // Check initial network state
+        networkMonitor.startMonitoring()
+        val initialNetworkState = networkMonitor.networkState.value ?: NetworkState.Unknown
+        Log.d("LoginActivity", "Initial network state: $initialNetworkState")
+        
+        // Set initial network status view state
+        if (initialNetworkState == NetworkState.Offline || initialNetworkState == NetworkState.Unknown) {
+            binding.networkStatusView.visibility = View.VISIBLE
+            binding.networkStatusView.updateNetwork(NetworkState.Offline)
+        } else {
+            binding.networkStatusView.visibility = View.GONE
+        }
+        
         setupMobileInputValidation()
         setupClickListeners()
         observeViewModel()
@@ -154,18 +167,26 @@ class LoginActivity : AppCompatActivity(), NetworkStatusView.OnRetryConnectionLi
     }
 
     private fun setupNetworkMonitoring() {
-        networkMonitor.startMonitoring()
         networkMonitor.networkState.observe(this) { state ->
-            val isAvailable = state != NetworkState.Offline
-            binding.networkStatusView.visibility = if (!isAvailable) View.VISIBLE else View.GONE
-            binding.networkStatusView.updateNetwork(state)
+            Log.d("LoginActivity", "Network state observed: $state")
             
+            val isAvailable = state != NetworkState.Offline && state != NetworkState.Unknown
+            
+            // Update network status view
+            if (!isAvailable) {
+                binding.networkStatusView.visibility = View.VISIBLE
+                binding.networkStatusView.updateNetwork(state)
+            } else {
+                binding.networkStatusView.visibility = View.GONE
+            }
+            
+            // Update button state
             val mobile = binding.editTextMobile.text.toString().trim()
             val isValid = mobile.matches(Regex("^[0-9]{10}$"))
             binding.buttonLogin.isEnabled = isAvailable && isValid
             
             // Debug logging
-            Log.d("LoginActivity", "Network state: $state, Available: $isAvailable, Mobile valid: $isValid")
+            Log.d("LoginActivity", "Network state: $state, Available: $isAvailable, Mobile valid: $isValid, Button enabled: ${binding.buttonLogin.isEnabled}")
         }
     }
 
@@ -207,6 +228,7 @@ class LoginActivity : AppCompatActivity(), NetworkStatusView.OnRetryConnectionLi
     override fun onRetryConnection() {
         Log.d("LoginActivity", "Retry connection clicked")
         // Restart network monitoring
+        networkMonitor.stopMonitoring()
         networkMonitor.startMonitoring()
         
         // Force a network check
