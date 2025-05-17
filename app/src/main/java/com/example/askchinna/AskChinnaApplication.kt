@@ -16,6 +16,7 @@ import com.example.askchinna.data.local.AppDatabase
 import com.example.askchinna.service.DataSeedService
 import com.example.askchinna.util.ImageHelper
 import com.example.askchinna.util.NetworkStateMonitor
+import com.example.askchinna.util.NetworkDebugUtil
 import com.google.firebase.FirebaseApp
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.HiltAndroidApp
@@ -57,6 +58,13 @@ class AskChinnaApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        Log.d(TAG, "AskChinnaApplication onCreate")
+        
+        // Debug network state immediately
+        Log.d(TAG, "=== Network Debug at App Start ===")
+        NetworkDebugUtil.logDetailedNetworkState(this)
+        Log.d(TAG, "Simple network check: ${NetworkDebugUtil.isConnectedSimple(this)}")
+        
         initializeApp()
     }
 
